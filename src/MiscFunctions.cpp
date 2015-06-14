@@ -404,10 +404,12 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
     else
     {
         cv::Mat rgbMat;
+        bool swap = true;
         int qImageFormat = QImage::Format_RGB888;
         if(mat.type()==CV_8UC4)
         {
             qImageFormat = QImage::Format_ARGB32;
+            swap = false;
             rgbMat = mat;
         }
         else if (mat.type()==CV_8UC3)
@@ -424,7 +426,10 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
 
         // Create QImage with same dimensions as input Mat
         QImage img(qImageBuffer, mat.cols, mat.rows, mat.step,(QImage::Format) qImageFormat);
-        return img.rgbSwapped();     // deep copy !!
+        if (swap) {
+            return img.rgbSwapped();
+        }
+        return img; // deep copy !!
         //}
     }
 }
