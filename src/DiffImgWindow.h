@@ -69,6 +69,8 @@ public slots:
     void on_actionSaveDifference_triggered();
     void on_actionShowComment_toggled (bool);
 
+    void on_actionShowDocks_triggered();
+
     void on_actionDualPanel_toggled(bool val);
     void on_actionDisplayWipe_toggled(bool val);
 

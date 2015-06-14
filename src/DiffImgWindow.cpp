@@ -927,6 +927,15 @@ void DiffImgWindow::on_actionFullResolution_triggered()
 
 //-------------------------------------------------------------------------
 
+void DiffImgWindow::on_actionShowDocks_triggered()
+{
+    dockWidgetNavigator->show();
+    dockWidgetProperties->show();
+    dockWidgetHistogram->show();
+}
+
+//-------------------------------------------------------------------------
+
 void DiffImgWindow::on_pushButtonFile1_pressed()
 {
     actionImage1->setChecked(true);
