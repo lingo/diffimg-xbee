@@ -1,0 +1,163 @@
+Diffimg v1.2.0   README 23.01.2012
+
+Din't test much :P
+
+0. CONTENTS OF THIS FILE
+========================
+
+1. INTRODUCTION
+
+2. REQUIREMENTS
+
+3. INSTALLATION
+
+4. LICENSE, COPYRIGHT, DISCLAIMER
+
+5. CONTACT
+
+6. CREDITS
+
+7. SUPPORT AND DONATIONS
+
+8. HISTORY
+
+9. RESTRICTIONS
+
+
+1. INTRODUCTION
+===============
+
+Welcome to Diffimg v1.1.0 port for OS/2 and eComStation.
+DiffImg is a simple image comparison tool which take two images with the same size as input. 
+Some statitics are computed and the positions where pixel differ are displayed as a color mask.
+Because DiffImg is written with Qt, it runs on Windows and Linux (MacOSX isn't tested yet) and OS/2.
+
+2. REQUIREMENTS
+===============
+
+* klibc 0.6.4 or later
+
+    ftp://ftp.netlabs.org/pub/gcc/libc-0.6.4-csd4.zip or
+    ftp://ftp.netlabs.org/incoming/libc-0.6.4-csd4.wpi
+
+* Qt4 dll
+
+    see http://svn.netlabs.org/qt4 for more information whats needed and where to get the latest dll's
+
+
+* Gcc 4.4.6 dll and other needed dll's
+    ftp://ftp.netlabs.org/pub/gcc/gcc4core-1_2_1.wpi 
+
+
+
+3. INSTALLATION
+===============
+          
+To install Diffimg, do the following:
+
+klibc
+-----
+
+  1. Download klibc 0.6.4 csd4 or later.
+  2. Install the package by unzipping zip file to libpath or click on wpi.
+
+
+
+Qt4 dll
+-------
+
+  1. Download the zip or rpm and follow the instructions
+
+
+Gcc dll
+-------
+  1. Download the package.
+  2. Install the package by clicking on the wpi file.
+
+
+Diffimg
+--------
+
+  1. Create a directory for Diffimg.
+  2. Extract the Diffimg package to the new directory.
+  3. Create a WPS object for Diffimg.exe.
+  4. Start Diffimg
+  5. Enjoy the app
+  
+
+4. LICENSE, COPYRIGHT, DISCLAIMER
+=================================
+
+(C) 2007-2012 Xbee <xbee@xbee.org> http://thehive.xbee.net/index.php?module=pages&func=display&pageid=11
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+5. CONTACT
+==========
+
+if you find a bug, then add a ticket to the trac at http://svn.netlabs.org/qtapps
+
+Only bug reports with a reproducable bug are accepted. :-)
+
+
+
+6. CREDITS
+==========
+
+The port was done by: Elbert Pol aka TeLLie
+
+Thanks go to:
+  * Xbee
+  * Dmitry A. Kuminov
+  * Silvan Scherrer
+
+They either helped me when I had some nasty questions or did some testing for me.
+
+
+7. SUPPORT AND DONATIONS
+========================
+
+Diffimg is based on volunteer work. If you would like to support further
+development, you can do so in one of the following ways:
+
+
+  * Donate to the Qt4 project: see qt.netlabs.org for more information
+
+  * Contribute to the project: Besides actual development, this also includes
+    maintaining the documentation and the project web site as well as help
+    for users.
+
+
+8. HISTORY
+==========
+Compiled now with Qt4.7.3 GA
+
+Changelog:
+
+Version 1.2.0
+* features
+- add OS/2 support (thanks to Elbert Pol)
+- add LXDE support
+- add OPENBOX support
+- add command line argument to reset the stored preference
+- add debug info in log
+- add the ability to save log in a file
+- add drag&drop
+- add command option to disable multiple instance detection
+* bugs
+- replace activated signal for action by triggered for os/2 platform
+- correct horizontal alignment (center image)
+Version 1.1.0
+* Features
+- add changelog access in interface
+- add some test files in the Windows setup.exe
+- add opacity of error mask in preferences
+- add the ability to set a threshold in RMS value to compare the two images
+* Bugs
+- correct missing DLLs in the Windows installer for mingw compilation
+
+Version 1.0.0
+Official release

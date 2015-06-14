@@ -1,0 +1,39 @@
+<RCC>
+  <qresource prefix="/diffimg">
+    <file>wipe_effect.png</file>
+    <file>icon_paypal.png</file>
+    <file>delete.png</file>
+    <file>comment.png</file>
+    <file>save.png</file>
+    <file>check2.png</file>
+    <file>perceptual.png</file>
+    <file>perchannel.png</file>
+    <file>perchannelmean.png</file>
+    <file>perluminance.png</file>
+    <file>journal.png</file>
+    <file>help.png</file>
+    <file>allgood.png</file>
+    <file>bad.png</file>
+    <file>somebad.png</file>
+    <file>refresh.png</file>
+    <file>preferences.png</file>
+    <file>diffimg.png</file>
+    <file>modified.png</file>
+    <file>original.png</file>
+    <file>about.png</file>
+    <file>splashscreen.png</file>
+    <file>window_split_hor.png</file>
+    <file>red.png</file>
+    <file>yellow.png</file>
+    <file>icon_difference.png</file>
+    <file>prev.png</file>
+    <file>next.png</file>
+    <file>icon_open.png</file>
+    <file>icon_diff.png</file>
+    <file>icon_mag1.png</file>
+    <file>icon_magfit.png</file>
+    <file>icon_modified.png</file>
+    <file>icon_original.png</file>
+    <file>icon_quit.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,13 @@
+Source: diffimg
+Section: x11
+Priority: optional
+Maintainer: xbee <xbee@xbee.net>
+Build-Depends: cdbs, debhelper (>= 8), cmake, libqt4-dev, libx11-dev, libopencv-dev, libqwt-dev
+
+Package: diffimg
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: 
+Recommends: 
+Description: DiffImg is a simple image comparison tool.
+

@@ -1,0 +1,19 @@
+diffimg (2.2.0) unstable; urgency=low
+
+  * Release 2.2.0 : add "wipe" effect
+
+ -- xbee <xbee@xbee.net>  Thu, 9 September 2014 9:00:00 +0100
+ 
+diffimg (2.1.0) unstable; urgency=low
+
+  * Release 2.1.0 : add YUV format + bugfixes
+
+ -- xbee <xbee@xbee.net>  Thu, 9 June 2014 9:00:00 +0100
+ 
+diffimg (2.0.2) unstable; urgency=low
+
+  * Release 2.0.2 : Initial release.
+
+ -- xbee <xbee@xbee.net>  Thu, 9 January 2014 9:00:00 +0100
+
+
