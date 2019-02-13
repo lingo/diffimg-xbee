@@ -21,11 +21,11 @@
 #ifndef _SPLASHSCREEN_H_
 #define _SPLASHSCREEN_H_
 
-#include <QtGui/QSplashScreen>
-#include <QtGui/QWidget>
-#include <QtGui/QPixmap>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
+#include <QSplashScreen>
+#include <QWidget>
+#include <QPixmap>
+#include <QPaintEvent>
+#include <QPainter>
 
 class SplashScreen :
     public QSplashScreen

@@ -23,8 +23,8 @@
 #include <QtCore/QTimer>
 #include <QtCore/QtDebug>
 #include <QtCore/QThread>
-#include <QtGui/QApplication>
-#include <QtGui/QDesktopWidget>
+#include <QApplication>
+#include <QDesktopWidget>
 
 const int refreshInterval = 201;
 

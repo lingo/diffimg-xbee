@@ -20,9 +20,9 @@
 
 #include <QtCore/QFileInfo>
 
-#include <QtGui/QFileDialog>
-#include <QtGui/QCompleter>
-#include <QtGui/QDirModel>
+#include <QFileDialog>
+#include <QCompleter>
+#include <QDirModel>
 
 #include "FilesDialog.h"
 #include "MiscFunctions.h"

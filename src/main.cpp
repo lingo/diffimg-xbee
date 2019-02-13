@@ -18,10 +18,10 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *******************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtGui/QPlastiqueStyle>
-#include <QtGui/QMessageBox>
-#include <QtGui/QDesktopWidget>
+#include <QApplication>
+//#include <QPlastiqueStyle>
+#include <QMessageBox>
+#include <QDesktopWidget>
 #include <QtCore/QFileInfo>
 
 #include "DiffImgWindow.h"
@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
 
     // modifying base look
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-    QApplication::setStyle(new QPlastiqueStyle);
+    //QApplication::setStyle(new QPlastiqueStyle);
 #endif
 
     // check for special argument

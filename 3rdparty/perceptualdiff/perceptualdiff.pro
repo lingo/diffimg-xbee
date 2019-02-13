@@ -24,6 +24,8 @@ INCLUDEPATH += ./ \
     ../opencv/include \
     ../opencv/core/include \
     ../opencv/highgui/include \
-    ../opencv/imgproc/include 
+    ../opencv/imgproc/include \
+    /usr/include/opencv4
+
 
 win32-msvc:DEFINES += _CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_WARNINGS

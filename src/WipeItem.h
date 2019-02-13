@@ -22,7 +22,7 @@
 #define _WIPEITEM_H_
 
 // Qt
-#include <QtGui/QGraphicsItem>
+#include <QGraphicsItem>
 
 class QGraphicsSceneMouseEvent;
 

@@ -21,7 +21,7 @@
 #ifndef _DIFFIMGWINDOW_H_
 #define _DIFFIMGWINDOW_H_
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "ui_DiffImgWindow.h"
 
 // forward declarations
@@ -42,7 +42,7 @@ public:
 
 
 
-    DiffImgWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
+    DiffImgWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~DiffImgWindow();
 
 public slots:

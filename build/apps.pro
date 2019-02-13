@@ -143,11 +143,13 @@ LIBS += -lqwt \
         -L../3rdparty/qtpropertybrowser/lib -lqtpropertybrowser \
         -L../3rdparty/libyuv/lib -llibyuv \
         -L../3rdparty/perceptualdiff/lib -lperceptualdiff \
+         -lopencv_imgcodecs \
          -lopencv_imgproc  \
          -lopencv_highgui \
          -lopencv_core 
 }
 
+INCLUDEPATH += /usr/include/opencv4
 
     
 RESOURCES += ../res/$${TARGET}.qrc

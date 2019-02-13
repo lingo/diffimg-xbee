@@ -22,7 +22,7 @@
 #define _EDITORVIEW_H_
 
 // Qt
-#include <QtGui/QGraphicsView>
+#include <QGraphicsView>
 #include <QtCore/QPointF>
 
 class QGraphicsPixmapItem;

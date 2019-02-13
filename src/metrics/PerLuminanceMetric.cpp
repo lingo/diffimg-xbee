@@ -21,6 +21,7 @@
 #include <QtCore/QDebug>
 
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/types_c.h>
 
 #include "PerLuminanceMetric.h"
 

@@ -19,9 +19,9 @@
  *******************************************************************************/
 
 #include <QtCore/QtDebug>
-#include <QtGui/QResizeEvent>
-#include <QtGui/QPainter>
-#include <QtGui/QGraphicsView>
+#include <QResizeEvent>
+#include <QPainter>
+#include <QGraphicsView>
 
 #include "ImageNavigator.h"
 

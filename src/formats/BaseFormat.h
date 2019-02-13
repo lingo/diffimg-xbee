@@ -23,7 +23,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
-#include <QtGui/QPixmap>
+#include <QPixmap>
 
 namespace cv
 {

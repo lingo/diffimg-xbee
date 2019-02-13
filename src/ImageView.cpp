@@ -21,10 +21,10 @@
 // Qt
 #include <QtCore/QtDebug>
 
-#include <QtGui/QMouseEvent>
-#include <QtGui/QGraphicsScene>
+#include <QMouseEvent>
+#include <QGraphicsScene>
 
-#include <QtGui/QGraphicsPixmapItem>
+#include <QGraphicsPixmapItem>
 
 //#include <QtOpenGL/QGLWidget>
 

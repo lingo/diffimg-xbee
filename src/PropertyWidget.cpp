@@ -18,8 +18,8 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *******************************************************************************/
 
-#include <QtGui/QPixmap>
-#include <QtGui/QPainter>
+#include <QPixmap>
+#include <QPainter>
 #include <QtCore/QDate>
 
 #include <climits>

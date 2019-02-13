@@ -21,7 +21,7 @@
 #ifndef _IMAGENAVIGATOR_H_
 #define _IMAGENAVIGATOR_H_
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 class QGraphicsView;
 

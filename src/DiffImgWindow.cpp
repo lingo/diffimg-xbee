@@ -42,14 +42,16 @@
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
-#include <QtGui/QActionGroup>
-#include <QtGui/QFileDialog>
-#include <QtGui/QAction>
-#include <QtGui/QMessageBox>
-#include <QtGui/QDesktopWidget>
-#include <QtGui/QDesktopServices>
-#include <QtGui/QPainter>
-#include <QtGui/QDragEnterEvent>
+#include <QActionGroup>
+#include <QFileDialog>
+#include <QAction>
+#include <QMessageBox>
+#include <QDesktopWidget>
+#include <QDesktopServices>
+#include <QPainter>
+#include <QDragEnterEvent>
+#include <QButtonGroup>
+#include <QMimeData>
 
 #if !defined(WIN32)
 #include <unistd.h> // for unlink
@@ -104,7 +106,7 @@ public:
     }
 };
 
-DiffImgWindow::DiffImgWindow(QWidget *parent, Qt::WFlags flags)
+DiffImgWindow::DiffImgWindow(QWidget *parent, Qt::WindowFlags flags)
     :   QMainWindow(parent, flags),
     m_displayOverlayDiff(true),
     m_displayOriginalImage(true),

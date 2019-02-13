@@ -26,13 +26,14 @@
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
 
-#include <QtGui/QApplication>
-#include <QtGui/QPixmap>
-#include <QtGui/QImageReader>
-#include <QtGui/QImage>
+#include <QApplication>
+#include <QPixmap>
+#include <QImageReader>
+#include <QImage>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/types_c.h>
 
 #include "MiscFunctions.h"
 #include "LogHandler.h"

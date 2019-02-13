@@ -21,7 +21,7 @@
 #ifndef _DIALOGFILES_H_
 #define _DIALOGFILES_H_
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include "ui_FilesDialog.h"
 
 using namespace Ui;

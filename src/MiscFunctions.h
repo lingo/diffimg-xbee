@@ -22,7 +22,7 @@
 #define _MISCFUNCTIONS_H_
 
 #include <QtCore/QString>
-#include <QtGui/QImage>
+#include <QImage>
 
 namespace cv
 {

@@ -20,9 +20,9 @@
 
 // Qt
 #include <QtCore/QDebug>
-#include <QtGui/QPainter>
-#include <QtGui/QGraphicsSceneMouseEvent>
-#include <QtGui/QCursor>
+#include <QPainter>
+#include <QGraphicsSceneMouseEvent>
+#include <QCursor>
 
 #include "WipeItem.h"
 #include "WipeMethod.h"

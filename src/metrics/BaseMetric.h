@@ -23,10 +23,12 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
-#include <QtGui/QPixmap>
+#include <QPixmap>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgcodecs/legacy/constants_c.h>
+#include <opencv2/imgproc/types_c.h>
 
 struct ImageProperty
 {
