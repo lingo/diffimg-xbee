@@ -1,4 +1,4 @@
-﻿DiffImg is a simple image comparison tool which take two RGB images with the same size as input. Some statitics are computed and the positions where pixel differ are displayed as a color mask.
+DiffImg is a simple image comparison tool which take two RGB images with the same size as input. Some statitics are computed and the positions where pixel differ are displayed as a color mask.
 Because DiffImg is written with Qt, it runs on Windows, Linux, OS/2 (MacOSX isn't tested yet).
 
 You want to help ? You can proposed you as translator on transifex.com (DiffImg project) or post feedbacks on SourceForge:
