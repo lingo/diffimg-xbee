@@ -64,6 +64,7 @@ public:
     QString m_statusTip;
     QString m_whatsThis;
     QString m_name;
+    QString m_id;
     bool m_enabled;
     bool m_modified;
 
@@ -240,6 +241,16 @@ QString QtProperty::propertyName() const
 }
 
 /*!
+    Returns the property's id.
+
+    \sa setPropertyId()
+*/
+QString QtProperty::propertyId() const
+{
+    return d_ptr->m_id;
+}
+
+/*!
     Returns whether the property is enabled.
 
     \sa setEnabled()
@@ -293,6 +304,22 @@ QIcon QtProperty::valueIcon() const
 QString QtProperty::valueText() const
 {
     return d_ptr->m_manager->valueText(this);
+}
+
+/*!
+    Returns True if this property is equal to \a otherProperty
+
+    The list of parent or sub properties are not considered in the comparison.
+*/
+bool QtProperty::compare(QtProperty* otherProperty)const
+{
+  return (this->propertyId() == otherProperty->propertyId()
+          && this->propertyName() == otherProperty->propertyName()
+          && this->toolTip() == otherProperty->toolTip()
+          && this->statusTip() == otherProperty->statusTip()
+          && this->whatsThis() == otherProperty->whatsThis()
+          && this->isEnabled() == otherProperty->isEnabled()
+          && this->isModified() == otherProperty->isModified());
 }
 
 /*!
@@ -354,6 +381,21 @@ void QtProperty::setPropertyName(const QString &text)
 }
 
 /*!
+    \fn void QtProperty::setPropertyId(const QString &id)
+
+    Sets the property's  id to the given \a id.
+
+    \sa propertyId()
+*/
+void QtProperty::setPropertyId(const QString &text)
+{
+    if (d_ptr->m_id == text)
+        return;
+
+    d_ptr->m_id = text;
+}
+
+/*!
     Enables or disables the property according to the passed \a enable value.
 
     \sa isEnabled()
@@ -379,6 +421,14 @@ void QtProperty::setModified(bool modified)
 
     d_ptr->m_modified = modified;
     propertyChanged();
+}
+
+/*!
+    Returns whether the property is sub property.
+*/
+bool QtProperty::isSubProperty()const
+{
+  return d_ptr->m_parentItems.count();
 }
 
 /*!
@@ -734,6 +784,23 @@ QtProperty *QtAbstractPropertyManager::addProperty(const QString &name)
         initializeProperty(property);
     }
     return property;
+}
+
+/*!
+    Return the QtProperty object matching \a id or Null if any.
+
+    \sa addProperty(), setPropertyId(const QString&), properties()
+*/
+QtProperty * QtAbstractPropertyManager::qtProperty(const QString &id)const
+{
+  foreach(QtProperty* prop, d_ptr->m_properties)
+    {
+    if (prop->propertyId() == id)
+      {
+      return prop;
+      }
+    }
+  return 0;
 }
 
 /*!
@@ -1181,7 +1248,6 @@ typedef QMap<QtAbstractPropertyManager *, QMap<QtAbstractEditorFactoryBase *,
 Q_GLOBAL_STATIC(Map1, m_viewToManagerToFactory)
 Q_GLOBAL_STATIC(Map2, m_managerToFactoryToViews)
 
-    /*
 class QtAbstractPropertyBrowserPrivate
 {
     QtAbstractPropertyBrowser *q_ptr;
@@ -1215,7 +1281,6 @@ public:
 
     QtBrowserItem *m_currentItem;
 };
-*/
 
 QtAbstractPropertyBrowserPrivate::QtAbstractPropertyBrowserPrivate() :
    m_currentItem(0)
@@ -1980,4 +2045,4 @@ void QtAbstractPropertyBrowser::setCurrentItem(QtBrowserItem *item)
 QT_END_NAMESPACE
 #endif
 
-//#include "moc_qtpropertybrowser.cpp"
+#include "moc_qtpropertybrowser.cpp"

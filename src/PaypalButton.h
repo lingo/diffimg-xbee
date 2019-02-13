@@ -11,7 +11,7 @@
     \author Filipe Azevedo aka Nox P\@sNox <pasnox@gmail.com>
 */
 
-#include <QtGui/QPushButton>
+#include <QPushButton>
 #include <QtCore/QUrl>
 #include <QtCore/QHash>
 

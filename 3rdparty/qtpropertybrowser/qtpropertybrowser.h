@@ -41,9 +41,8 @@
 #ifndef QTPROPERTYBROWSER_H
 #define QTPROPERTYBROWSER_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QtCore/QSet>
-#include <QtCore/QMap>
 
 #if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
@@ -82,6 +81,7 @@ public:
     QString statusTip() const;
     QString whatsThis() const;
     QString propertyName() const;
+    QString propertyId() const;
     bool isEnabled() const;
     bool isModified() const;
 
@@ -89,13 +89,17 @@ public:
     QIcon valueIcon() const;
     QString valueText() const;
 
+    virtual bool compare(QtProperty* otherProperty)const;
+
     void setToolTip(const QString &text);
     void setStatusTip(const QString &text);
     void setWhatsThis(const QString &text);
     void setPropertyName(const QString &text);
+    void setPropertyId(const QString &text);
     void setEnabled(bool enable);
     void setModified(bool modified);
 
+    bool isSubProperty()const;
     void addSubProperty(QtProperty *property);
     void insertSubProperty(QtProperty *property, QtProperty *afterProperty);
     void removeSubProperty(QtProperty *property);
@@ -121,6 +125,7 @@ public:
     void clear() const;
 
     QtProperty *addProperty(const QString &name = QString());
+    QtProperty *qtProperty(const QString &id)const;
 Q_SIGNALS:
 
     void propertyInserted(QtProperty *property,
@@ -322,41 +327,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void slotPropertyDataChanged(QtProperty *))
 
 };
-
-class QtAbstractPropertyBrowserPrivate
-{
-    QtAbstractPropertyBrowser *q_ptr;
-    Q_DECLARE_PUBLIC(QtAbstractPropertyBrowser)
-public:
-    QtAbstractPropertyBrowserPrivate();
-
-    void insertSubTree(QtProperty *property,
-            QtProperty *parentProperty);
-    void removeSubTree(QtProperty *property,
-            QtProperty *parentProperty);
-    void createBrowserIndexes(QtProperty *property, QtProperty *parentProperty, QtProperty *afterProperty);
-    void removeBrowserIndexes(QtProperty *property, QtProperty *parentProperty);
-    QtBrowserItem *createBrowserIndex(QtProperty *property, QtBrowserItem *parentIndex, QtBrowserItem *afterIndex);
-    void removeBrowserIndex(QtBrowserItem *index);
-    void clearIndex(QtBrowserItem *index);
-
-    void slotPropertyInserted(QtProperty *property,
-            QtProperty *parentProperty, QtProperty *afterProperty);
-    void slotPropertyRemoved(QtProperty *property, QtProperty *parentProperty);
-    void slotPropertyDestroyed(QtProperty *property);
-    void slotPropertyDataChanged(QtProperty *property);
-
-    QList<QtProperty *> m_subItems;
-    QMap<QtAbstractPropertyManager *, QList<QtProperty *> > m_managerToProperties;
-    QMap<QtProperty *, QList<QtProperty *> > m_propertyToParents;
-
-    QMap<QtProperty *, QtBrowserItem *> m_topLevelPropertyToIndex;
-    QList<QtBrowserItem *> m_topLevelIndexes;
-    QMap<QtProperty *, QList<QtBrowserItem *> > m_propertyToIndexes;
-
-    QtBrowserItem *m_currentItem;
-};
-
 
 #if QT_VERSION >= 0x040400
 QT_END_NAMESPACE

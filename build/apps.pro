@@ -1,5 +1,5 @@
 
-QT += core gui 
+QT += core gui widgets
 
 CONFIG += ordered debug_and_release
 

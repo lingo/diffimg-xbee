@@ -40,18 +40,17 @@
 
 #include "qtbuttonpropertybrowser.h"
 #include <QtCore/QSet>
-#include <QtGui/QGridLayout>
-#include <QtGui/QLabel>
 #include <QtCore/QTimer>
 #include <QtCore/QMap>
-#include <QtGui/QToolButton>
-#include <QtGui/QStyle>
+#include <QGridLayout>
+#include <QLabel>
+#include <QToolButton>
+#include <QStyle>
 
 #if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
 #endif
 
-/*
 class QtButtonPropertyBrowserPrivate
 {
     QtButtonPropertyBrowser *q_ptr;
@@ -73,7 +72,7 @@ public:
     struct WidgetItem
     {
         WidgetItem() : widget(0), label(0), widgetLabel(0),
-                button(0), container(0), layout(0), parent(0), expanded(false) { }
+                button(0), container(0), layout(0), /*line(0), */parent(0), expanded(false) { }
         QWidget *widget; // can be null
         QLabel *label; // main label with property name
         QLabel *widgetLabel; // label substitute showing the current value if there is no widget
@@ -102,7 +101,6 @@ private:
     QList<WidgetItem *> m_children;
     QList<WidgetItem *> m_recreateQueue;
 };
-*/
 
 QToolButton *QtButtonPropertyBrowserPrivate::createButton(QWidget *parent) const
 {
@@ -279,14 +277,14 @@ void QtButtonPropertyBrowserPrivate::propertyInserted(QtBrowserItem *index, QtBr
         if (!parentItem->container) {
             m_recreateQueue.removeAll(parentItem);
             WidgetItem *grandParent = parentItem->parent;
-            //QWidget *w = 0;
+            QWidget *w = 0;
             QGridLayout *l = 0;
             const int oldRow = gridRow(parentItem);
             if (grandParent) {
-                //w = grandParent->container;
+                w = grandParent->container;
                 l = grandParent->layout;
             } else {
-                //w = q_ptr;
+                w = q_ptr;
                 l = m_mainLayout;
             }
             QFrame *container = new QFrame();
@@ -628,4 +626,4 @@ bool QtButtonPropertyBrowser::isExpanded(QtBrowserItem *item) const
 QT_END_NAMESPACE
 #endif
 
-//#include "moc_qtbuttonpropertybrowser.cpp"
+#include "moc_qtbuttonpropertybrowser.cpp"

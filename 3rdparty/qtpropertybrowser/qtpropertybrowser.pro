@@ -5,6 +5,7 @@ TEMPLATE          = lib
 TARGET            = qtpropertybrowser
 
 DESTDIR           = ./lib
+QT += widgets
 
 CONFIG += staticlib
 

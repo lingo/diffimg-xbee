@@ -34,9 +34,9 @@
 #include <QtCore/QDebug>
 #include <QtCore/QTranslator>
 
-#include <QtGui/QMessageBox>
-#include <QtGui/QIntValidator>
-#include <QtGui/QDoubleValidator>
+#include <QMessageBox>
+#include <QIntValidator>
+#include <QDoubleValidator>
 
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent),

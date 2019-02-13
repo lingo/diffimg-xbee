@@ -22,13 +22,11 @@
 
 
 #include <QtCore/QEvent>
-#include <QtGui/QDesktopServices>
+#include <QDesktopServices>
 #include <QtCore/QLocale>
-#include <QtGui/QStyleOptionButton>
-#include <QtGui/QPainter>
-#if QT_VERSION >= 0x050000
+#include <QStyleOptionButton>
+#include <QPainter>
 #include <QtCore/QUrlQuery>
-#endif
 
 #include <QtCore/QDebug>
 

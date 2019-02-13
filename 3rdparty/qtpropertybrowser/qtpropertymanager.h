@@ -1,47 +1,40 @@
 /****************************************************************************
-** 
-** Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
+**
 ** Contact: Nokia Corporation (qt-info@nokia.com)
-** 
+**
 ** This file is part of a Qt Solutions component.
 **
-** Commercial Usage  
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Solutions Commercial License Agreement provided
-** with the Software or, alternatively, in accordance with the terms
-** contained in a written agreement between you and Nokia.
-** 
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-** 
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
-** 
-** GNU General Public License Usage 
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-** 
-** Please note Third Party Software included with Qt Solutions may impose
-** additional restrictions and it is the user's responsibility to ensure
-** that they have met the licensing requirements of the GPL, LGPL, or Qt
-** Solutions Commercial license and the relevant license of the Third
-** Party Software they are using.
-** 
-** If you are unsure which license is appropriate for your use, please
-** contact Nokia at qt-info@nokia.com.
-** 
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
 ****************************************************************************/
 
 
@@ -49,9 +42,6 @@
 #define QTPROPERTYMANAGER_H
 
 #include "qtpropertybrowser.h"
-
-#include <QtCore/QSizeF>
-#include <limits.h>
 
 #if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
@@ -61,60 +51,6 @@ class QDate;
 class QTime;
 class QDateTime;
 class QLocale;
-
-template <class PrivateData, class Value>
-static void setSimpleMinimumData(PrivateData *data, const Value &minVal)
-{
-    data->minVal = minVal;
-    if (data->maxVal < data->minVal)
-        data->maxVal = data->minVal;
-
-    if (data->val < data->minVal)
-        data->val = data->minVal;
-}
-
-template <class PrivateData, class Value>
-static void setSimpleMaximumData(PrivateData *data, const Value &maxVal)
-{
-    data->maxVal = maxVal;
-    if (data->minVal > data->maxVal)
-        data->minVal = data->maxVal;
-
-    if (data->val > data->maxVal)
-        data->val = data->maxVal;
-}
-
-
-template <class PrivateData, class Value>
-static void setSizeMinimumData(PrivateData *data, const Value &newMinVal)
-{
-    data->minVal = newMinVal;
-    if (data->maxVal.width() < data->minVal.width())
-        data->maxVal.setWidth(data->minVal.width());
-    if (data->maxVal.height() < data->minVal.height())
-        data->maxVal.setHeight(data->minVal.height());
-
-    if (data->val.width() < data->minVal.width())
-        data->val.setWidth(data->minVal.width());
-    if (data->val.height() < data->minVal.height())
-        data->val.setHeight(data->minVal.height());
-}
-
-template <class PrivateData, class Value>
-static void setSizeMaximumData(PrivateData *data, const Value &newMaxVal)
-{
-    data->maxVal = newMaxVal;
-    if (data->minVal.width() > data->maxVal.width())
-        data->minVal.setWidth(data->maxVal.width());
-    if (data->minVal.height() > data->maxVal.height())
-        data->minVal.setHeight(data->maxVal.height());
-
-    if (data->val.width() > data->maxVal.width())
-        data->val.setWidth(data->maxVal.width());
-    if (data->val.height() > data->maxVal.height())
-        data->val.setHeight(data->maxVal.height());
-}
-
 
 class QT_QTPROPERTYBROWSER_EXPORT QtGroupPropertyManager : public QtAbstractPropertyManager
 {
@@ -804,352 +740,6 @@ private:
     QtCursorPropertyManagerPrivate *d_ptr;
     Q_DECLARE_PRIVATE(QtCursorPropertyManager)
     Q_DISABLE_COPY(QtCursorPropertyManager)
-};
-
-class QtLocalePropertyManagerPrivate
-{
-    QtLocalePropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtLocalePropertyManager)
-public:
-
-    QtLocalePropertyManagerPrivate();
-
-    void slotEnumChanged(QtProperty *property, int value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    typedef QMap<const QtProperty *, QLocale> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtEnumPropertyManager *m_enumPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToLanguage;
-    QMap<const QtProperty *, QtProperty *> m_propertyToCountry;
-
-    QMap<const QtProperty *, QtProperty *> m_languageToProperty;
-    QMap<const QtProperty *, QtProperty *> m_countryToProperty;
-};
-
-class QtPointPropertyManagerPrivate
-{
-    QtPointPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtPointPropertyManager)
-public:
-
-    void slotIntChanged(QtProperty *property, int value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    typedef QMap<const QtProperty *, QPoint> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtIntPropertyManager *m_intPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToX;
-    QMap<const QtProperty *, QtProperty *> m_propertyToY;
-
-    QMap<const QtProperty *, QtProperty *> m_xToProperty;
-    QMap<const QtProperty *, QtProperty *> m_yToProperty;
-};
-
-class QtFontPropertyManagerPrivate
-{
-    QtFontPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtFontPropertyManager)
-public:
-
-    QtFontPropertyManagerPrivate();
-
-    void slotIntChanged(QtProperty *property, int value);
-    void slotEnumChanged(QtProperty *property, int value);
-    void slotBoolChanged(QtProperty *property, bool value);
-    void slotPropertyDestroyed(QtProperty *property);
-    void slotFontDatabaseChanged();
-    void slotFontDatabaseDelayedChange();
-
-    QStringList m_familyNames;
-
-    typedef QMap<const QtProperty *, QFont> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtIntPropertyManager *m_intPropertyManager;
-    QtEnumPropertyManager *m_enumPropertyManager;
-    QtBoolPropertyManager *m_boolPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToFamily;
-    QMap<const QtProperty *, QtProperty *> m_propertyToPointSize;
-    QMap<const QtProperty *, QtProperty *> m_propertyToBold;
-    QMap<const QtProperty *, QtProperty *> m_propertyToItalic;
-    QMap<const QtProperty *, QtProperty *> m_propertyToUnderline;
-    QMap<const QtProperty *, QtProperty *> m_propertyToStrikeOut;
-    QMap<const QtProperty *, QtProperty *> m_propertyToKerning;
-
-    QMap<const QtProperty *, QtProperty *> m_familyToProperty;
-    QMap<const QtProperty *, QtProperty *> m_pointSizeToProperty;
-    QMap<const QtProperty *, QtProperty *> m_boldToProperty;
-    QMap<const QtProperty *, QtProperty *> m_italicToProperty;
-    QMap<const QtProperty *, QtProperty *> m_underlineToProperty;
-    QMap<const QtProperty *, QtProperty *> m_strikeOutToProperty;
-    QMap<const QtProperty *, QtProperty *> m_kerningToProperty;
-
-    bool m_settingValue;
-    QTimer *m_fontDatabaseChangeTimer;
-};
-
-class QtColorPropertyManagerPrivate
-{
-    QtColorPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtColorPropertyManager)
-public:
-
-    void slotIntChanged(QtProperty *property, int value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    typedef QMap<const QtProperty *, QColor> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtIntPropertyManager *m_intPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToR;
-    QMap<const QtProperty *, QtProperty *> m_propertyToG;
-    QMap<const QtProperty *, QtProperty *> m_propertyToB;
-    QMap<const QtProperty *, QtProperty *> m_propertyToA;
-
-    QMap<const QtProperty *, QtProperty *> m_rToProperty;
-    QMap<const QtProperty *, QtProperty *> m_gToProperty;
-    QMap<const QtProperty *, QtProperty *> m_bToProperty;
-    QMap<const QtProperty *, QtProperty *> m_aToProperty;
-};
-
-class QtSizePolicyPropertyManagerPrivate
-{
-    QtSizePolicyPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtSizePolicyPropertyManager)
-public:
-
-    QtSizePolicyPropertyManagerPrivate();
-
-    void slotIntChanged(QtProperty *property, int value);
-    void slotEnumChanged(QtProperty *property, int value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    typedef QMap<const QtProperty *, QSizePolicy> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtIntPropertyManager *m_intPropertyManager;
-    QtEnumPropertyManager *m_enumPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToHPolicy;
-    QMap<const QtProperty *, QtProperty *> m_propertyToVPolicy;
-    QMap<const QtProperty *, QtProperty *> m_propertyToHStretch;
-    QMap<const QtProperty *, QtProperty *> m_propertyToVStretch;
-
-    QMap<const QtProperty *, QtProperty *> m_hPolicyToProperty;
-    QMap<const QtProperty *, QtProperty *> m_vPolicyToProperty;
-    QMap<const QtProperty *, QtProperty *> m_hStretchToProperty;
-    QMap<const QtProperty *, QtProperty *> m_vStretchToProperty;
-};
-
-class QtSizeFPropertyManagerPrivate
-{
-    QtSizeFPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtSizeFPropertyManager)
-public:
-
-    void slotDoubleChanged(QtProperty *property, double value);
-    void slotPropertyDestroyed(QtProperty *property);
-    void setValue(QtProperty *property, const QSizeF &val);
-    void setRange(QtProperty *property,
-                const QSizeF &minVal, const QSizeF &maxVal, const QSizeF &val);
-
-    struct Data
-    {
-        Data() : val(QSizeF(0, 0)), minVal(QSizeF(0, 0)), maxVal(QSizeF(INT_MAX, INT_MAX)), decimals(2) {}
-        QSizeF val;
-        QSizeF minVal;
-        QSizeF maxVal;
-        int decimals;
-        QSizeF minimumValue() const { return minVal; }
-        QSizeF maximumValue() const { return maxVal; }
-        void setMinimumValue(const QSizeF &newMinVal) { setSizeMinimumData(this, newMinVal); }
-        void setMaximumValue(const QSizeF &newMaxVal) { setSizeMaximumData(this, newMaxVal); }
-    };
-
-    typedef QMap<const QtProperty *, Data> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtDoublePropertyManager *m_doublePropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToW;
-    QMap<const QtProperty *, QtProperty *> m_propertyToH;
-
-    QMap<const QtProperty *, QtProperty *> m_wToProperty;
-    QMap<const QtProperty *, QtProperty *> m_hToProperty;
-};
-
-class QtPointFPropertyManagerPrivate
-{
-    QtPointFPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtPointFPropertyManager)
-public:
-
-    struct Data
-    {
-        Data() : decimals(2) {}
-        QPointF val;
-        int decimals;
-    };
-
-    void slotDoubleChanged(QtProperty *property, double value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    typedef QMap<const QtProperty *, Data> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtDoublePropertyManager *m_doublePropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToX;
-    QMap<const QtProperty *, QtProperty *> m_propertyToY;
-
-    QMap<const QtProperty *, QtProperty *> m_xToProperty;
-    QMap<const QtProperty *, QtProperty *> m_yToProperty;
-};
-
-class QtSizePropertyManagerPrivate
-{
-    QtSizePropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtSizePropertyManager)
-public:
-
-    void slotIntChanged(QtProperty *property, int value);
-    void slotPropertyDestroyed(QtProperty *property);
-    void setValue(QtProperty *property, const QSize &val);
-    void setRange(QtProperty *property,
-                const QSize &minVal, const QSize &maxVal, const QSize &val);
-
-    struct Data
-    {
-        Data() : val(QSize(0, 0)), minVal(QSize(0, 0)), maxVal(QSize(INT_MAX, INT_MAX)) {}
-        QSize val;
-        QSize minVal;
-        QSize maxVal;
-        QSize minimumValue() const { return minVal; }
-        QSize maximumValue() const { return maxVal; }
-        void setMinimumValue(const QSize &newMinVal) { setSizeMinimumData(this, newMinVal); }
-        void setMaximumValue(const QSize &newMaxVal) { setSizeMaximumData(this, newMaxVal); }
-    };
-
-    typedef QMap<const QtProperty *, Data> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtIntPropertyManager *m_intPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToW;
-    QMap<const QtProperty *, QtProperty *> m_propertyToH;
-
-    QMap<const QtProperty *, QtProperty *> m_wToProperty;
-    QMap<const QtProperty *, QtProperty *> m_hToProperty;
-};
-
-class QtRectPropertyManagerPrivate
-{
-    QtRectPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtRectPropertyManager)
-public:
-
-    void slotIntChanged(QtProperty *property, int value);
-    void slotPropertyDestroyed(QtProperty *property);
-    void setConstraint(QtProperty *property, const QRect &constraint, const QRect &val);
-
-    struct Data
-    {
-        Data() : val(0, 0, 0, 0) {}
-        QRect val;
-        QRect constraint;
-    };
-
-    typedef QMap<const QtProperty *, Data> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtIntPropertyManager *m_intPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToX;
-    QMap<const QtProperty *, QtProperty *> m_propertyToY;
-    QMap<const QtProperty *, QtProperty *> m_propertyToW;
-    QMap<const QtProperty *, QtProperty *> m_propertyToH;
-
-    QMap<const QtProperty *, QtProperty *> m_xToProperty;
-    QMap<const QtProperty *, QtProperty *> m_yToProperty;
-    QMap<const QtProperty *, QtProperty *> m_wToProperty;
-    QMap<const QtProperty *, QtProperty *> m_hToProperty;
-};
-
-class QtRectFPropertyManagerPrivate
-{
-    QtRectFPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtRectFPropertyManager)
-public:
-
-    void slotDoubleChanged(QtProperty *property, double value);
-    void slotPropertyDestroyed(QtProperty *property);
-    void setConstraint(QtProperty *property, const QRectF &constraint, const QRectF &val);
-
-    struct Data
-    {
-        Data() : val(0, 0, 0, 0), decimals(2) {}
-        QRectF val;
-        QRectF constraint;
-        int decimals;
-    };
-
-    typedef QMap<const QtProperty *, Data> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtDoublePropertyManager *m_doublePropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToX;
-    QMap<const QtProperty *, QtProperty *> m_propertyToY;
-    QMap<const QtProperty *, QtProperty *> m_propertyToW;
-    QMap<const QtProperty *, QtProperty *> m_propertyToH;
-
-    QMap<const QtProperty *, QtProperty *> m_xToProperty;
-    QMap<const QtProperty *, QtProperty *> m_yToProperty;
-    QMap<const QtProperty *, QtProperty *> m_wToProperty;
-    QMap<const QtProperty *, QtProperty *> m_hToProperty;
-};
-
-class QtFlagPropertyManagerPrivate
-{
-    QtFlagPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtFlagPropertyManager)
-public:
-
-    void slotBoolChanged(QtProperty *property, bool value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    struct Data
-    {
-        Data() : val(-1) {}
-        int val;
-        QStringList flagNames;
-    };
-
-    typedef QMap<const QtProperty *, Data> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtBoolPropertyManager *m_boolPropertyManager;
-
-    QMap<const QtProperty *, QList<QtProperty *> > m_propertyToFlags;
-
-    QMap<const QtProperty *, QtProperty *> m_flagToProperty;
-};
-
-class QtMetaEnumWrapper : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QSizePolicy::Policy policy READ policy)
-public:
-    QSizePolicy::Policy policy() const { return QSizePolicy::Ignored; }
-private:
-    QtMetaEnumWrapper(QObject *parent) : QObject(parent) {}
 };
 
 #if QT_VERSION >= 0x040400
