@@ -733,7 +733,9 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
 
     m_image1 = MiscFunctions::opencvMatToQImage(m_opencvInput1,false);
     m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
-    m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false);
+    m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    //m_imageDiff.fill(Qt::red);
+    qDebug() << m_imageDiff;
 
     // !!!!!!!!!!! debug !!!!!!!!
 

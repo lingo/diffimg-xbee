@@ -331,9 +331,11 @@ QString MiscFunctions::fileToString(const QString &filename)
 
 QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
 {
+    qDebug() << mat.type();
     // 8-bits unsigned, NO. OF CHANNELS=1
     if(mat.type()==CV_8UC1)
     {
+        qDebug() << "8uc1";
         // Set the color table (used to translate color indexes to qRgb values)
         QVector<QRgb> colorTable;
         for (int i = 0; i<256; i++)
@@ -342,9 +344,10 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
         if (deepCopy)
         {
             QImage img(mat.cols, mat.rows, QImage::Format_Indexed8);
-            for (int i = 0; i < img.height(); i++)
+            for (int i = 0; i < img.height(); i++) {
                 // scanLine returns a ptr to the start of the data for that row
                 memcpy( img.scanLine(i), mat.ptr(i), img.bytesPerLine() );  //correct
+            }
             return img;
         }
         else
@@ -360,6 +363,7 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
     }
     else if (mat.type()==CV_16UC1)
     {
+        qDebug() << "16uc1";
         cv::Mat ucharMatScaled;
         cv::Mat ushortMatScaled;
         cv::Mat floatMatScaled;
@@ -374,6 +378,7 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
     }
     else if (mat.type()==CV_32FC1)
     {
+        qDebug() << "32fc1";
         cv::Mat ucharMatScaled;
         cv::Mat floatMatScaled;
         double minImage, maxImage;
@@ -387,6 +392,7 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
     }
     else if (mat.type() == CV_32FC3)
     {
+        qDebug() << "32fc3";
         cv::Mat ucharMatScaled;
         cv::Mat floatMatScaled;
         double minImage, maxImage;
@@ -404,6 +410,7 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
     // 8-bits unsigned, NO. OF CHANNELS=3
     else
     {
+        qDebug() << "other";
         cv::Mat rgbMat;
         bool swap = true;
         int qImageFormat = QImage::Format_RGB888;
