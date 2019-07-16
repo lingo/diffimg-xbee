@@ -932,8 +932,9 @@ void DiffImgWindow::on_pushButtonFile1_pressed()
 
 void DiffImgWindow::on_pushButtonFile2_pressed()
 {
-    if (m_displayDualPanel)
+    if (m_displayDualPanel) {
         return;
+    }
 
     actionImage2->setChecked(true);
 }
@@ -958,16 +959,16 @@ void DiffImgWindow::resetView()
 
 void DiffImgWindow::setModeSingleImage()
 {
-    pushButtonFile2->setEnabled(false);
-    pushButtonDifference->setEnabled(false);
+    pushButtonFile2->setCheckable(false);
+    pushButtonDifference->setCheckable(false);
 }
 
 //-------------------------------------------------------------------------
 
 void DiffImgWindow::setModeDualImage()
 {
-    pushButtonFile2->setEnabled(true);
-    pushButtonDifference->setEnabled(true);
+    pushButtonFile2->setCheckable(true);
+    pushButtonDifference->setCheckable(true);
 }
 
 //-------------------------------------------------------------------------
@@ -990,12 +991,12 @@ void DiffImgWindow::setModeDualPanel(bool val)
         //graphicsView2->show();
         //graphicsView1->show();
 
-        pushButtonFile2->setEnabled(false);
+        pushButtonFile2->setCheckable(false);
     }
     else
     {
         setPanel2Visibility(false);
-        pushButtonFile2->setEnabled(true);
+        pushButtonFile2->setCheckable(true);
     }
     synchronizePanels();
 }
