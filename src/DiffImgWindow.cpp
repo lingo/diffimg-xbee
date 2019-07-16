@@ -705,11 +705,8 @@ void DiffImgWindow::updateDisplay()
 
     setPanel1Visibility(true);
 
-    qDebug() << stackedWidget->currentIndex();
-
     // new mode
     if (stackedWidget->currentIndex() == PAGE_WIPEVIEW) {
-        qDebug() << "is wipe view";
         QImage img1;
         if (m_applyGain || m_applyOffset) {
             graphicsViewWipe->setWipeImage1(met->getImage1WithGain(m_currentGain,m_currentOffset));

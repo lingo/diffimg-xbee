@@ -233,9 +233,8 @@ void ImageView::initBackground()
 
 void ImageView::fitScale()
 {
-    if ( scene() )
-    {
-        fitInView(scene()->sceneRect(), Qt::KeepAspectRatio );
+    if ( scene() ) {
+        fitInView(scene()->sceneRect().marginsAdded(QMarginsF(10, 10, 10, 10)), Qt::KeepAspectRatio );
         setCenter( scene()->sceneRect().center() );
         emit scaleChanged( transform().m22() );
         emit somethingChanged();
@@ -253,9 +252,7 @@ void ImageView::resetScale()
 void ImageView::mousePressEvent(QMouseEvent *event)
 {
     m_drag = false;
-    if (!(m_wipeMode && isImageInside()) && event->button() == Qt::LeftButton)
-    {
-        qDebug() << "Not wiping";
+    if (!(m_wipeMode && isImageInside()) && event->button() == Qt::LeftButton) {
         m_drag = true;
     }
     QGraphicsView::mousePressEvent(event);
@@ -264,7 +261,20 @@ void ImageView::mousePressEvent(QMouseEvent *event)
 void ImageView::mouseReleaseEvent(QMouseEvent *event)
 {
     m_drag = false;
+
     QGraphicsView::mouseReleaseEvent(event);
+
+    const QRectF fullRect = mapToScene(rect()).boundingRect();
+    const QRectF imageRect = m_imageItem->boundingRect();
+    if (!fullRect.contains(imageRect) && !imageRect.contains(fullRect)) {
+        const qreal dx = qMax(fullRect.left() - imageRect.left(), imageRect.right() - fullRect.right());
+        const qreal dy = qMax(fullRect.top() - imageRect.top(), imageRect.bottom() - fullRect.bottom());
+
+        const qreal currentScale = qMin(transform().m11(), transform().m22());
+        if (dx * currentScale < 25  && dy * currentScale < 25) {
+            ensureVisible(m_imageItem, 0, 0);
+        }
+    }
 }
 
 /**
@@ -296,6 +306,13 @@ void ImageView::zoomIn()
 
 void ImageView::zoom(double factor)
 {
+    const qreal currentScale = qMin(transform().m11(), transform().m22());
+    if (factor < 1. && currentScale < 0.1) {
+        return;
+    }
+    if (factor > 1. && currentScale > 10) {
+        return;
+    }
     //Get the position of the mouse before scaling, in scene coords
     QPointF pointBeforeScale( QGraphicsView::mapToScene( mapFromGlobal(QCursor::pos()) ) );
 
