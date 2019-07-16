@@ -124,8 +124,6 @@ DiffImgWindow::DiffImgWindow(QWidget *parent, Qt::WindowFlags flags)
     m_appName(PACKAGE_NAME),
 #endif
     m_firstTime(true),
-    m_splashscreenAtStartup(true),
-    m_splashscreenTransparentBackground(true),
     m_about(NULL),
     m_logLevel(LogHandler::MSG_DEBUG),
     m_widgetHistoCurveR(NULL),
@@ -329,9 +327,6 @@ void DiffImgWindow::saveSettings()
     settings.setValue("displayHistoZeroValue", m_displayHistoZeroValue);
     settings.setValue("displayImageComment", m_displayImageComment);
 
-    settings.setValue("splashscreenAtStartup", m_splashscreenAtStartup);
-    settings.setValue("splashscreenTransparentBackground", m_splashscreenTransparentBackground);
-
     settings.setValue("currentLanguage", m_currentLanguage);
 
     settings.setValue("resetConfig", m_resetConfig); // not use by now
@@ -376,9 +371,6 @@ void DiffImgWindow::loadSettings()
     settings.endGroup();
 
     settings.beginGroup("Application");
-
-    m_splashscreenAtStartup = settings.value( "splashscreenAtStartup", true).toBool();
-    m_splashscreenTransparentBackground = settings.value("splashscreenTransparentBackground",true).toBool();
 
     m_currentLanguage = settings.value("currentLanguage","auto").toString();
 
@@ -1092,10 +1084,6 @@ void DiffImgWindow::updateAbout()
     m_about->comboBoxOutputParam->setCurrentIndex(m_thresholdType);
 
     m_about->comboBoxWipeEffectAxis->setCurrentIndex(m_wipeMethod);
-
-    // splashscreen
-    m_about->checkBoxSplashscreenAtStartup->setChecked(m_splashscreenAtStartup);
-    m_about->checkBoxSplashscreenTransparentBackground->setChecked(m_splashscreenTransparentBackground);
 }
 
 //--------------------------------------------------------------------------------------
@@ -1214,10 +1202,6 @@ void DiffImgWindow::setPreferences()
 {
     if (!m_about)
         return;
-
-    // splashscreen
-    m_splashscreenAtStartup = m_about->checkBoxSplashscreenAtStartup->isChecked();
-    m_splashscreenTransparentBackground = m_about->checkBoxSplashscreenTransparentBackground->isChecked();
 
     // get the language
     m_currentLanguage = m_about->comboBoxLanguage->itemData( m_about->comboBoxLanguage->currentIndex() ).toString();

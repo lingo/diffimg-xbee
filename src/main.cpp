@@ -27,7 +27,6 @@
 #include "DiffImgWindow.h"
 #include "AppSettings.h"
 #include "MiscFunctions.h"
-#include "SplashScreen.h"
 #include "MetricsRegistering.h"
 #include "FormatsRegistering.h"
 #include "MetricsManager.h"
@@ -465,25 +464,12 @@ int main(int argc, char *argv[])
         settings.sync();
     }
 
-    bool splashscreenAtStartup = settings.value("splashscreenAtStartup",true).toBool();
-    bool splashscreenTransparentBackground = settings.value("splashscreenTransparentBackground",false).toBool();
     settings.endGroup();
-
-    // splash screen
-    SplashScreen sScreen(QPixmap(":/diffimg/splashscreen.png"), 3000, screenNumber, splashscreenTransparentBackground);
-
-    if (splashscreenAtStartup)
-        sScreen.show();
 
     DiffImgWindow w;
 
     QObject::connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
-
-    // splash screen
-    if (splashscreenAtStartup)
-        sScreen.delayedFinish(&w);
-    else
-        w.show();
+    w.show();
 
     if ( !files.isEmpty() )
         w.setFiles(files[0],files[1]);

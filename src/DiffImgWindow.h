@@ -210,8 +210,6 @@ private:
     QImage m_maskDiffImage;
 
     QString m_currentLanguage;
-    bool m_splashscreenAtStartup;
-    bool m_splashscreenTransparentBackground;
 
     AboutDialog *m_about;
     int m_logLevel;

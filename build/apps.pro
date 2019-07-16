@@ -51,7 +51,6 @@ HEADERS += \
     ../src/formats/YUVFormat.h \
     ../src/MiscFunctions.h \ 
     ../src/PropertyWidget.h \
-    ../src/SplashScreen.h \
     ../src/PaypalButton.h
     
 SOURCES +=  \
@@ -78,7 +77,6 @@ SOURCES +=  \
     ../src/formats/YUVFormat.cpp \
     ../src/MiscFunctions.cpp \ 
     ../src/PropertyWidget.cpp \
-    ../src/SplashScreen.cpp \
     ../src/PaypalButton.cpp
     
 FORMS += \

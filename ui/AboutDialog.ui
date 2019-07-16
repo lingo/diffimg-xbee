@@ -235,13 +235,6 @@
        <string>Preferences</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="checkBoxSplashscreenAtStartup">
-         <property name="text">
-          <string>Display splashscreen at startup</string>
-         </property>
-        </widget>
-       </item>
        <item row="7" column="0" colspan="5">
         <widget class="Line" name="line">
          <property name="orientation">
@@ -503,19 +496,6 @@
        <item row="2" column="2" colspan="3">
         <widget class="QComboBox" name="comboBoxWipeEffectAxis"/>
        </item>
-       <item row="1" column="2" colspan="3">
-        <widget class="QCheckBox" name="checkBoxSplashscreenTransparentBackground">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Splashscreen with transparent background</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tabInfos">
@@ -715,22 +695,6 @@
     <hint type="destinationlabel">
      <x>474</x>
      <y>166</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBoxSplashscreenAtStartup</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>checkBoxSplashscreenTransparentBackground</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>140</x>
-     <y>52</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>234</x>
-     <y>71</y>
     </hint>
    </hints>
   </connection>
