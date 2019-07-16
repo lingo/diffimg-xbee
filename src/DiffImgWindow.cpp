@@ -650,7 +650,7 @@ void DiffImgWindow::openFile1(const QString &fileName)
 void DiffImgWindow::updateImage1(const QImage &image)
 {
     m_image1 = image;
-    m_image1Thumbnail = m_image1.scaled( (int) defaultThumbnailSize, (int) defaultThumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation );
+    m_image1Thumbnail = m_image1.scaled( pushButtonFile1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
 
     //m_resultImage1 = QImage(m_image1.size(), QImage::Format_ARGB32);
 
@@ -776,7 +776,7 @@ void DiffImgWindow::openFile2(const QString &fileName)
 void DiffImgWindow::updateImage2(const QImage &image)
 {
     m_image2 = image;
-    m_image2Thumbnail = m_image2.scaled( (int) defaultThumbnailSize, (int) defaultThumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation );
+    m_image2Thumbnail = m_image2.scaled( pushButtonFile2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
 
     // set default iconsize for pushbutton
     pushButtonFile2->setIconSize( m_image2Thumbnail.size() );
@@ -794,7 +794,7 @@ void DiffImgWindow::updateImage2(const QImage &image)
 void DiffImgWindow::updateDifference(const QImage &image)
 {
     m_diffImage = image;
-    m_diffImageThumbnail = m_diffImage.scaled( (int) defaultThumbnailSize, (int) defaultThumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation );
+    m_diffImageThumbnail = m_diffImage.scaled( pushButtonDifference->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
     pushButtonDifference->setIconSize( m_diffImageThumbnail.size() );
     pushButtonDifference->setIcon( QPixmap::fromImage(m_diffImageThumbnail) );
 }
