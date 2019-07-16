@@ -54,14 +54,12 @@ void MetricParam::reset(bool all)
 
 void MetricParam::setThreshold(const QString &valText)
 {
-    switch ( threshold.type() )
+    switch ( uint(threshold.type()) )
     {
-        case QMetaType::Int:
-        {
+        case QVariant::Int:
             threshold = valText.toInt();
             break;
-        }
-        case QMetaType::Double:
+        case QVariant::Double:
         case QMetaType::Float:
         {
             threshold = valText.toFloat();
@@ -704,9 +702,9 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
         int maxWidth = qMax(image1.width(), image2.width());
         int maxHeight = qMax(image1.height(), image2.height());
         if (image1.width() < image2.width() && image1.height() < image2.height()) {
-            image1 = image1.scaled(maxWidth, maxHeight);
+            image1 = image1.scaled(maxWidth, maxHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         } else if (image2.width() < image1.width() && image2.height() < image1.height()) {
-            image2 = image2.scaled(maxWidth, maxHeight);
+            image2 = image2.scaled(maxWidth, maxHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         } else {
             image1 = image1.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
             image2 = image2.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
