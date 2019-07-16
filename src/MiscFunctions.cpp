@@ -331,7 +331,7 @@ QString MiscFunctions::fileToString(const QString &filename)
 
 QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
 {
-    qDebug() << mat.type();
+    //qDebug() << mat.type();
     // 8-bits unsigned, NO. OF CHANNELS=1
     if(mat.type()==CV_8UC1)
     {
@@ -410,7 +410,7 @@ QImage MiscFunctions::opencvMatToQImage(const cv::Mat& mat, bool deepCopy)
     // 8-bits unsigned, NO. OF CHANNELS=3
     else
     {
-        qDebug() << "other";
+        //qDebug() << "other";
         cv::Mat rgbMat;
         bool swap = true;
         int qImageFormat = QImage::Format_RGB888;
