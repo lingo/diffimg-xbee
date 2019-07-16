@@ -432,10 +432,11 @@ void DiffImgWindow::loadSettings()
 void DiffImgWindow::load()
 {
     // display the selection file dialog if needed
-    if (m_file1.isEmpty() || m_file2.isEmpty() || m_firstTime)
-        QTimer::singleShot( 1000, this, SLOT( on_actionOpen_triggered() ) );
-    else
-        QTimer::singleShot( 2000, this, SLOT( acceptFiles() ) );
+    if (m_file1.isEmpty() || m_file2.isEmpty() || m_firstTime) {
+        QTimer::singleShot( 0, this, SLOT( on_actionOpen_triggered() ) );
+    } else {
+        QTimer::singleShot( 0, this, SLOT( acceptFiles() ) );
+    }
 }
 
 void DiffImgWindow::on_actionHelp_triggered()
