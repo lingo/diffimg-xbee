@@ -586,7 +586,10 @@ void DiffImgWindow::on_actionDisplayWipe_toggled(bool val)
 {
     actionDualPanel->setEnabled(!val);
     m_actionGroup->setEnabled(!val);
-    dockWidgetNavigator->setEnabled(!val);
+    pushButtonFile1->setEnabled(!val);
+    pushButtonFile2->setEnabled(!val);
+    pushButtonDifference->setEnabled(!val);
+    //dockWidgetNavigator->setEnabled(!val);
     if (val)
     {
         stackedWidget->setCurrentIndex(PAGE_WIPEVIEW);
@@ -702,9 +705,20 @@ void DiffImgWindow::updateDisplay()
 
     setPanel1Visibility(true);
 
+    qDebug() << stackedWidget->currentIndex();
+
     // new mode
-    if (m_displayDualPanel)
-    {
+    if (stackedWidget->currentIndex() == PAGE_WIPEVIEW) {
+        qDebug() << "is wipe view";
+        QImage img1;
+        if (m_applyGain || m_applyOffset) {
+            graphicsViewWipe->setWipeImage1(met->getImage1WithGain(m_currentGain,m_currentOffset));
+            graphicsViewWipe->setWipeImage2(met->getImage2WithGain(m_currentGain,m_currentOffset));
+        } else {
+            graphicsViewWipe->setWipeImage1(m_image1);
+            graphicsViewWipe->setWipeImage2(m_image2);
+        }
+    } else if (m_displayDualPanel) {
         setPanel2Visibility(true);
         graphicsView2->setShowOverview(false);
         if (m_currentDisplayType == TYPE_ORIGINAL)
@@ -725,9 +739,7 @@ void DiffImgWindow::updateDisplay()
                 img1 = m_diffImage;
             graphicsView1->setImage(img1);
         }
-    }
-    else
-    {
+    } else {
         setPanel2Visibility(false);
         graphicsView2->setShowOverview(false);
         QImage img1;
