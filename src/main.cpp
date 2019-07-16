@@ -449,11 +449,6 @@ int main(int argc, char *argv[])
 
     AppSettings settings;
 
-    // in order to display splashscreen on the same screen than application ...
-    settings.beginGroup("MainWindow");
-    int screenNumber = ( settings.value( "screenNumber",QApplication::desktop()->primaryScreen() ).toInt() ) % ( QApplication::desktop()->screenCount() ); // in order to be sure to display on a right screen
-    settings.endGroup();
-
     settings.beginGroup("Application");
 
     // reset the saved configuration if needed

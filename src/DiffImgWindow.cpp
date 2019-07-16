@@ -305,14 +305,6 @@ void DiffImgWindow::saveSettings()
     settings.setValue( "fullScreen", isFullScreen() );
     settings.setValue( "maximized", isMaximized ());
 
-    // save the screen number for the splashsreeen ...
-    if ( QApplication::desktop()->isVirtualDesktop() )
-        settings.setValue( "screenNumber", QApplication::desktop()->screenNumber( pos() ) );
-    else
-        settings.setValue( "screenNumber", QApplication::desktop()->screenNumber(this) );
-
-    settings.setValue( "screenNumber", QApplication::desktop()->screenNumber(this) );
-
     settings.endGroup();
 
     settings.beginGroup("Application");
@@ -357,7 +349,7 @@ void DiffImgWindow::loadSettings()
     move( settings.value( "pos", QPoint(200, 200) ).toPoint() );
 
     // check if restore position isn't outside the current screen definitions (additional screen has been unplugged)
-    if (QApplication::desktop()->screenNumber( pos() ) < 0)
+    if (QApplication::screenAt( pos() ) == nullptr)
         move( QPoint(200, 200) );
 
     bool fullScreen = settings.value("fullScreen",false).toBool();
