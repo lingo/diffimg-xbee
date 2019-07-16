@@ -78,7 +78,6 @@ void AboutDialog::updateAbout()
     initMetrics();
 
     labelRelease->setText( QString(PACKAGE_NAME) + " " + QString(PACKAGE_VERSION) );
-    labelCheckRelease->setText( tr("<a href=\"%1\">Check for new release ...</a>").arg(PACKAGE_CHECK_RELEASE_URL) );
 
     // paypal
 
