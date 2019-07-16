@@ -5149,8 +5149,8 @@ void QtFlagPropertyManager::setFlagNames(QtProperty *property, const QStringList
     while (itProp.hasNext()) {
         QtProperty *prop = itProp.next();
         if (prop) {
-            delete prop;
             d_ptr->m_flagToProperty.remove(prop);
+            delete prop;
         }
     }
     d_ptr->m_propertyToFlags[property].clear();
@@ -5190,8 +5190,8 @@ void QtFlagPropertyManager::uninitializeProperty(QtProperty *property)
     while (itProp.hasNext()) {
         QtProperty *prop = itProp.next();
         if (prop) {
-            delete prop;
             d_ptr->m_flagToProperty.remove(prop);
+            delete prop;
         }
     }
     d_ptr->m_propertyToFlags.remove(property);
