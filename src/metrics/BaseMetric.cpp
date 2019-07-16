@@ -491,14 +491,14 @@ bool BaseMetric::checkImages()
     if ( m_opencvInput2.empty() )
     {
         LogHandler::getInstance()->reportError( QString("Can't read %1").arg( m_file2 ) );
-        return m_valid;
+        return false;
     }
 
     // check size
     if (m_opencvInput1.rows != m_opencvInput2.rows || m_opencvInput1.cols != m_opencvInput2.cols)
     {
         LogHandler::getInstance()->reportError( QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_opencvInput1.rows ).arg(m_opencvInput1.cols).arg(m_opencvInput2.rows).arg(m_opencvInput2.cols) );
-        return m_valid;
+        return false;
     }
 
     // check type
@@ -688,29 +688,51 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     init();
     resetOutputParams();
 
-    // load file1
-    m_opencvInput1 = cv::imread(m_file1.toStdString(),CV_LOAD_IMAGE_UNCHANGED );
-    if ( m_opencvInput1.empty() )
-    {
-        LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file, trying with Qt ... (%1)").arg( m_file1 ) );
-
-        // try to load with Qt
-        m_opencvInput1 = MiscFunctions::searchDecoder( m_file1 );
+    QImage image1(m_file1);
+    if (image1.size().isEmpty()) {
+        LogHandler::getInstance()->reportDebug( QString("Can't load %1").arg( m_file1 ) );
+        return;
     }
 
+    QImage image2(m_file2);
+    if (image2.size().isEmpty()) {
+        LogHandler::getInstance()->reportDebug( QString("Can't load %1").arg( m_file2 ) );
+        return;
+    }
+
+    if (image1.size() != image2.size()) {
+        int maxWidth = qMax(image1.width(), image2.width());
+        int maxHeight = qMax(image1.height(), image2.height());
+        if (image1.width() < image2.width() && image1.height() < image2.height()) {
+            image1 = image1.scaled(maxWidth, maxHeight);
+        } else if (image2.width() < image1.width() && image2.height() < image1.height()) {
+            image2 = image2.scaled(maxWidth, maxHeight);
+        } else {
+            image1 = image1.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
+            image2 = image2.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
+        }
+    }
+
+    m_opencvInput1 = MiscFunctions::qImageToOpencvMat(image1);
+    if ( m_opencvInput1.empty() )
+    {
+        LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file (%1)").arg( m_file1 ) );
+        return;
+    }
+
+    m_opencvInput2 = MiscFunctions::qImageToOpencvMat(image2);
     // load file2
-    m_opencvInput2 = cv::imread(m_file2.toStdString(),CV_LOAD_IMAGE_UNCHANGED );
+    //m_opencvInput2 = cv::imread(m_file2.toStdString(),CV_LOAD_IMAGE_UNCHANGED );
     if ( m_opencvInput2.empty() )
     {
-        LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file, trying with Qt ... (%1)").arg( m_file2 ) );
-
-        // try to load with Qt
-        m_opencvInput2 = MiscFunctions::searchDecoder( m_file2 );
+        LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file (%1)").arg( m_file2 ) );
+        return;
     }
 
     // check compatibility
-    if( !checkImages() )
+    if( !checkImages() ) {
         return;
+    }
 
     // compute "standard" properties
     computeStandardProperties();
@@ -735,7 +757,7 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
     m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     //m_imageDiff.fill(Qt::red);
-    qDebug() << m_imageDiff;
+    //qDebug() << m_imageDiff;
 
     // !!!!!!!!!!! debug !!!!!!!!
 
