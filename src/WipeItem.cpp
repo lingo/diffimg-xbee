@@ -93,7 +93,9 @@ void WipeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 void WipeItem::setImage1(const QImage &img)
 {
     m_pix1 = QPixmap::fromImage(img);
-    m_wipePoint = QPointF(0,0);
+    if (m_wipePoint.isNull()) {
+        m_wipePoint = QPointF(img.width()/2,img.height() / 2);
+    }
     prepareGeometryChange ();
     update();
 }
@@ -101,7 +103,9 @@ void WipeItem::setImage1(const QImage &img)
 void WipeItem::setImage2(const QImage &img)
 {
     m_pix2 = QPixmap::fromImage(img);
-    m_wipePoint = QPointF(0,0);
+    if (m_wipePoint.isNull()) {
+        m_wipePoint = QPointF(img.width()/2,img.height() / 2);
+    }
     prepareGeometryChange ();
     update();
 }
@@ -113,29 +117,31 @@ void WipeItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
     {
         m_wipePoint = event->pos();
         update();
-    }
-    else
+    } else {
         event->ignore();
-    QGraphicsItem::mouseMoveEvent(event);
+        QGraphicsItem::mouseMoveEvent(event);
+    }
 }
 
 void WipeItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
 {
-    if (event->button() == Qt::RightButton)
-    {
+    const int distance = (m_wipeMethod == WipeMethod::WIPE_HORIZONTAL) ?
+        qAbs(event->pos().x() - m_wipePoint.x()) :
+        qAbs(event->pos().y() - m_wipePoint.y()) ;
+    if (event->button() == Qt::RightButton || distance < 40) {
         m_wipe = true;
-    }
-    else
+    } else {
         QGraphicsItem::mousePressEvent(event);
+    }
 }
 
 void WipeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) 
 {
-    if (event->button() == Qt::RightButton)
-    {
+    if (m_wipe) { //event->button() == Qt::RightButton)
         m_wipe = false;
+    } else {
+        QGraphicsItem::mouseReleaseEvent(event);
     }
-   // QGraphicsItem::mouseReleaseEvent(event);
 }
 
 void WipeItem::setWipeMethod(int method)

@@ -253,8 +253,9 @@ void ImageView::resetScale()
 void ImageView::mousePressEvent(QMouseEvent *event)
 {
     m_drag = false;
-    if (event->button() == Qt::LeftButton)
+    if (!(m_wipeMode && isImageInside()) && event->button() == Qt::LeftButton)
     {
+        qDebug() << "Not wiping";
         m_drag = true;
     }
     QGraphicsView::mousePressEvent(event);
@@ -262,10 +263,7 @@ void ImageView::mousePressEvent(QMouseEvent *event)
 
 void ImageView::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-    {
-        m_drag = false;
-    }
+    m_drag = false;
     QGraphicsView::mouseReleaseEvent(event);
 }
 
