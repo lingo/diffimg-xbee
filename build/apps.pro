@@ -51,7 +51,6 @@ HEADERS += \
     ../src/formats/YUVFormat.h \
     ../src/MiscFunctions.h \ 
     ../src/PropertyWidget.h \
-    ../src/PaypalButton.h
     
 SOURCES +=  \
     ../src/AboutDialog.cpp \
@@ -77,7 +76,6 @@ SOURCES +=  \
     ../src/formats/YUVFormat.cpp \
     ../src/MiscFunctions.cpp \ 
     ../src/PropertyWidget.cpp \
-    ../src/PaypalButton.cpp
     
 FORMS += \
     ../ui/*.ui

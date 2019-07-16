@@ -78,14 +78,6 @@ void AboutDialog::updateAbout()
     initMetrics();
 
     labelRelease->setText( QString(PACKAGE_NAME) + " " + QString(PACKAGE_VERSION) );
-
-    // paypal
-
-    pushButtonPaypal->setBusinessId(PAYPAL_BUSINESS_ID);
-    pushButtonPaypal->setItemName( "Support TheHive" );
-    pushButtonPaypal->setItemId( "TheHive-DONATION" );
-    pushButtonPaypal->setCurrencyCode( "EUR" );
-
 }
 
 void AboutDialog::updateWipeEffects()

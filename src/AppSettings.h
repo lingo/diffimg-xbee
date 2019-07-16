@@ -29,7 +29,6 @@
 #define PACKAGE_ONLINE_HELP_URL "http://thehive.xbee.net/index.php?module=pages&func=display&pageid=11"
 #define PACKAGE_CHECK_RELEASE_URL "http://sourceforge.net/projects/diffimg/files"
 #define PACKAGE_DESCRIPTION "Image difference viewer"
-#define PAYPAL_BUSINESS_ID "Q2SYR2EMYKKYE"
 
 class AppSettings : public QSettings
 {

@@ -193,16 +193,6 @@
            </property>
           </spacer>
          </item>
-         <item>
-          <widget class="PaypalButton" name="pushButtonPaypal">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="flat">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
       </layout>
@@ -604,13 +594,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>PaypalButton</class>
-   <extends>QPushButton</extends>
-   <header>PaypalButton.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../res/diffimg.qrc"/>
  </resources>
