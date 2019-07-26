@@ -90,6 +90,56 @@ void PerceptualMetric::createInputParams()
     addInputParam( new MetricParam("Downsample",tr("Downsample"),tr("How many powers of two to down sample the image"),defaultDownSample) );
 }
 
+RGBAImage* qImageToRGBAImage(const QImage &input)
+{
+    if (input.isNull()) {
+        return 0;
+    }
+    QImage img(input); // CoW, so don't care
+
+
+    const int w = img.width();
+    const int h = img.height();
+
+    RGBAImage* result = new RGBAImage(w, h, "unknown");
+
+    if (img.format() != QImage::Format_ARGB32) {
+        img = img.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    // Copy the image over to our internal format, FreeImage has the scanlines bottom to top though.
+    unsigned int* dest = result->Get_Data();
+
+    for( int y = 0; y < h; y++, dest += w ) {
+        //const unsigned int* scanline = (const unsigned int*)FreeImage_GetScanLine(freeImage, h - y - 1 );
+        //const unsigned int * ptr = tmpImg.ptr<unsigned int>(y);
+        memcpy(dest, img.scanLine(y), sizeof(dest[0]) * w);
+    }
+
+    return result;
+}
+
+QImage RGBAImageToQImage(RGBAImage *image)
+{
+    if (!image)
+        return QImage();
+
+    int Width = image->Get_Width();
+    int Height = image->Get_Height();
+
+    //cv::Mat mat = cv::Mat(Height, Width , CV_8UC4 );
+    QImage output(Width, Height, QImage::Format_RGB32);
+
+    const unsigned int* source = image->Get_Data();
+    for( int y = 0; y < Height; y++, source += Width ) {
+        //unsigned int * ptr = mat.ptr<unsigned int>(y);
+        //unsigned int* scanline = (unsigned int*)FreeImage_GetScanLine(bitmap, Height - y - 1 );
+        memcpy(output.scanLine(y), source, sizeof(source[0]) * Width);
+    }
+
+    return output;
+}
+
 void PerceptualMetric::performDifference()
 {
     CompareArgs args;
@@ -104,9 +154,11 @@ void PerceptualMetric::performDifference()
     args.DownSample = getInputParam("Downsample")->threshold.toInt();
     args.ThresholdPixels = getOutputParam("ErrorNum")->threshold.toInt();
 
-    args.ImgA = OpenCVImageLoader::MatToRGBAImage(m_opencvInput1);
-    args.ImgB = OpenCVImageLoader::MatToRGBAImage(m_opencvInput2);
-    args.ImgDiff = new RGBAImage(m_opencvInput1.cols, m_opencvInput1.rows,"");
+    args.ImgA = qImageToRGBAImage(m_image1);
+    args.ImgB = qImageToRGBAImage(m_image2);
+    //args.ImgA = OpenCVImageLoader::MatToRGBAImage(m_opencvInput1);
+    //args.ImgB = OpenCVImageLoader::MatToRGBAImage(m_opencvInput2);
+    args.ImgDiff = new RGBAImage(m_image1.width(), m_image2.height(), "");
 
     if (!args.ImgA ||!args.ImgB) // convert problem
     {
@@ -118,10 +170,11 @@ void PerceptualMetric::performDifference()
     m_noDifference = Yee_Compare(args);
 
     // save diff image
-    std::vector<cv::Mat> channels;
-    cv::Mat rgbDiff = m_opencvDiff = OpenCVImageLoader::RGBAImageToMat(args.ImgDiff);
-    cv::split(rgbDiff,channels);
-    m_opencvDiff = channels[0];
+    //std::vector<cv::Mat> channels;
+    //cv::Mat rgbDiff = m_opencvDiff = OpenCVImageLoader::RGBAImageToMat(args.ImgDiff);
+    //cv::split(rgbDiff,channels);
+    //m_opencvDiff = channels[0];
 
+    m_opencvDiff = MiscFunctions::qImageToOpencvMat(RGBAImageToQImage(args.ImgDiff).convertToFormat(QImage::Format_Grayscale8).convertToFormat(QImage::Format_RGB32)); // TODO opencv is crap
     //OpenCVImageLoader::WriteToFile(args.ImgDiff ,"d:/tmp.png");
 }
