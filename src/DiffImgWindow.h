@@ -111,6 +111,7 @@ protected slots:
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
     void keyPressEvent ( QKeyEvent * event );
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
 

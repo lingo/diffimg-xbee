@@ -653,13 +653,16 @@ void DiffImgWindow::updateImage1(const QImage &image)
     graphicsViewWipe->filenameLeft = QFileInfo(m_file1).fileName();
 
     m_image1 = image;
-    m_image1Thumbnail = m_image1.scaled( pushButtonFile1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
+
+    m_image1Thumbnail = m_image1.scaledToHeight(pushButtonFile1->height(), Qt::SmoothTransformation );
 
     //m_resultImage1 = QImage(m_image1.size(), QImage::Format_ARGB32);
 
     // set default iconsize for pushbutton
-    pushButtonFile1->setIconSize( m_image1Thumbnail.size() );
-    pushButtonFile1->setIcon( QPixmap::fromImage(m_image1Thumbnail) );
+    pushButtonFile1->setIconSize( pushButtonFile1->size() );
+    //pushButtonFile1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pushButtonFile1->setIcon( QPixmap::fromImage(m_image1Thumbnail).scaled(pushButtonFile1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
+    //pushButtonFile1->setMinimumSize(0, 0);
 
     lineEditComment1->setText( readComment(m_file1) );
     pushButtonValidComment1->setEnabled(false);
@@ -788,11 +791,14 @@ void DiffImgWindow::updateImage2(const QImage &image)
     graphicsViewWipe->filenameRight = QFileInfo(m_file2).fileName();
 
     m_image2 = image;
-    m_image2Thumbnail = m_image2.scaled( pushButtonFile2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
+
+    m_image2Thumbnail = m_image2.scaledToHeight(pushButtonFile2->height(), Qt::SmoothTransformation );
 
     // set default iconsize for pushbutton
-    pushButtonFile2->setIconSize( m_image2Thumbnail.size() );
-    pushButtonFile2->setIcon( QPixmap::fromImage(m_image2Thumbnail) );
+    pushButtonFile2->setIconSize( pushButtonFile2->size() );
+    //pushButtonFile2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pushButtonFile2->setIcon( QPixmap::fromImage(m_image2Thumbnail).scaled(pushButtonFile2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
+    //pushButtonFile2->setMinimumSize(0, 0);
 
     lineEditComment2->setText( readComment(m_file2) );
     pushButtonValidComment2->setEnabled(false);
@@ -806,9 +812,9 @@ void DiffImgWindow::updateImage2(const QImage &image)
 void DiffImgWindow::updateDifference(const QImage &image)
 {
     m_diffImage = image;
-    m_diffImageThumbnail = m_diffImage.scaled( pushButtonDifference->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
-    pushButtonDifference->setIconSize( m_diffImageThumbnail.size() );
-    pushButtonDifference->setIcon( QPixmap::fromImage(m_diffImageThumbnail) );
+    m_diffImageThumbnail = m_diffImage.scaledToHeight(pushButtonDifference->height(), Qt::SmoothTransformation );
+    pushButtonDifference->setIconSize( pushButtonDifference->size() );
+    pushButtonDifference->setIcon( QPixmap::fromImage(m_diffImageThumbnail).scaled(pushButtonDifference->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
 }
 
 //-------------------------------------------------------------------------
@@ -1410,6 +1416,41 @@ void DiffImgWindow::dragEnterEvent(QDragEnterEvent *event)
     }
 
     event->acceptProposedAction();
+}
+void DiffImgWindow::resizeEvent(QResizeEvent *event)
+{
+    if (m_image1Thumbnail.isNull() || m_image2Thumbnail.isNull() || m_diffImageThumbnail.isNull()) {
+        QMainWindow::resizeEvent(event);
+        return;
+    }
+
+    QSize size1 = pushButtonFile1->size();
+    pushButtonFile1->setIconSize(size1);
+    if (size1.height() > m_image1Thumbnail.height()) {
+        m_image1Thumbnail = m_image1.scaledToHeight(size1.height(), Qt::SmoothTransformation );
+    }
+    pushButtonFile1->setIcon( QPixmap::fromImage(m_image1Thumbnail).scaled(pushButtonFile1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
+
+    QSize size2 = pushButtonFile2->size();
+    pushButtonFile2->setIconSize(size2);
+    if (size2.height() > m_image2Thumbnail.height()) {
+        m_image2Thumbnail = m_image2.scaledToHeight(size2.height(), Qt::SmoothTransformation );
+    }
+
+    pushButtonFile2->setIcon( QPixmap::fromImage(m_image2Thumbnail).scaled(pushButtonFile2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
+
+    QSize sizeDiff = pushButtonDifference->size();
+    if (sizeDiff.height() > m_diffImageThumbnail.height()) {
+        m_diffImageThumbnail = m_diffImage.scaledToHeight(defaultThumbnailSize, Qt::SmoothTransformation );
+    }
+
+    pushButtonDifference->setIconSize(sizeDiff);
+    pushButtonDifference->setIcon( QPixmap::fromImage(m_diffImageThumbnail).scaled(pushButtonDifference->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
+
+    if (m_image1Thumbnail.isNull() || m_image2Thumbnail.isNull() || m_diffImageThumbnail.isNull()) {
+        QMainWindow::resizeEvent(event);
+        return;
+    }
 }
 
 void DiffImgWindow::dragMoveEvent(QDragMoveEvent *event)
