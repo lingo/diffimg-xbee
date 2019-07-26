@@ -40,7 +40,7 @@ ImageView::ImageView(QWidget * parent) : QGraphicsView(parent),
     m_imageItem(NULL),
     m_maskItem(NULL),
     m_navigatorSize(0.15f),
-    m_navigatorMargin(10),
+    m_navigatorMargin(20),
     m_showNavigator(true),
     m_maskOpacity(0.5f),
     m_showMask(true),
@@ -182,28 +182,44 @@ void ImageView::paintEvent(QPaintEvent* event)
 
     // draw background
     painter.drawTiledPixmap(rect(), m_tileBg);
+    painter.end();
     QGraphicsView::paintEvent(event);
+    painter.begin(viewport());
 
-    if (!isImageInside() && m_showNavigator)
-    {
-        if ( m_navigator->isVisible() )
-        {
+    if (!isImageInside() && m_showNavigator) {
+        if ( m_navigator->isVisible() ) {
             // top left placement
             m_navigator->move(m_navigatorMargin, m_navigatorMargin);
-        }
-        else
-        {
+        } else {
             m_navigator->show();
             m_navigator->update();
         }
-    }
-    else
-    {
+    } else {
         m_navigator->hide();
     }
 
-    if (m_showMarker)
+    if (m_showMarker) {
         drawMarker(painter);
+    }
+
+    QFont font = painter.font();
+    font.setBold(true);
+    painter.setFont(font);
+
+    QColor bgColor = painter.background().color();
+    bgColor.setAlpha(128);
+    if (!filenameLeft.isEmpty()) {
+        const int flags = Qt::AlignLeft | Qt::AlignTop;
+        QRect boundingRect = painter.fontMetrics().boundingRect(rect(), flags, filenameLeft);
+        painter.fillRect(boundingRect, bgColor);
+        painter.drawText(rect(), flags, filenameLeft);
+    }
+    if (!filenameRight.isEmpty()) {
+        const int flags = Qt::AlignRight | Qt::AlignTop;
+        QRect boundingRect = painter.fontMetrics().boundingRect(rect(), flags, filenameRight);
+        painter.fillRect(boundingRect, bgColor);
+        painter.drawText(rect(), flags, filenameRight);
+    }
 }
 
 bool ImageView::event(QEvent *e)

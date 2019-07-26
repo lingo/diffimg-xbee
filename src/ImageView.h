@@ -34,6 +34,8 @@ class ImageView : public QGraphicsView
     Q_OBJECT
 
 public:
+    QString filenameLeft;
+    QString filenameRight;
 
     ImageView(QWidget * map);
     ~ImageView();

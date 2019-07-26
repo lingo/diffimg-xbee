@@ -642,8 +642,7 @@ void DiffImgWindow::openFile1(const QString &fileName)
         return;
 
     QImage image(fileName);
-    if ( image.isNull() )
-    {
+    if (image.isNull()) {
         QMessageBox::information( this, tr("Image Viewer"),tr("Cannot load %1.").arg(fileName) );
         return;
     }
@@ -652,6 +651,9 @@ void DiffImgWindow::openFile1(const QString &fileName)
 
 void DiffImgWindow::updateImage1(const QImage &image)
 {
+    graphicsView1->filenameLeft = QFileInfo(m_file1).fileName();
+    graphicsViewWipe->filenameLeft = QFileInfo(m_file1).fileName();
+
     m_image1 = image;
     m_image1Thumbnail = m_image1.scaled( pushButtonFile1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
 
@@ -769,12 +771,12 @@ void DiffImgWindow::updateDisplay()
 
 void DiffImgWindow::openFile2(const QString &fileName)
 {
-    if ( fileName.isEmpty() )
+    if (fileName.isEmpty()) {
         return;
+    }
 
     QImage image(fileName);
-    if ( image.isNull() )
-    {
+    if (image.isNull()) {
         QMessageBox::information( this, tr("Image Viewer"),tr("Cannot load %1.").arg(fileName) );
         return;
     }
@@ -784,6 +786,9 @@ void DiffImgWindow::openFile2(const QString &fileName)
 
 void DiffImgWindow::updateImage2(const QImage &image)
 {
+    graphicsView2->filenameRight = QFileInfo(m_file2).fileName();
+    graphicsViewWipe->filenameRight = QFileInfo(m_file2).fileName();
+
     m_image2 = image;
     m_image2Thumbnail = m_image2.scaled( pushButtonFile2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
 
