@@ -49,20 +49,48 @@ QPixmap PerLuminanceMetric::getLogo() const
 
 void PerLuminanceMetric::performDifference()
 {
-    cv::Mat gray1;
-    cv::Mat gray2;
-    if (m_opencvInput1.channels()>=3)
-    {
-        cvtColor(m_opencvInput1,gray1,CV_RGB2GRAY);
-        cvtColor(m_opencvInput2,gray2,CV_RGB2GRAY);
-    }
-    else
-    {
-        gray1 = m_opencvInput1;
-        gray2 = m_opencvInput2;
+    Q_ASSERT(m_image1.size() == m_image2.size());
+
+    QImage output(m_image1.width(), m_image2.height(), QImage::Format_Grayscale8);
+
+    QImage img1 = m_image1;
+    if(img1.depth() < 32){
+        img1 = img1.convertToFormat(img1.hasAlphaChannel() ?  QImage::Format_ARGB32 : QImage::Format_RGB32);
     }
 
-    absdiff(gray1,gray2,m_opencvDiff);
+    QImage img2 = m_image2;
+    if(img2.depth() < 32){
+        img2 = img2.convertToFormat(img2.hasAlphaChannel() ?  QImage::Format_ARGB32 : QImage::Format_RGB32);
+    }
 
-    //cv::imwrite("d:/toto2.png",gray1);
+
+    const int pixelCount = output.width()*output.height();
+
+    if(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied) {
+        qDebug() << "premult";
+        for (int y=0; y<output.height(); y++) {
+            uchar *dst = output.scanLine(y);
+            const QRgb *src1 = (QRgb *)img1.constScanLine(y);
+            const QRgb *src2 = (QRgb *)img2.constScanLine(y);
+            for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
+                const QRgb pixel1 = qUnpremultiply(*src1);
+                const QRgb pixel2 = qUnpremultiply(*src2);
+                *dst = qAbs(qGray(pixel1) - qGray(pixel2));
+            }
+        }
+    } else if (img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() != QImage::Format_ARGB32_Premultiplied) {
+        // TODO blah
+        Q_ASSERT(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied);
+    } else {
+        for (int y=0; y<output.height(); y++) {
+            uchar *dst = output.scanLine(y);
+            const QRgb *src1 = (QRgb *)img1.constScanLine(y);
+            const QRgb *src2 = (QRgb *)img2.constScanLine(y);
+            for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
+                *dst = qAbs(qGray(*src1) - qGray(*src2));
+            }
+        }
+    }
+
+    m_opencvDiff = MiscFunctions::qImageToOpencvMat(output.convertToFormat(QImage::Format_RGB32)); // TODO opencv is crap
 }

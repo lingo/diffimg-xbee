@@ -901,6 +901,8 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     if( !checkImages() ) {
         return;
     }
+    m_image1 = MiscFunctions::opencvMatToQImage(m_opencvInput1,false);
+    m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
 
     // compute "standard" properties
     computeStandardProperties();
