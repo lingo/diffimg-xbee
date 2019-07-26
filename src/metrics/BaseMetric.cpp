@@ -199,6 +199,36 @@ void MetricParam::setThreshold(const QString &valText)
     }
 }
 
+static void applyGainOffset(QImage &img, double gain, double offset)
+{
+    if(img.depth() < 32){
+        img = img.convertToFormat(img.hasAlphaChannel() ?
+                                  QImage::Format_ARGB32 :
+                                  QImage::Format_RGB32);
+    }
+
+    QRgb *dest = (QRgb *)img.bits();
+    const int pixelCount = img.width()*img.height();
+
+    if(img.format() == QImage::Format_ARGB32_Premultiplied){
+        for(int i=0; i < pixelCount; ++i, ++dest) {
+            const QRgb pixel = qUnpremultiply(*dest);
+            const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
+            const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
+            const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
+            *dest = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
+        }
+    } else {
+        for(int i=0; i < pixelCount; ++i){
+            const QRgb pixel = *dest;
+            const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
+            const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
+            const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
+            *dest++ = qRgba(r, g, b, qAlpha(pixel));
+        }
+    }
+}
+
 //---------------------------------------------------------------------------
 
 BaseMetric::BaseMetric(QObject *parent) :
@@ -476,23 +506,34 @@ float BaseMetric::getMaxError() const
 
 QImage BaseMetric::getImage1WithGain(double gain, double offset)
 {
-    cv::Mat converted;
-    m_opencvInput1.convertTo(converted, -1, gain, offset);
-    return MiscFunctions::opencvMatToQImage(converted);
+    if (qFuzzyCompare(gain, 1.) && qFuzzyCompare(offset, 0.)) {
+        return m_image1;
+    }
+    QImage ret = m_image1;
+    applyGainOffset(ret, gain, offset);
+    return ret;
 }
 
 QImage BaseMetric::getImage2WithGain(double gain, double offset)
 {
-    cv::Mat converted;
-    m_opencvInput2.convertTo(converted, -1, gain, offset);
-    return MiscFunctions::opencvMatToQImage(converted);
+    if (qFuzzyCompare(gain, 1.) && qFuzzyCompare(offset, 0.)) {
+        return m_image2;
+    }
+
+    QImage ret = m_image2;
+    applyGainOffset(ret, gain, offset);
+    return ret;
 }
 
 QImage BaseMetric::getImageDifferenceWithGain(double gain, double offset)
 {
-    cv::Mat converted;
-    m_opencvDiff.convertTo(converted, -1, gain, offset);
-    return MiscFunctions::opencvMatToQImage(converted);
+    if (qFuzzyCompare(gain, 1.) && qFuzzyCompare(offset, 0.)) {
+        return m_imageDiff;
+    }
+
+    QImage ret = m_imageDiff;
+    applyGainOffset(ret, gain, offset);
+    return ret;
 }
 
 const QImage & BaseMetric::getImage1() const
