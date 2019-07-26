@@ -280,6 +280,10 @@ void ImageView::mouseReleaseEvent(QMouseEvent *event)
 
     QGraphicsView::mouseReleaseEvent(event);
 
+    if (!m_imageItem) {
+        return;
+    }
+
     const QRectF fullRect = mapToScene(rect()).boundingRect();
     const QRectF imageRect = m_imageItem->boundingRect();
     if (!fullRect.contains(imageRect) && !imageRect.contains(fullRect)) {
