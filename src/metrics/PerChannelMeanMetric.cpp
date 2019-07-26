@@ -46,21 +46,72 @@ QPixmap PerChannelMeanMetric::getLogo() const
 
 void PerChannelMeanMetric::performDifference()
 {
-    // create two "mean" images
-    cv::Mat mean1 = mat2mean(m_opencvInput1);
-    cv::Mat mean2 = mat2mean(m_opencvInput2);
-    absdiff(mean1,mean2,m_opencvDiff);
+    Q_ASSERT(m_image1.size() == m_image2.size());
 
-    //cv::imwrite("d:/toto2.png",mean1);
-}
+    QImage output(m_image1.width(), m_image2.height(), QImage::Format_Grayscale8);
 
-cv::Mat PerChannelMeanMetric::mat2mean(const cv::Mat& src)
-{
-    std::vector<cv::Mat> planes( src.channels() );
-    cv::split(src,planes);
-    float factor = 1.0 / src.channels();
-    cv::Mat mean = factor * planes[0];
-    for (int i = 1; i < m_opencvInput1.channels(); i++)
-        mean += (factor * planes[i]);
-    return mean;
+    QImage img1 = m_image1;
+    if(img1.depth() < 32){
+        img1 = img1.convertToFormat(img1.hasAlphaChannel() ?  QImage::Format_ARGB32 : QImage::Format_RGB32);
+    }
+
+    QImage img2 = m_image2;
+    if(img2.depth() < 32){
+        img2 = img2.convertToFormat(img2.hasAlphaChannel() ?  QImage::Format_ARGB32 : QImage::Format_RGB32);
+    }
+    if(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied) {
+        qDebug() << "premult";
+        for (int y=0; y<output.height(); y++) {
+            uchar *dst = output.scanLine(y);
+            const QRgb *src1 = (QRgb *)img1.constScanLine(y);
+            const QRgb *src2 = (QRgb *)img2.constScanLine(y);
+            for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
+                const QRgb pixel1 = qUnpremultiply(*src1);
+                const QRgb pixel2 = qUnpremultiply(*src2);
+
+                const uint8_t r1 = qRed(pixel1)/3;
+                const uint8_t r2 = qRed(pixel2)/3;
+                const uint8_t g1 = qGreen(pixel1)/3;
+                const uint8_t g2 = qGreen(pixel2)/3;
+                const uint8_t b1 = qBlue(pixel1)/3;
+                const uint8_t b2 = qBlue(pixel2)/3;
+
+                const uint8_t rd = qAbs(r1 - r2);
+                const uint8_t rg = qAbs(g1 - g2);
+                const uint8_t rb = qAbs(b1 - b2);
+
+                *dst = rd + rg + rb;
+            }
+        }
+    } else if (img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() != QImage::Format_ARGB32_Premultiplied) {
+        // TODO blah
+        Q_ASSERT(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied);
+    } else {
+        qDebug() << "not pre";
+        for (int y=0; y<output.height(); y++) {
+            uchar *dst = output.scanLine(y);
+            const QRgb *src1 = (QRgb *)img1.constScanLine(y);
+            const QRgb *src2 = (QRgb *)img2.constScanLine(y);
+            for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
+                const QRgb pixel1 = *src1;
+                const QRgb pixel2 = *src2;
+
+                const uint8_t r1 = qRed(pixel1)/3;
+                const uint8_t r2 = qRed(pixel2)/3;
+                const uint8_t g1 = qGreen(pixel1)/3;
+                const uint8_t g2 = qGreen(pixel2)/3;
+                const uint8_t b1 = qBlue(pixel1)/3;
+                const uint8_t b2 = qBlue(pixel2)/3;
+
+                const uint8_t rd = qAbs(r1 - r2);
+                const uint8_t rg = qAbs(g1 - g2);
+                const uint8_t rb = qAbs(b1 - b2);
+
+                *dst = rd + rg + rb;
+            }
+        }
+    }
+
+    m_opencvDiff = MiscFunctions::qImageToOpencvMat(output.convertToFormat(QImage::Format_RGB32)); // TODO opencv is crap
+    return;
 }
