@@ -47,6 +47,20 @@ QPixmap PerLuminanceMetric::getLogo() const
     return QPixmap(":/diffimg/perluminance.png");
 }
 
+#define Q_MAX_3(a, b, c) ( ( a > b && a > c) ? a : (b > c ? b : c) )
+#define Q_MIN_3(a, b, c) ( ( a < b && a < c) ? a : (b < c ? b : c) )
+
+// from HSL
+static inline int getLightness(const QRgb rgb)
+{
+    const int r = qRed(rgb);
+    const int g = qGreen(rgb);
+    const int b = qBlue(rgb);
+    const int max = Q_MAX_3(r, g, b);
+    const int min = Q_MIN_3(r, g, b);
+    return qreal(0.5) * (max + min);
+}
+
 void PerLuminanceMetric::performDifference()
 {
     Q_ASSERT(m_image1.size() == m_image2.size());
@@ -63,9 +77,6 @@ void PerLuminanceMetric::performDifference()
         img2 = img2.convertToFormat(img2.hasAlphaChannel() ?  QImage::Format_ARGB32 : QImage::Format_RGB32);
     }
 
-
-    const int pixelCount = output.width()*output.height();
-
     if(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied) {
         qDebug() << "premult";
         for (int y=0; y<output.height(); y++) {
@@ -75,7 +86,8 @@ void PerLuminanceMetric::performDifference()
             for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
                 const QRgb pixel1 = qUnpremultiply(*src1);
                 const QRgb pixel2 = qUnpremultiply(*src2);
-                *dst = qAbs(qGray(pixel1) - qGray(pixel2));
+
+                *dst = qAbs(getLightness(pixel1) - getLightness(pixel2));
             }
         }
     } else if (img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() != QImage::Format_ARGB32_Premultiplied) {
@@ -87,7 +99,7 @@ void PerLuminanceMetric::performDifference()
             const QRgb *src1 = (QRgb *)img1.constScanLine(y);
             const QRgb *src2 = (QRgb *)img2.constScanLine(y);
             for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
-                *dst = qAbs(qGray(*src1) - qGray(*src2));
+                *dst = qAbs(getLightness(*src1) - getLightness(*src2));
             }
         }
     }
