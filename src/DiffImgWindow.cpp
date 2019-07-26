@@ -1123,17 +1123,17 @@ void DiffImgWindow::initHistoNew()
     if (m_currentDisplayType == TYPE_ORIGINAL)
     {
         nbChannels = met->getImage1Channels();
-        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinImage1(),met->getMaxImage1() );
+        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinImage1(), 256);
     }
     else if (m_currentDisplayType == TYPE_MODIFIED)
     {
         nbChannels = met->getImage2Channels();
-        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinImage2(),met->getMaxImage2() );
+        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinImage2(), 256 );
     }
     else
     {
         nbChannels = met->getDifferenceChannels();
-        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinError(),met->getMaxError() );
+        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinError(), 256 );
     }
 
     if (nbChannels == 1)
@@ -1186,8 +1186,8 @@ void DiffImgWindow::applyHisto()
         }
         else if (i == 1)
         {
-            m_widgetHistoCurveR->setSamples( (*pHistos)[i] );
-            m_widgetHistoCurveR->attach(widgetHisto);
+            m_widgetHistoCurveG->setSamples( (*pHistos)[i] );
+            m_widgetHistoCurveG->attach(widgetHisto);
         }
         else if (i == 2)
         {

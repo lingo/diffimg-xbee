@@ -167,7 +167,7 @@ protected:
     virtual void performDifference() = 0;
 
     int computeNbErrors(const cv::Mat &mat);
-    void computeHisto(const cv::Mat img,QList<QPolygonF> &polys, bool skipZeroLevel = false);
+    void computeHisto(const QImage &input,QList<QPolygonF> &polys, bool skipZeroLevel = false);
     void computeDifferenceMask();
 
     QString m_type;

@@ -62,6 +62,10 @@ float BaseMetric::defaultThresholdStandardDeviation = 0.3f;
 //   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 //   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 //   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+struct IntegerPixel {
+    quint32 red{}, green{}, blue{}, alpha{};
+};
 static bool equalize(QImage &img)
 {
     if (img.isNull()) {
@@ -76,10 +80,6 @@ static bool equalize(QImage &img)
     }
 
     const int pixelCount = img.width()*img.height();
-
-    struct IntegerPixel {
-        quint32 red{}, green{}, blue{}, alpha{};
-    };
 
     // form histogram
     IntegerPixel histogram [256];
@@ -228,6 +228,46 @@ static void applyGainOffset(QImage &img, double gain, double offset)
         }
     }
 }
+static void findMinMax(const QImage &inp, double *min, double *max)
+{
+    QImage img(inp);
+
+    if(img.depth() < 32){
+        img = img.convertToFormat(img.hasAlphaChannel() ?
+                                  QImage::Format_ARGB32 :
+                                  QImage::Format_RGB32);
+    }
+
+    *min = 255;
+    *max = 0;
+
+    QRgb *dest = (QRgb *)img.bits();
+    const int pixelCount = img.width()*img.height();
+    if(img.format() == QImage::Format_ARGB32_Premultiplied){
+        for(int i=0; i < pixelCount; ++i, ++dest) {
+            const QRgb pixel = qUnpremultiply(*dest);
+            *min = std::min(double(qRed(pixel)), *min);
+            *min = std::min(double(qGreen(pixel)), *min);
+            *min = std::min(double(qBlue(pixel)), *min);
+
+            *max = std::max(double(qRed(pixel)), *max);
+            *max = std::max(double(qGreen(pixel)), *max);
+            *max = std::max(double(qBlue(pixel)), *max);
+        }
+    } else {
+        for(int i=0; i < pixelCount; ++i){
+            const QRgb pixel = *dest;
+            *min = std::min(int(qRed(pixel)),   int(*min));
+            *min = std::min(int(qGreen(pixel)), int(*min));
+            *min = std::min(int(qBlue(pixel)),  int(*min));
+
+            *max = std::max(int(qRed(pixel)),   int(*max));
+            *max = std::max(int(qGreen(pixel)), int(*max));
+            *max = std::max(int(qBlue(pixel)),  int(*max));
+        }
+    }
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -411,7 +451,11 @@ void BaseMetric::computeStandardProperties()
     // depth
     m_properties << ImageProperty( tr("Band depth"), tr("Number of bits per band (U:unsigned, S:signed, F:float)"),MiscFunctions::matDepthToText( m_opencvInput1.depth() ) );
 
+    findMinMax(m_image1, &m_minImage1, &m_maxImage1);
+    qDebug() << m_minImage1 << m_maxImage1;
+    findMinMax(m_image2, &m_minImage2, &m_maxImage2);
     cv::minMaxLoc(m_opencvInput1, &m_minImage1, &m_maxImage1); //Locate max and min values
+    qDebug() << m_minImage1 << m_maxImage1;
     cv::minMaxLoc(m_opencvInput2, &m_minImage2, &m_maxImage2); //Locate max and min values
 }
 
@@ -693,14 +737,14 @@ bool BaseMetric::selectedStatsIsValid() const
 const QList<QPolygonF> &BaseMetric::getHistogramImage1()
 {
     if ( m_histoImage1.isEmpty() )
-        computeHisto(m_opencvInput1,m_histoImage1);
+        computeHisto(m_image1,m_histoImage1);
     return m_histoImage1;
 }
 
 const QList<QPolygonF> &BaseMetric::getHistogramImage2()
 {
     if ( m_histoImage2.isEmpty() )
-        computeHisto(m_opencvInput2,m_histoImage2);
+        computeHisto(m_image2,m_histoImage2);
     return m_histoImage2;
 }
 
@@ -709,121 +753,78 @@ const QList<QPolygonF> &BaseMetric::getHistogramImageDiff(bool showZero)
     if ( m_histoImageDiff.isEmpty() || m_prevShowHistoZero != showZero )
     {
         m_histoImageDiff.clear();
-        computeHisto(m_opencvDiff,m_histoImageDiff,!showZero);
+        computeHisto(m_imageDiff,m_histoImageDiff,!showZero);
     }
     m_prevShowHistoZero = showZero;
     return m_histoImageDiff;
 }
 
-void BaseMetric::computeHisto(const cv::Mat img,QList<QPolygonF> &polys, bool skipZeroLevel)
+void BaseMetric::computeHisto(const QImage &input,QList<QPolygonF> &polys, bool skipZeroLevel)
 {
+    QImage img(input); // CoW, so don't care
+
+    if (img.format() != QImage::Format_ARGB32) {
+        img = img.convertToFormat(QImage::Format_ARGB32);
+    }
+
     polys.clear();
 
-    if ( img.empty() )
+    if ( img.isNull() ) {
         return;
-
-    QList<cv::Mat> listHisto;
-
-    for (int i = 0; i < img.channels(); i++)
-        listHisto << cv::Mat();
-
-    std::vector<cv::Mat> listChannels;
-
-    cv::split(img, listChannels);
-
-    // compute global min/max
-    double min = 100000;
-    double max = -100000;
-    for (size_t i = 0; i < listChannels.size(); i++)
-    {
-        double minVal, maxVal;
-        cv::minMaxLoc(listChannels[i], &minVal, &maxVal); //Locate max and min values
-        min = qMin(min,minVal);
-        max = qMax(max,maxVal);
     }
 
-    // null image => exit
-    if (min == 0.0 && max == 0.0)
-        return;
-
-    for (size_t i = 0; i < listChannels.size(); i++)
+    typedef struct
     {
-//         double minVal, maxVal;
-//         cv::minMaxLoc(listChannels[i], &minVal, &maxVal); //Locate max and min values
-//
-//         qDebug() << "min " << minVal << " max = " << maxVal;
+        quint32 red, green, blue, alpha;
+    } HistogramListItem;
 
-        // Initialize histogram settings
-        int histSize[] = { (int)(max - min) };
-        float Range[] = { (float)min, (float)max }; //{0, 256} = 0 to 255
-        const float *Ranges[] = { Range };
-        int channels[] = { 0 };
+    // form histogram
+    IntegerPixel histogram [256];
+    QRgb *dest = (QRgb *)img.constBits();
 
-        /*
-           int histSize[] = { 256 };
-           float Range[] = { 0, 256 }; //{0, 256} = 0 to 255
-           const float *Ranges[] = { Range };
-           int channels[] = { 0 };
-         */
+    const int pixelCount = img.width()*img.height();
 
-        cv::Mat hist;
+    int max = 0, min = 0;;
+    for(int i=0; i < pixelCount; ++i){
+        const QRgb pixel = *dest++;
+        histogram[qRed(pixel)].red++;
+        histogram[qGreen(pixel)].green++;
+        histogram[qBlue(pixel)].blue++;
+        histogram[qAlpha(pixel)].alpha++;
 
-        calcHist(&(listChannels[i]), 1, channels, cv::Mat(), // do not use mask
-                 hist,
-                 1,
-                 histSize,
-                 Ranges,
-                 true, // the histogram is uniform
-                 false);
+        //max = std::max(qRed(pixel), max);.
+        //max = std::max(qGreen(pixel), max);
+        //max = std::max(qBlue(pixel), max);
+        //max = std::max(qAlpha(pixel), max);
 
-        QPolygonF points;
-        for( int h = 0; h < hist.rows; h++)
-        {
-            float bin_value = 0;
-            if (!skipZeroLevel || h)
-                bin_value = hist.at<float>(h);
-            points << QPointF( (float)h, bin_value );
+        //min = std::min(qRed(pixel), min);.
+        //min = std::min(qGreen(pixel), min);
+        //min = std::min(qBlue(pixel), min);
+        //min = std::min(qAlpha(pixel), min);
+    }
+
+    QPolygonF points[3];
+    for (int i= 0; i<256; i++) {
+        if (!skipZeroLevel || histogram[i].red) {
+            points[0] << QPointF(i, histogram[i].red);
         }
-        polys << points;
+
+        if (!skipZeroLevel || histogram[i].green) {
+            points[1] << QPointF(i, histogram[i].green);
+        }
+
+        if (!skipZeroLevel || histogram[i].blue) {
+            points[2] << QPointF(i, histogram[i].blue);
+        }
     }
 
-    /*
-       return;
-
-       cv::Mat histB;
-       cv::Mat histG;
-       cv::Mat histR;
-
-       MiscFunctions::ComputeHistogramBGR(img, histB, histG, histR);
-
-       //computeHistogram1D
-
-       // Insert the points that should be plotted on the graph in a vector of QPoints or a QPolgonF
-       QPolygonF points;
-       for( int h = 0; h < histB.rows; h++)
-       {
-        float bin_value = histB.at<float>(h);
-        points << QPointF((float)h, bin_value);
-       }
-       polys << points;
-
-       points.clear();
-       for( int h = 0; h < histG.rows; h++)
-       {
-        float bin_value = histG.at<float>(h);
-        points << QPointF((float)h, bin_value);
-       }
-       polys << points;
-
-       points.clear();
-       for( int h = 0; h < histR.rows; h++)
-       {
-        float bin_value = histR.at<float>(h);
-        points << QPointF((float)h, bin_value);
-       }
-       polys << points;
-
-     */
+    polys << points[0] << points[1] << points[2];
+    float maxX = 0;
+    for (const QPolygonF &pol : polys) {
+        for (const QPointF &p : pol) {
+            maxX = std::max(maxX, float(p.x()));
+        }
+    }
 }
 
 void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
