@@ -1314,7 +1314,9 @@ void DiffImgWindow::on_sliderGain_valueChanged(int val)
 {
     m_currentGain = val / 100.0f;
     doubleSpinBoxGain->setValue( (double)m_currentGain );
-    m_timerUpdate->start(updateWaitTime);
+    if (m_timerUpdate->remainingTime() < updateWaitTime / 10) {
+        m_timerUpdate->start(updateWaitTime);
+    }
 }
 
 void DiffImgWindow::on_doubleSpinBoxGain_valueChanged(double val)
@@ -1327,7 +1329,9 @@ void DiffImgWindow::on_sliderOffset_valueChanged(int val)
 {
     m_currentOffset = val;
     doubleSpinBoxOffset->setValue( (double)m_currentOffset );
-    m_timerUpdate->start(updateWaitTime);
+    if (m_timerUpdate->remainingTime() < updateWaitTime / 10) {
+        m_timerUpdate->start(updateWaitTime);
+    }
 
 //     if (m_lyr)
 //         m_lyr->setOffset(currentOffset_);
