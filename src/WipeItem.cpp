@@ -113,8 +113,7 @@ void WipeItem::setImage2(const QImage &img)
 void WipeItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
 {
 
-    if (m_wipe)
-    {
+    if (m_wipe) {
         m_wipePoint = event->pos();
         update();
     } else {
@@ -130,6 +129,8 @@ void WipeItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
         qAbs(event->pos().y() - m_wipePoint.y()) ;
     if (event->button() == Qt::RightButton || distance < 40) {
         m_wipe = true;
+        m_wipePoint = event->pos();
+        update();
     } else {
         QGraphicsItem::mousePressEvent(event);
     }
@@ -157,10 +158,11 @@ void WipeItem::setWipeMethod(int method)
                 m_wipePoint = m_pix2.rect().center();
             }
         }
-        if (m_wipeMethod == WipeMethod::WIPE_HORIZONTAL)
+        if (m_wipeMethod == WipeMethod::WIPE_HORIZONTAL) {
             setCursor(Qt::SplitHCursor);
-        else
+        } else {
             setCursor(Qt::SplitVCursor);
+        }
         update();
     }
 }

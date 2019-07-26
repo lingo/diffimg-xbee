@@ -304,10 +304,12 @@ void ImageView::mouseMoveEvent(QMouseEvent* event)
 {
     QPointF mousePos = QGraphicsView::mapToScene( event->pos() );
     emit mouseMoved(mousePos);
+
     m_centerPoint = QGraphicsView::mapToScene( rect().center() );
     QGraphicsView::mouseMoveEvent(event);
-    if (m_drag)
+    if (m_drag) {
         emit somethingChanged();
+    }
 }
 
 /**
