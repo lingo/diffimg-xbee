@@ -37,6 +37,135 @@ int BaseMetric::defaultThresholdMinError = 50;
 int BaseMetric::defaultThresholdMaxError = 50;
 float BaseMetric::defaultThresholdStandardDeviation = 0.3f;
 
+// equalize is partially from qimageblitz
+//   Copyright (c) 2003-2007 Clarence Dang <dang@kde.org>
+//   Copyright (c) 2006 Mike Gashler <gashlerm@yahoo.com>
+//   All rights reserved.
+
+//   Redistribution and use in source and binary forms, with or without
+//   modification, are permitted provided that the following conditions
+//   are met:
+
+//   1. Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//   2. Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+
+//   THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+//   IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+//   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+//   IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+//   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+//   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+//   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+//   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+//   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+//   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+static bool equalize(QImage &img)
+{
+    if (img.isNull()) {
+        return(false);
+    }
+
+
+    if(img.depth() < 32){
+        img = img.convertToFormat(img.hasAlphaChannel() ?
+                                  QImage::Format_ARGB32 :
+                                  QImage::Format_RGB32);
+    }
+
+    const int pixelCount = img.width()*img.height();
+
+    struct IntegerPixel {
+        quint32 red{}, green{}, blue{}, alpha{};
+    };
+
+    // form histogram
+    IntegerPixel histogram [256];
+    QRgb *dest = (QRgb *)img.bits();
+
+    if(img.format() == QImage::Format_ARGB32_Premultiplied){
+        for(int i=0; i < pixelCount; ++i, ++dest){
+            const QRgb pixel = qUnpremultiply(*dest);
+            histogram[qRed(pixel)].red++;
+            histogram[qGreen(pixel)].green++;
+            histogram[qBlue(pixel)].blue++;
+            histogram[qAlpha(pixel)].alpha++;
+        }
+    } else {
+        for(int i=0; i < pixelCount; ++i){
+            const QRgb pixel = *dest++;
+            histogram[qRed(pixel)].red++;
+            histogram[qGreen(pixel)].green++;
+            histogram[qBlue(pixel)].blue++;
+            histogram[qAlpha(pixel)].alpha++;
+        }
+    }
+
+    // integrate the histogram to get the equalization map
+    IntegerPixel map[256];
+    IntegerPixel intensity;
+    for (int i=0; i < 256; ++i){
+        intensity.red += histogram[i].red;
+        intensity.green += histogram[i].green;
+        intensity.blue += histogram[i].blue;
+        map[i] = intensity;
+    }
+
+    const IntegerPixel low = map[0];
+    const IntegerPixel high = map[255];
+    const uint32_t deltaRed = high.red - low.red;
+    const uint32_t deltaGreen = high.green - low.green;
+    const uint32_t deltaBlue = high.blue - low.blue;
+
+    // Yes, a normal pixel can be used instead but this is easier to read
+    // and no shifts to get components.
+    struct CharPixel {
+        quint8 red{}, green{}, blue{}, alpha{};
+    };
+
+    CharPixel equalize_map[256];
+
+    for (int i=0; i < 256; ++i) {
+        if(deltaRed) {
+            equalize_map[i].red = uint8_t((255*(map[i].red - low.red)) / deltaRed);
+        }
+
+        if(deltaGreen) {
+            equalize_map[i].green = uint8_t((255*(map[i].green - low.green)) / deltaGreen);
+        }
+
+        if(deltaBlue) {
+            equalize_map[i].blue = uint8_t((255*(map[i].blue - low.blue)) / deltaBlue);
+        }
+    }
+
+    // stretch the histogram and write
+    dest = (QRgb *)img.bits();
+    uint8_t r, g, b;
+    if(img.format() == QImage::Format_ARGB32_Premultiplied){
+        for(int i=0; i < pixelCount; ++i, ++dest) {
+            const QRgb pixel = qUnpremultiply(*dest);
+            r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
+            g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
+            b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
+            *dest = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
+        }
+    } else {
+        for(int i=0; i < pixelCount; ++i){
+            const QRgb pixel = *dest;
+            r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
+            g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
+            b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
+            *dest++ = qRgba(r, g, b, qAlpha(pixel));
+        }
+    }
+
+    return(true);
+}
+
+
 bool MetricParam::isValid()
 {
     if ( value.toFloat() > threshold.toFloat() )
@@ -754,6 +883,7 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     m_image1 = MiscFunctions::opencvMatToQImage(m_opencvInput1,false);
     m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
     m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    equalize(m_imageDiff);
     //m_imageDiff.fill(Qt::red);
     //qDebug() << m_imageDiff;
 
