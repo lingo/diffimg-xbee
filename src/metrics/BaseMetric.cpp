@@ -420,10 +420,10 @@ const QList<MetricParam *> & BaseMetric::getOutputParams()
 void BaseMetric::computeStandardProperties()
 {
     // Dimension (pixels)
-    m_properties << ImageProperty( tr("Dimension (pixels)"), tr("Dimension in pixel of images"),QString("%1x%2").arg(m_opencvInput1.cols).arg(m_opencvInput1.rows) );
+    m_properties << ImageProperty( tr("Dimension (pixels)"), tr("Dimension in pixel of images"),QString("%1x%2").arg(m_image1.width()).arg(m_image1.height()) );
 
     // size (pixels)
-    m_properties << ImageProperty( tr("Size (pixels)"), tr("Size in pixel of images"),MiscFunctions::pixelsToString(m_opencvInput1.cols * m_opencvInput1.rows) );
+    m_properties << ImageProperty( tr("Size (pixels)"), tr("Size in pixel of images"),MiscFunctions::pixelsToString(m_image1.width() * m_image1.height()) );
 
     // size (bytes)
     int sz1 = MiscFunctions::getFileSize(m_file1);
@@ -597,7 +597,7 @@ const QImage & BaseMetric::getImageDifference() const
 
 bool BaseMetric::saveDifference(const QString &file) const
 {
-    return cv::imwrite( file.toStdString(), m_opencvDiff);
+    return m_imageDiff.save(file);
 }
 
 const QImage & BaseMetric::getImageMask() const
@@ -914,9 +914,6 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     // compute some statistics on difference image
     computeStatistics();
 
-//      bool ok1 = cv::imwrite("d:/toto1.png",m_opencvInput1);
-//      bool ok2 = cv::imwrite("d:/toto2.png",m_opencvInput2);
-
     /*
        cvtColor(m_opencvInput1, m_opencvTransf1,CV_BGR2RGB);
        m_image1 = QImage((uchar*)m_opencvTransf1.data, m_opencvTransf1.cols, m_opencvTransf1.rows,m_opencvTransf1.step,QImage::Format_RGB888);
@@ -928,19 +925,6 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
     m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     equalize(m_imageDiff);
-    //m_imageDiff.fill(Qt::red);
-    //qDebug() << m_imageDiff;
-
-    // !!!!!!!!!!! debug !!!!!!!!
-
-    /*
-       if (m_opencvDiff.type() == CV_8UC3)
-       {
-        m_opencvDiff.at<cv::Vec3b>(200,300)[0] = 255;
-        m_opencvDiff.at<cv::Vec3b>(200,300)[1] = 128;
-        m_opencvDiff.at<cv::Vec3b>(200,300)[2] = 50;
-       }
-     */
 
     computeDifferenceMask();
 
