@@ -241,6 +241,7 @@ void DiffImgWindow::updateUi()
 
     // Wipe view
     graphicsViewWipe->setWipeMode(true);
+    widgetHisto->setMinimumHeight(50);
 }
 
 void DiffImgWindow::updateTooltips()
@@ -619,19 +620,16 @@ void DiffImgWindow::updateSmileyStatus()
 {
     BaseMetric *met = MetricsManager::getMetrics()[m_metricType];
 
+    QPixmap pixmap;
     // setup the emoticon
-    if ( !met->getPixelError() )
-    {
-        labelSmiley->setPixmap( QPixmap(":/diffimg/allgood.png") );
+    if ( !met->getPixelError() ) {
+        pixmap = QPixmap(":/diffimg/allgood.png");
+    } else if (m_compareWithThreshold && met->selectedStatsIsValid()) {
+        pixmap = QPixmap(":/diffimg/somebad.png");
+    } else {
+        pixmap = QPixmap(":/diffimg/bad.png");
     }
-    else if ( m_compareWithThreshold && met->selectedStatsIsValid() )
-    {
-        labelSmiley->setPixmap( QPixmap(":/diffimg/somebad.png") );
-    }
-    else
-    {
-        labelSmiley->setPixmap( QPixmap(":/diffimg/bad.png") );
-    }
+    labelSmiley->setPixmap(pixmap.scaledToHeight(labelSmiley->height()));
 }
 
 //-------------------------------------------------------------------------
@@ -932,6 +930,7 @@ void DiffImgWindow::on_actionShowDocks_triggered()
 {
     dockWidgetNavigator->show();
     dockWidgetProperties->show();
+    widgetHisto->setMinimumHeight(50);
     dockWidgetHistogram->show();
 }
 
@@ -1193,6 +1192,7 @@ void DiffImgWindow::applyHisto()
 
     // plot the histogram
     widgetHisto->replot();
+    widgetHisto->setMinimumHeight(50);
 }
 
 void DiffImgWindow::restart()

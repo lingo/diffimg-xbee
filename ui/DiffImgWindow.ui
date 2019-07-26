@@ -468,7 +468,7 @@
             <item row="0" column="0">
              <widget class="QPushButton" name="pushButtonFile2">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -521,7 +521,7 @@
             <item row="2" column="0">
              <widget class="QPushButton" name="pushButtonDifference">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -586,7 +586,7 @@
             <item row="0" column="0">
              <widget class="QPushButton" name="pushButtonFile1">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -623,6 +623,9 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetHistogram">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <property name="windowTitle">
     <string>Histogram</string>
    </property>
@@ -645,6 +648,12 @@
      </property>
      <item row="1" column="0">
       <widget class="QLabel" name="labelHist">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="font">
         <font>
          <pointsize>7</pointsize>
@@ -670,7 +679,7 @@
      <item row="0" column="0">
       <widget class="QwtPlot" name="widgetHisto">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -681,11 +690,20 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetProperties">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>274</width>
-     <height>199</height>
+     <height>241</height>
     </size>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background:green</string>
    </property>
    <property name="floating">
     <bool>true</bool>
@@ -700,31 +718,50 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_3">
-    <layout class="QGridLayout" name="gridLayout_9">
-     <item row="2" column="0" colspan="2">
-      <widget class="QLabel" name="label_17">
-       <property name="font">
-        <font>
-         <pointsize>7</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>(*) statistics exceeding the authorized threshold</string>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="2">
-      <widget class="QLabel" name="labelCurrentMetric">
-       <property name="text">
-        <string/>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item row="1" column="0" colspan="2">
+      <widget class="PropertyWidget" name="widgetProperties" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
       </widget>
      </item>
      <item row="4" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>red color: pixel with error &lt;= mean error</string>
+       </property>
+       <property name="text">
+        <string>&lt;img src=&quot;:/diffimg/red.png&quot; /&gt; error</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
       <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="toolTip">
         <string>yellow color: pixel with error &gt;mean error</string>
        </property>
@@ -739,40 +776,48 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="PropertyWidget" name="widgetProperties" native="true"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="toolTip">
-        <string>red color: pixel with error &lt;= mean error</string>
+     <item row="0" column="1">
+      <widget class="QLabel" name="labelCurrentMetric">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
        <property name="text">
-        <string>&lt;img src=&quot;:/diffimg/red.png&quot; /&gt; error</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::RichText</enum>
+        <string/>
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_17">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+       <property name="font">
+        <font>
+         <pointsize>7</pointsize>
+        </font>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
+       <property name="text">
+        <string>(*) statistics exceeding the authorized threshold</string>
        </property>
-      </spacer>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="3" column="1" rowspan="3">
       <widget class="QLabel" name="labelSmiley">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string/>
        </property>
