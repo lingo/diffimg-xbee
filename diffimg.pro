@@ -171,7 +171,7 @@ unix:!macx {
     manual.files += diffimg.1.gz
     manual.path = $$MYAPP_INSTALL_MAN
 
-    INSTALLS += starter transl data desktop icons manual
+    INSTALLS += target transl data desktop icons manual
 }
 
 
