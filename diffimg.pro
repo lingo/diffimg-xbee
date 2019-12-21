@@ -37,12 +37,13 @@ HEADERS += \
     $$PWD/src/metrics/PerChannelMeanMetric.h \
     $$PWD/src/metrics/PerChannelMetric.h \
     $$PWD/src/metrics/PerLuminanceMetric.h \
-    $$PWD/src/formats/BaseFormat.h \
-    $$PWD/src/formats/FormatsManager.h \
-    $$PWD/src/formats/FormatsRegistering.h \
-    $$PWD/src/formats/YUVFormat.h \
     $$PWD/src/MiscFunctions.h \
     $$PWD/src/PropertyWidget.h \
+
+    #$$PWD/src/formats/BaseFormat.h \
+    #$$PWD/src/formats/FormatsManager.h \
+    #$$PWD/src/formats/FormatsRegistering.h \
+    #$$PWD/src/formats/YUVFormat.h \
 
 SOURCES +=  \
     $$PWD/src/AboutDialog.cpp \
@@ -62,12 +63,13 @@ SOURCES +=  \
     $$PWD/src/metrics/PerChannelMeanMetric.cpp \
     $$PWD/src/metrics/PerChannelMetric.cpp \
     $$PWD/src/metrics/PerLuminanceMetric.cpp \
-    $$PWD/src/formats/BaseFormat.cpp \
-    $$PWD/src/formats/FormatsManager.cpp \
-    $$PWD/src/formats/FormatsRegistering.cpp \
-    $$PWD/src/formats/YUVFormat.cpp \
     $$PWD/src/MiscFunctions.cpp \
     $$PWD/src/PropertyWidget.cpp \
+
+    #$$PWD/src/formats/BaseFormat.cpp \
+    #$$PWD/src/formats/FormatsManager.cpp \
+    #$$PWD/src/formats/FormatsRegistering.cpp \
+    #$$PWD/src/formats/YUVFormat.cpp \
 
 FORMS += \
     $$PWD/ui/AboutDialog.ui \
@@ -82,10 +84,6 @@ INCLUDEPATH += \
 
 INCLUDEPATH += /usr/include/qwt
 LIBS += -lqwt
-
-LIBS += -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -lopencv_core
-
-INCLUDEPATH += /usr/include/opencv4
 
 RESOURCES += $$PWD/res/$${TARGET}.qrc
 

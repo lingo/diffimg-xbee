@@ -30,8 +30,6 @@
 #include "Metric.h"
 #include "RGBAImage.h"
 
-#include "OpenCVImageLoader.h"
-
 static int defaultLuminanceOnly = 0;
 static float defaultFieldOfView = 45.0f;
 static float defaultGamma = 2.2f;
@@ -127,7 +125,6 @@ QImage RGBAImageToQImage(RGBAImage *image)
     int Width = image->Get_Width();
     int Height = image->Get_Height();
 
-    //cv::Mat mat = cv::Mat(Height, Width , CV_8UC4 );
     QImage output(Width, Height, QImage::Format_RGB32);
 
     const unsigned int* source = image->Get_Data();
@@ -156,8 +153,6 @@ void PerceptualMetric::performDifference()
 
     args.ImgA = qImageToRGBAImage(m_image1);
     args.ImgB = qImageToRGBAImage(m_image2);
-    //args.ImgA = OpenCVImageLoader::MatToRGBAImage(m_opencvInput1);
-    //args.ImgB = OpenCVImageLoader::MatToRGBAImage(m_opencvInput2);
     args.ImgDiff = new RGBAImage(m_image1.width(), m_image2.height(), "");
 
     if (!args.ImgA ||!args.ImgB) // convert problem
@@ -170,9 +165,5 @@ void PerceptualMetric::performDifference()
     m_noDifference = Yee_Compare(args);
 
     // save diff image
-    //std::vector<cv::Mat> channels;
-    //cv::split(rgbDiff,channels);
-
-    m_imageDiff = RGBAImageToQImage(args.ImgDiff).convertToFormat(QImage::Format_Grayscale8).convertToFormat(QImage::Format_RGB32); // TODO opencv is crap
-    //OpenCVImageLoader::WriteToFile(args.ImgDiff ,"d:/tmp.png");
+    m_imageDiff = RGBAImageToQImage(args.ImgDiff).convertToFormat(QImage::Format_Grayscale8).convertToFormat(QImage::Format_RGB32);
 }

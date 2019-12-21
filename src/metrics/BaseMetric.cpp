@@ -23,6 +23,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 
+#include <cmath>
+
 #include "BaseMetric.h"
 #include "LogHandler.h"
 #include "AppSettings.h"

@@ -28,7 +28,7 @@
 #include "AppSettings.h"
 #include "MiscFunctions.h"
 #include "MetricsRegistering.h"
-#include "FormatsRegistering.h"
+//#include "FormatsRegistering.h"
 #include "MetricsManager.h"
 #include "BaseMetric.h"
 
@@ -210,7 +210,7 @@ int makeDiffBatch(const QString &file1, const QString &file2, const QString & me
 
     // metrics registering
     MetricsRegistering::registerAll();
-    FormatsRegistering::registerAll();
+    //FormatsRegistering::registerAll();
 
     //
     //

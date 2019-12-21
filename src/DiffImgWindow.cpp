@@ -27,9 +27,8 @@
 
 #include "BaseMetric.h"
 #include "MetricsRegistering.h"
-#include "FormatsRegistering.h"
+//#include "FormatsRegistering.h"
 #include "MetricsManager.h"
-#include "FormatsManager.h"
 #include "FilesManager.h"
 #include "WipeMethod.h"
 
@@ -155,7 +154,6 @@ DiffImgWindow::~DiffImgWindow()
     saveSettings();
     delete m_diffRes;
     MetricsManager::clear();
-    FormatsManager::clear();
 }
 
 void DiffImgWindow::updateUi()
@@ -167,8 +165,8 @@ void DiffImgWindow::updateUi()
     LogHandler::getInstance()->reportDebug( QString("Register of %1 metrics").arg(nb) );
 
     // weird format registering
-    nb = FormatsRegistering::registerAll();
-    LogHandler::getInstance()->reportDebug( QString("Register of %1 user formats").arg(nb) );
+    //nb = FormatsRegistering::registerAll();
+    //LogHandler::getInstance()->reportDebug( QString("Register of %1 user formats").arg(nb) );
 
     m_dfiles = new FilesDialog(this);
     connect( m_dfiles, SIGNAL( accepted () ), this, SLOT( acceptFiles() ) );

@@ -75,8 +75,6 @@ public:
     static bool stringToFile(const QString &data, const QString &filename);
     static QString fileToString(const QString &filename);
 
-    static QString matTypeToText(int);
-    static QString matDepthToText(int);
     static quint64 getFileSize(const QString &file);
     static QString bytesToString(quint64 bytes);
     static QString pixelsToString(quint64 pixels);

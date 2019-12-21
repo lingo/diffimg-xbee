@@ -26,8 +26,6 @@
 #include "MetricsManager.h"
 #include "BaseMetric.h"
 
-#include "FormatsManager.h"
-#include "BaseFormat.h"
 #include "WipeMethod.h"
 
 #include <QtCore/QFileInfo>
@@ -92,11 +90,11 @@ void AboutDialog::updateUserImageParameterLanguages()
     comboBoxImageFormatName->clear();
 
     // update comboBoxUploaders
-    const QList<BaseFormat *> &list = FormatsManager::getFormats();
-    foreach (BaseFormat * fmt, list)
-    {
-        comboBoxImageFormatName->addItem( fmt->getName(),qVariantFromValue( (void *) fmt ) ); // store directly pointer
-    }
+    //const QList<BaseFormat *> &list = FormatsManager::getFormats();
+    //foreach (BaseFormat * fmt, list)
+    //{
+    //    comboBoxImageFormatName->addItem( fmt->getName(),qVariantFromValue( (void *) fmt ) ); // store directly pointer
+    //}
 
 }
 
@@ -292,23 +290,23 @@ void AboutDialog::on_comboBoxImageFormatName_currentIndexChanged(int index)
     if (index < 0)
         return;
 
-    BaseFormat *fmt = static_cast<BaseFormat *>( comboBoxImageFormatName->itemData(index,Qt::UserRole).value<void *>() );
-    labelFormatDesc->setText( fmt->getDesc() );
+    //BaseFormat *fmt = static_cast<BaseFormat *>( comboBoxImageFormatName->itemData(index,Qt::UserRole).value<void *>() );
+    //labelFormatDesc->setText( fmt->getDesc() );
 
-    // update comboBoxFormatParam
-    comboBoxFormatParam->clear();
-    const QList<FormatProperty*> &listInput = fmt->getProperties();
+    //// update comboBoxFormatParam
+    //comboBoxFormatParam->clear();
+    //const QList<FormatProperty*> &listInput = fmt->getProperties();
 
-    lineEditFormatParam->setText("");
-    lineEditFormatParam->setToolTip("");
-    lineEditFormatParam->setEnabled( !listInput.isEmpty() );
-    comboBoxFormatParam->setToolTip("");
-    comboBoxcomboBoxFormatParamValues->setToolTip("");
+    //lineEditFormatParam->setText("");
+    //lineEditFormatParam->setToolTip("");
+    //lineEditFormatParam->setEnabled( !listInput.isEmpty() );
+    //comboBoxFormatParam->setToolTip("");
+    //comboBoxcomboBoxFormatParamValues->setToolTip("");
 
-    foreach (FormatProperty * prop, listInput)
-    {
-        comboBoxFormatParam->addItem( prop->name,qVariantFromValue( (void *) prop ) ); // store directly pointer
-    }
+    //foreach (FormatProperty * prop, listInput)
+    //{
+    //    comboBoxFormatParam->addItem( prop->name,qVariantFromValue( (void *) prop ) ); // store directly pointer
+    //}
 
 }
 
@@ -386,6 +384,7 @@ void AboutDialog::on_comboBoxOutputParam_currentIndexChanged(int index)
 }
 void AboutDialog::setupFormatParam(int index, QComboBox *combo, QLineEdit *lineEdit,QComboBox *comboEdit, QPushButton * )
 {
+#if 0
     if (index < 0)
         return;
 
@@ -410,6 +409,7 @@ void AboutDialog::setupFormatParam(int index, QComboBox *combo, QLineEdit *lineE
 
         comboEdit->setCurrentIndex(comboEdit->findText( prop->value.toString()));
     }
+#endif
 }
 
 void AboutDialog::setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, QPushButton *button )
@@ -472,6 +472,7 @@ void AboutDialog::applyFormatProperty(QComboBox *combo, QLineEdit *lineEdit, QCo
     //changePalette(true,lineEdit,button);
 
     // apply the modification
+#if 0
     FormatProperty *prop = static_cast<FormatProperty *>( combo->itemData(combo->currentIndex(),Qt::UserRole).value<void *>() );
 
     if (!prop)
@@ -481,6 +482,7 @@ void AboutDialog::applyFormatProperty(QComboBox *combo, QLineEdit *lineEdit, QCo
         prop->value = lineEdit->text().toLower();
     else
         prop->value = comboValue->currentText();
+#endif
 }
 
 void AboutDialog::on_pushButtonApplyImageParam_pressed()

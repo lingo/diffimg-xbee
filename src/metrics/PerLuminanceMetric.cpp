@@ -20,9 +20,6 @@
 
 #include <QtCore/QDebug>
 
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/imgproc/types_c.h>
-
 #include "PerLuminanceMetric.h"
 
 #include "MiscFunctions.h"
@@ -104,5 +101,5 @@ void PerLuminanceMetric::performDifference()
         }
     }
 
-    m_imageDiff = output; // TODO opencv is crap
+    m_imageDiff = output;
 }

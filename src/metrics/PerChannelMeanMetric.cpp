@@ -111,5 +111,5 @@ void PerChannelMeanMetric::performDifference()
         }
     }
 
-    m_imageDiff = output; // TODO opencv is crap
+    m_imageDiff = output;
 }

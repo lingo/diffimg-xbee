@@ -31,14 +31,9 @@
 #include <QImageReader>
 #include <QImage>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/imgproc/types_c.h>
-
 #include "MiscFunctions.h"
 #include "LogHandler.h"
 #include "AppSettings.h"
-#include "FormatsManager.h"
 
 #include <math.h>
 #include <vector>
@@ -69,11 +64,6 @@ QStringList MiscFunctions::getAvailablesImageFormatsList()
         if ( !result.contains(format) )
             result << format;
     }
-
-    // add formats not support by Qt but by opencv
-    result << "exr"; // OpenEXR
-    result << "jp2"; // jpeg2000
-    result << "yuv"; // yuv
 
     return result;
 }
@@ -329,165 +319,6 @@ QString MiscFunctions::fileToString(const QString &filename)
     return res;
 }
 
-QString MiscFunctions::matTypeToText(int type)
-{
-    switch(  type )
-    {
-        case CV_8UC1:
-            return "CV_8UC1";
-
-            break;
-        case CV_8UC2:
-            return "CV_8UC2";
-
-            break;
-        case CV_8UC3:
-            return "CV_8UC3";
-
-            break;
-        case CV_8UC4:
-            return "CV_8UC4";
-
-            break;
-        case CV_8SC1:
-            return "CV_8SC1";
-
-            break;
-        case CV_8SC2:
-            return "CV_8SC2";
-
-            break;
-        case CV_8SC3:
-            return "CV_8SC3";
-
-            break;
-        case CV_8SC4:
-            return "CV_8SC4";
-
-            break;
-        case CV_16UC1:
-            return "CV_16UC1";
-
-            break;
-        case CV_16UC2:
-            return "CV_16UC2";
-
-            break;
-        case CV_16UC3:
-            return "CV_16UC3";
-
-            break;
-        case CV_16UC4:
-            return "CV_16UC4";
-
-            break;
-        case CV_16SC1:
-            return "CV_16SC1";
-
-            break;
-        case CV_16SC2:
-            return "CV_16SC2";
-
-            break;
-        case CV_16SC3:
-            return "CV_16SC3";
-
-            break;
-        case CV_16SC4:
-            return "CV_16SC4";
-
-            break;
-        case CV_32SC1:
-            return "CV_32SC1";
-
-            break;
-        case CV_32SC2:
-            return "CV_32SC2";
-
-            break;
-        case CV_32SC3:
-            return "CV_32SC3";
-
-            break;
-        case CV_32SC4:
-            return "CV_32SC4";
-
-            break;
-        case CV_32FC1:
-            return "CV_32FC1";
-
-            break;
-        case CV_32FC2:
-            return "CV_32FC2";
-
-            break;
-        case CV_32FC3:
-            return "CV_32FC3";
-
-            break;
-        case CV_32FC4:
-            return "CV_32FC4";
-
-            break;
-        case CV_64FC1:
-            return "CV_64FC1";
-
-            break;
-        case CV_64FC2:
-            return "CV_64FC2";
-
-            break;
-        case CV_64FC3:
-            return "CV_64FC3";
-
-            break;
-        case CV_64FC4:
-            return "CV_64FC4";
-
-            break;
-        default:
-            break;
-    }
-    return "";
-}
-
-QString MiscFunctions::matDepthToText(int depth)
-{
-    switch(  depth )
-    {
-        case CV_8U:
-            return "8U";
-
-            break;
-        case CV_8S:
-            return "8S";
-
-            break;
-        case CV_16U:
-            return "16U";
-
-            break;
-        case CV_16S:
-            return "16S";
-
-            break;
-        case CV_32S:
-            return "32S";
-
-            break;
-        case CV_32F:
-            return "32F";
-
-            break;
-        case CV_64F:
-            return "64F";
-
-            break;
-        default:
-            break;
-    }
-    return "";
-}
 
 quint64 MiscFunctions::getFileSize(const QString &file)
 {

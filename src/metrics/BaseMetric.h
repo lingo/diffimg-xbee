@@ -25,11 +25,6 @@
 #include <QtCore/QVariant>
 #include <QPixmap>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgcodecs/legacy/constants_c.h>
-#include <opencv2/imgproc/types_c.h>
-
 struct ImageProperty
 {
     ImageProperty(const QString & n, const QString &d, const QString &v) :

@@ -20,8 +20,6 @@
 
 #include <QtCore/QDebug>
 
-#include <opencv2/imgproc/imgproc.hpp>
-
 #include "PerChannelMetric.h"
 
 #include "MiscFunctions.h"
