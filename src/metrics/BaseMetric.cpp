@@ -79,27 +79,30 @@ static bool equalize(QImage &img)
                                   QImage::Format_RGB32);
     }
 
-    const int pixelCount = img.width()*img.height();
-
     // form histogram
     IntegerPixel histogram [256];
-    QRgb *dest = (QRgb *)img.bits();
 
     if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for(int i=0; i < pixelCount; ++i, ++dest){
-            const QRgb pixel = qUnpremultiply(*dest);
-            histogram[qRed(pixel)].red++;
-            histogram[qGreen(pixel)].green++;
-            histogram[qBlue(pixel)].blue++;
-            histogram[qAlpha(pixel)].alpha++;
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = qUnpremultiply(*pixels);
+                histogram[qRed(pixel)].red++;
+                histogram[qGreen(pixel)].green++;
+                histogram[qBlue(pixel)].blue++;
+                histogram[qAlpha(pixel)].alpha++;
+            }
         }
     } else {
-        for(int i=0; i < pixelCount; ++i){
-            const QRgb pixel = *dest++;
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = *pixels;
             histogram[qRed(pixel)].red++;
             histogram[qGreen(pixel)].green++;
             histogram[qBlue(pixel)].blue++;
             histogram[qAlpha(pixel)].alpha++;
+            }
         }
     }
 
@@ -142,23 +145,28 @@ static bool equalize(QImage &img)
     }
 
     // stretch the histogram and write
-    dest = (QRgb *)img.bits();
     uint8_t r, g, b;
     if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for(int i=0; i < pixelCount; ++i, ++dest) {
-            const QRgb pixel = qUnpremultiply(*dest);
-            r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
-            g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
-            b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
-            *dest = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = qUnpremultiply(*pixels);
+                r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
+                g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
+                b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
+                *pixels = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
+            }
         }
     } else {
-        for(int i=0; i < pixelCount; ++i){
-            const QRgb pixel = *dest;
-            r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
-            g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
-            b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
-            *dest++ = qRgba(r, g, b, qAlpha(pixel));
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = *pixels;
+                r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
+                g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
+                b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
+                *pixels = qRgba(r, g, b, qAlpha(pixel));
+            }
         }
     }
 
@@ -207,24 +215,27 @@ static void applyGainOffset(QImage &img, double gain, double offset)
                                   QImage::Format_RGB32);
     }
 
-    QRgb *dest = (QRgb *)img.bits();
-    const int pixelCount = img.width()*img.height();
-
     if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for(int i=0; i < pixelCount; ++i, ++dest) {
-            const QRgb pixel = qUnpremultiply(*dest);
+    for (int line=0; line<img.height(); line++) {
+        QRgb *pixels = (QRgb *)img.scanLine(line);
+        for(int i=0; i < img.width(); ++i, ++pixels) {
+            const QRgb pixel = qUnpremultiply(*pixels);
             const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
             const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
             const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
-            *dest = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
+            *pixels = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
         }
+    }
     } else {
-        for(int i=0; i < pixelCount; ++i){
-            const QRgb pixel = *dest;
-            const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
-            const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
-            const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
-            *dest++ = qRgba(r, g, b, qAlpha(pixel));
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = *pixels;
+                const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
+                const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
+                const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
+                *pixels = qRgba(r, g, b, qAlpha(pixel));
+            }
         }
     }
 }
@@ -238,32 +249,33 @@ static void findMinMax(const QImage &inp, double *min, double *max)
                                   QImage::Format_RGB32);
     }
 
-    *min = 255;
-    *max = 0;
-
-    QRgb *dest = (QRgb *)img.bits();
-    const int pixelCount = img.width()*img.height();
     if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for(int i=0; i < pixelCount; ++i, ++dest) {
-            const QRgb pixel = qUnpremultiply(*dest);
-            *min = std::min(double(qRed(pixel)), *min);
-            *min = std::min(double(qGreen(pixel)), *min);
-            *min = std::min(double(qBlue(pixel)), *min);
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = qUnpremultiply(*pixels);
+                *min = std::min(double(qRed(pixel)), *min);
+                *min = std::min(double(qGreen(pixel)), *min);
+                *min = std::min(double(qBlue(pixel)), *min);
 
-            *max = std::max(double(qRed(pixel)), *max);
-            *max = std::max(double(qGreen(pixel)), *max);
-            *max = std::max(double(qBlue(pixel)), *max);
+                *max = std::max(double(qRed(pixel)), *max);
+                *max = std::max(double(qGreen(pixel)), *max);
+                *max = std::max(double(qBlue(pixel)), *max);
+            }
         }
     } else {
-        for(int i=0; i < pixelCount; ++i){
-            const QRgb pixel = *dest;
-            *min = std::min(int(qRed(pixel)),   int(*min));
-            *min = std::min(int(qGreen(pixel)), int(*min));
-            *min = std::min(int(qBlue(pixel)),  int(*min));
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = *pixels;
+                *min = std::min(double(qRed(pixel)),   double(*min));
+                *min = std::min(double(qGreen(pixel)), double(*min));
+                *min = std::min(double(qBlue(pixel)),  double(*min));
 
-            *max = std::max(int(qRed(pixel)),   int(*max));
-            *max = std::max(int(qGreen(pixel)), int(*max));
-            *max = std::max(int(qBlue(pixel)),  int(*max));
+                *max = std::max(double(qRed(pixel)),   double(*max));
+                *max = std::max(double(qGreen(pixel)), double(*max));
+                *max = std::max(double(qBlue(pixel)),  double(*max));
+            }
         }
     }
 }
@@ -451,12 +463,13 @@ void BaseMetric::computeStandardProperties()
     // depth
     m_properties << ImageProperty( tr("Band depth"), tr("Number of bits per band (U:unsigned, S:signed, F:float)"),MiscFunctions::matDepthToText( m_opencvInput1.depth() ) );
 
+    m_minImage1 = 255.;
+    m_minImage2 = 255.;
+    m_maxImage1 = 0.;
+    m_maxImage2 = 0.;
+
     findMinMax(m_image1, &m_minImage1, &m_maxImage1);
-    qDebug() << m_minImage1 << m_maxImage1;
     findMinMax(m_image2, &m_minImage2, &m_maxImage2);
-    cv::minMaxLoc(m_opencvInput1, &m_minImage1, &m_maxImage1); //Locate max and min values
-    qDebug() << m_minImage1 << m_maxImage1;
-    cv::minMaxLoc(m_opencvInput2, &m_minImage2, &m_maxImage2); //Locate max and min values
 }
 
 void BaseMetric::loadSettings()
@@ -780,27 +793,26 @@ void BaseMetric::computeHisto(const QImage &input,QList<QPolygonF> &polys, bool 
 
     // form histogram
     IntegerPixel histogram [256];
-    QRgb *dest = (QRgb *)img.constBits();
+    int max = 0, min = 255;
+    for (int line=0; line<img.height(); line++) {
+        QRgb *pixels = (QRgb *)img.scanLine(line);
+        for(int i=0; i < img.width(); ++i, ++pixels) {
+            const QRgb pixel = *pixels;
+            histogram[qRed(pixel)].red++;
+            histogram[qGreen(pixel)].green++;
+            histogram[qBlue(pixel)].blue++;
+            histogram[qAlpha(pixel)].alpha++;
 
-    const int pixelCount = img.width()*img.height();
+            //max = std::max(qRed(pixel), max);
+            //max = std::max(qGreen(pixel), max);
+            //max = std::max(qBlue(pixel), max);
+            //max = std::max(qAlpha(pixel), max);
 
-    int max = 0, min = 0;;
-    for(int i=0; i < pixelCount; ++i){
-        const QRgb pixel = *dest++;
-        histogram[qRed(pixel)].red++;
-        histogram[qGreen(pixel)].green++;
-        histogram[qBlue(pixel)].blue++;
-        histogram[qAlpha(pixel)].alpha++;
-
-        //max = std::max(qRed(pixel), max);.
-        //max = std::max(qGreen(pixel), max);
-        //max = std::max(qBlue(pixel), max);
-        //max = std::max(qAlpha(pixel), max);
-
-        //min = std::min(qRed(pixel), min);.
-        //min = std::min(qGreen(pixel), min);
-        //min = std::min(qBlue(pixel), min);
-        //min = std::min(qAlpha(pixel), min);
+            //min = std::min(qRed(pixel), min);
+            //min = std::min(qGreen(pixel), min);
+            //min = std::min(qBlue(pixel), min);
+            //min = std::min(qAlpha(pixel), min);
+        }
     }
 
     QPolygonF points[3];
@@ -924,7 +936,7 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     m_image1 = MiscFunctions::opencvMatToQImage(m_opencvInput1,false);
     m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
     m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    equalize(m_imageDiff);
+    //equalize(m_imageDiff);
 
     computeDifferenceMask();
 
