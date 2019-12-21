@@ -918,7 +918,6 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
 
     m_opencvInput2.release();
 
-    m_opencvDiff.release();
     m_opencvMaskDiff.release();
 
     m_properties.clear();
@@ -975,7 +974,6 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
 
     // perform the difference algorithm
     performDifference();
-    m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     // compute some statistics on difference image
     computeStatistics();

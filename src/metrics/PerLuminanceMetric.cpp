@@ -104,5 +104,5 @@ void PerLuminanceMetric::performDifference()
         }
     }
 
-    m_opencvDiff = MiscFunctions::qImageToOpencvMat(output.convertToFormat(QImage::Format_RGB32)); // TODO opencv is crap
+    m_imageDiff = output; // TODO opencv is crap
 }

@@ -87,7 +87,6 @@ void PerChannelMeanMetric::performDifference()
         // TODO blah
         Q_ASSERT(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied);
     } else {
-        qDebug() << "not pre";
         for (int y=0; y<output.height(); y++) {
             uchar *dst = output.scanLine(y);
             const QRgb *src1 = (QRgb *)img1.constScanLine(y);
@@ -112,5 +111,5 @@ void PerChannelMeanMetric::performDifference()
         }
     }
 
-    m_opencvDiff = MiscFunctions::qImageToOpencvMat(output.convertToFormat(QImage::Format_RGB32)); // TODO opencv is crap
+    m_imageDiff = output; // TODO opencv is crap
 }

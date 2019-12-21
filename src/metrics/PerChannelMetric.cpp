@@ -104,7 +104,7 @@ void PerChannelMetric::performDifference()
         }
     }
 
-    m_opencvDiff = MiscFunctions::qImageToOpencvMat(output);
+    m_imageDiff = output;
 }
 
 void PerChannelMetric::updateParameters()

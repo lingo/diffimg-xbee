@@ -171,10 +171,8 @@ void PerceptualMetric::performDifference()
 
     // save diff image
     //std::vector<cv::Mat> channels;
-    //cv::Mat rgbDiff = m_opencvDiff = OpenCVImageLoader::RGBAImageToMat(args.ImgDiff);
     //cv::split(rgbDiff,channels);
-    //m_opencvDiff = channels[0];
 
-    m_opencvDiff = MiscFunctions::qImageToOpencvMat(RGBAImageToQImage(args.ImgDiff).convertToFormat(QImage::Format_Grayscale8).convertToFormat(QImage::Format_RGB32)); // TODO opencv is crap
+    m_imageDiff = RGBAImageToQImage(args.ImgDiff).convertToFormat(QImage::Format_Grayscale8).convertToFormat(QImage::Format_RGB32); // TODO opencv is crap
     //OpenCVImageLoader::WriteToFile(args.ImgDiff ,"d:/tmp.png");
 }

@@ -191,7 +191,6 @@ protected:
     cv::Mat m_opencvInput2;
 
     //cv::Mat m_opencvTransf2;
-    cv::Mat m_opencvDiff;
     cv::Mat m_opencvMaskDiff;
     QImage m_image1;
     QImage m_image2;
