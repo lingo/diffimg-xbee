@@ -96,10 +96,10 @@ static bool equalize(QImage &img)
             QRgb *pixels = (QRgb *)img.scanLine(line);
             for(int i=0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = *pixels;
-            histogram[qRed(pixel)].red++;
-            histogram[qGreen(pixel)].green++;
-            histogram[qBlue(pixel)].blue++;
-            histogram[qAlpha(pixel)].alpha++;
+                histogram[qRed(pixel)].red++;
+                histogram[qGreen(pixel)].green++;
+                histogram[qBlue(pixel)].blue++;
+                histogram[qAlpha(pixel)].alpha++;
             }
         }
     }
@@ -237,9 +237,10 @@ static void applyGainOffset(QImage &img, double gain, double offset)
         }
     }
 }
-static void findMinMax(const QImage &inp, double *min, double *max)
+static double findMinMax(const QImage &inp, double *min, double *max)
 {
     QImage img(inp);
+    double mean = 0.;
 
     if(img.depth() < 32){
         img = img.convertToFormat(img.hasAlphaChannel() ?
@@ -259,6 +260,8 @@ static void findMinMax(const QImage &inp, double *min, double *max)
                 *max = std::max(double(qRed(pixel)), *max);
                 *max = std::max(double(qGreen(pixel)), *max);
                 *max = std::max(double(qBlue(pixel)), *max);
+
+                mean += qRed(pixel) + qGreen(pixel) + qBlue(pixel);
             }
         }
     } else {
@@ -273,9 +276,12 @@ static void findMinMax(const QImage &inp, double *min, double *max)
                 *max = std::max(double(qRed(pixel)),   double(*max));
                 *max = std::max(double(qGreen(pixel)), double(*max));
                 *max = std::max(double(qBlue(pixel)),  double(*max));
+
+                mean += qRed(pixel) + qGreen(pixel) + qBlue(pixel);
             }
         }
     }
+    return mean / (img.width() * img.height() * 3);
 }
 
 
@@ -991,55 +997,50 @@ static size_t countNonBlack(const QImage &img)
     return ret;
 }
 
+static double findStdDev(const QImage &input, const double mean)
+{
+    QImage img;
+    if(input.depth() < 32){
+        img = input.convertToFormat(img.hasAlphaChannel() ?
+                                  QImage::Format_ARGB32 :
+                                  QImage::Format_RGB32);
+    } else {
+        img = input;
+    }
+
+    double stddev = 0;
+    if(img.format() == QImage::Format_ARGB32_Premultiplied){
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = qUnpremultiply(*pixels);
+                stddev += (qRed(pixel) - mean) * (qRed(pixel) - mean);
+                stddev += (qGreen(pixel) - mean) * (qGreen(pixel) - mean);
+                stddev += (qBlue(pixel) - mean) * (qBlue(pixel) - mean);
+            }
+        }
+    } else {
+        for (int line=0; line<img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+            for(int i=0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = *pixels;
+                stddev += (qRed(pixel) - mean) * (qRed(pixel) - mean);
+                stddev += (qGreen(pixel) - mean) * (qGreen(pixel) - mean);
+                stddev += (qBlue(pixel) - mean) * (qBlue(pixel) - mean);
+            }
+        }
+    }
+    return std::sqrt(stddev / (img.width() * img.height() * 3));
+}
+
 void BaseMetric::computeStatistics()
 {
     MetricParam *param;
-    m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     m_minError = 255., m_maxError = 0.;
-    findMinMax(m_imageDiff, &m_minError, &m_maxError);
+    m_meanError = findMinMax(m_imageDiff, &m_minError, &m_maxError);
 
-    cv::Scalar templMean, templSdv;
-
-    cv::Mat reshaped = m_opencvDiff.reshape(1);
-    meanStdDev( reshaped, templMean, templSdv );
-
-    //////////////////////////////////
-
-/*
-    unsigned char * pixelPtr = (unsigned char*)m_opencvDiff.data;
-    int cn = m_opencvDiff.channels();
-    float err = 0, err2 = 0;
-    int nb = 0;
-
-    for(int i=0;i<m_opencvDiff.rows;i++)
-    {
-        for(int j=0;j<m_opencvDiff.cols;j++)
-        {
-            for(int k=0;k<cn;k++)
-            {
-                err += pixelPtr[i*(m_opencvDiff.step)+j*cn+k];
-                err2 += (pixelPtr[i*(m_opencvDiff.step)+j*cn+k]*pixelPtr[i*(m_opencvDiff.step)+j*cn+k]);
-            }
-            nb++;
-        }
-    }
-    float errm = err/(3*nb);
-    err2 /=(3*nb);
-    err2 = err2 - (errm*errm);
-    err2 =  std::sqrt(err2);
- */
-
-    //////////////////////////////////
-
-    double stdDev = 0;
-    for (int i = 0; i<reshaped.channels(); i++)
-    {
-        m_meanError += templMean[i];
-        stdDev += templSdv[i];
-    }
-    m_meanError *= m_opencvDiff.channels(); // mean of 3 components if rgb
-    stdDev /= reshaped.channels();
+    const double stdDev = findStdDev(m_imageDiff, m_meanError);
 
     // mean error
     param = getOutputParam("MeanError");
