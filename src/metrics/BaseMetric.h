@@ -167,7 +167,7 @@ protected:
     virtual void performDifference() = 0;
 
     void computeHisto(const QImage &input,QList<QPolygonF> &polys, bool skipZeroLevel = false);
-    void computeDifferenceMask();
+    QImage createDiffMask(const QImage &img);
 
     QString m_type;
     QString m_name;

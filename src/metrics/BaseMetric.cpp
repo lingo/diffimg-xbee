@@ -618,7 +618,21 @@ const QImage & BaseMetric::getImageMask() const
 
 int BaseMetric::getDifferenceChannels() const
 {
-    return m_opencvDiff.channels();
+    switch(m_imageDiff.format()) {
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+    case QImage::Format_Alpha8:
+    case QImage::Format_Grayscale8:
+    case QImage::Format_Grayscale16:
+        return 1;
+    default:
+        break;
+    }
+    if (m_imageDiff.hasAlphaChannel()) {
+        return 4;
+    } else {
+        return 3;
+    }
 }
 
 double BaseMetric::getMaxImage1() const
@@ -836,6 +850,28 @@ void BaseMetric::computeHisto(const QImage &input,QList<QPolygonF> &polys, bool 
         }
     }
 }
+QImage BaseMetric::createDiffMask(const QImage &img)
+{
+    QImage ret(img.width(), img.height(), QImage::Format_ARGB32_Premultiplied);
+    ret.fill(Qt::transparent);
+    for (int line=0; line<img.height(); line++) {
+        const QRgb *pixels = (const QRgb *)img.scanLine(line);
+        QRgb *dest = (QRgb *)ret.scanLine(line);
+        for(int i=0; i < img.width(); ++i, ++pixels, ++dest) {
+            const int val = qGray(*pixels);
+            if (val == 0) {
+                continue;
+            }
+            if (val > m_meanError) {
+                *dest = qRgba(0, 255, 255, 255);
+            } else {
+                *dest = qRgba(0, 0, 255, 255);
+            }
+        }
+    }
+
+    return ret;
+}
 
 void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
 {
@@ -936,9 +972,7 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     //equalize(m_imageDiff);
 
-    computeDifferenceMask();
-
-    m_imageMask = MiscFunctions::opencvMatToQImage(m_opencvMaskDiff,false);
+    m_imageMask = createDiffMask(m_imageDiff);
 }
 
 static size_t countNonBlack(const QImage &img)
@@ -1035,124 +1069,4 @@ void BaseMetric::computeStatistics()
     // % error
     param = getOutputParam("ErrorPercent");
     param->value = m_nbPixelError * 100.0 / (m_imageDiff.width() * m_imageDiff.height());
-}
-
-void BaseMetric::computeDifferenceMask()
-{
-// methode bestiale pour l'instant
-
-    m_opencvMaskDiff = cv::Mat(m_opencvDiff.size(), CV_8UC4);
-
-    // unsigned char * pixelPtr = (unsigned char*)m_opencvDiff.data;
-    int cn = m_opencvDiff.channels();
-
-//     qDebug() << "type = " << MiscFunctions::matTypeToText( m_opencvDiff.type() );
-//     qDebug() << "depth = " << MiscFunctions::matDepthToText( m_opencvDiff.depth() );
-
-    m_opencvMaskDiff.setTo( cv::Scalar(0,0,0,255) );
-
-    for(int i = 0; i<m_opencvDiff.rows; i++)
-        for(int j = 0; j<m_opencvDiff.cols; j++)
-        {
-            //for(int k=0;k<cn;k++)
-            {
-                float val = 0;
-                if (cn == 1)
-                {
-                    if (m_opencvDiff.depth() == CV_8U)
-                        val = m_opencvDiff.at<uchar>(i,j);
-                    else if (m_opencvDiff.depth() == CV_16S)
-                        val = m_opencvDiff.at<short>(i,j);
-                    else if (m_opencvDiff.depth() == CV_16U)
-                        val = m_opencvDiff.at<ushort>(i,j);
-                    else if (m_opencvDiff.depth() == CV_32F)
-                        val = m_opencvDiff.at<float>(i,j);
-                }
-                else if (cn == 3)
-                {
-//                     for(int k = 0; k<cn; k++)
-//                         val += m_opencvDiff.at<cv::Vec3b>(i,j)[k];
-                    for(int k = 0; k<cn; k++)
-                    {
-                        if (m_opencvDiff.depth() == CV_8U)
-                            val += m_opencvDiff.at<cv::Vec3b>(i,j)[k];
-                        else if (m_opencvDiff.depth() == CV_16S)
-                            val += m_opencvDiff.at<cv::Vec3s>(i,j)[k];
-                        else if (m_opencvDiff.depth() == CV_16U)
-                            val += m_opencvDiff.at<cv::Vec3w>(i,j)[k];
-                        else if (m_opencvDiff.depth() == CV_32F)
-                            val += m_opencvDiff.at<cv::Vec3f>(i,j)[k];
-                    }
-
-                    val /= cn;
-                }
-                else // RGBA => not taking account of Alpha channel !!
-                {
-//                     for(int k = 0; k<cn - 1; k++)
-//                         val += m_opencvDiff.at<cv::Vec4b>(i,j)[k];
-                    for(int k = 0; k<cn; k++)
-                    {
-                        if (m_opencvDiff.depth() == CV_8U)
-                            val += m_opencvDiff.at<cv::Vec4b>(i,j)[k];
-                        else if (m_opencvDiff.depth() == CV_16U)
-                            val += m_opencvDiff.at<cv::Vec4w>(i,j)[k];
-                        else if (m_opencvDiff.depth() == CV_16S)
-                            val += m_opencvDiff.at<cv::Vec4s>(i,j)[k];
-                        else if (m_opencvDiff.depth() == CV_32F)
-                            val += m_opencvDiff.at<cv::Vec4f>(i,j)[k];
-                    }
-
-                    val /= cn - 1;
-                }
-
-                if (val > 0.0)
-                {
-                    if (val > m_meanError)
-                    {
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[0] = 255;   // first channel  (B)
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[1] = 255; // second channel (G)
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[2] = 0;  // 3 channel (R)
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[3] = 255;  // 4 channel (A)
-                    }
-                    else
-                    {
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[0] = 255;   // first channel  (B)
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[1] = 0; // second channel (G)
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[2] = 0;  // 3 channel (R)
-                        m_opencvMaskDiff.at<cv::Vec4b>(i,j)[3] = 255;  // 4 channel (A)
-                    }
-                }
-                else
-                {
-                    m_opencvMaskDiff.at<cv::Vec4b>(i,j)[0] = 0;   // first channel  (B)
-                    m_opencvMaskDiff.at<cv::Vec4b>(i,j)[1] = 0; // second channel (G)
-                    m_opencvMaskDiff.at<cv::Vec4b>(i,j)[2] = 0;  // second channel (R)
-                    m_opencvMaskDiff.at<cv::Vec4b>(i,j)[3] = 0;  // second channel (A)
-                }
-            }
-        }
-
-/*
-    return;
-    cv::Mat upperMean,lowerMean;
-
-    cv::Scalar mins,maxs;
-
-    for (int i = 0; i < m_opencvDiff.channels(); i++)
-    {
-        mins[i] = m_meanError+1;
-        maxs[i] = m_maxError;
-    }
-    inRange(m_opencvDiff, mins,maxs, upperMean);
-    //threshold(upperMean,upperMean,0,255,cv::THRESH_BINARY);
-    cv::imwrite("d:/mask.png",upperMean);
-
-    for (int i = 0; i < m_opencvDiff.channels(); i++)
-    {
-        mins[i] = 1;
-        maxs[i] = m_meanError+1;
-    }
-    inRange(m_opencvDiff, mins,maxs, lowerMean);
-    cv::imwrite("d:/mask2.png",lowerMean);
- */
 }
