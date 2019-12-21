@@ -148,9 +148,7 @@ unix:!macx {
     lrelease.commands      = $$[QT_INSTALL_BINS]/lrelease ${QMAKE_FILE_IN} -qm $$PWD/lang/${QMAKE_FILE_BASE}.qm
     lrelease.CONFIG       += no_link target_predeps
 
-    # to copy executable to /usr/local/bin directory
-    starter.files = ./release/$${TARGET}
-    starter.path = $$MYAPP_INSTALL_BINDIR
+    target.path = $$MYAPP_INSTALL_BINDIR
 
     transl.files = $$PWD/lang/*.qm
     transl.path = $$MYAPP_INSTALL_TRANS
