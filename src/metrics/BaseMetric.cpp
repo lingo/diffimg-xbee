@@ -23,8 +23,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 
-#include <opencv2/imgproc/imgproc.hpp>
-
 #include "BaseMetric.h"
 #include "LogHandler.h"
 #include "AppSettings.h"
@@ -943,12 +941,29 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     m_imageMask = MiscFunctions::opencvMatToQImage(m_opencvMaskDiff,false);
 }
 
+static size_t countNonBlack(const QImage &img)
+{
+    size_t ret = 0;
+    for (int line=0; line<img.height(); line++) {
+        QRgb *pixels = (QRgb *)img.scanLine(line);
+        for(int i=0; i < img.width(); ++i, ++pixels) {
+            // I think it should use qGray(), but to preserve compatibility with opencv we do it the bad way
+            //if (qGray(*pixels)) {
+            if (qRed(*pixels) || qGreen(*pixels) || qBlue(*pixels)) {
+                ret++;
+            }
+        }
+    }
+    return ret;
+}
+
 void BaseMetric::computeStatistics()
 {
     MetricParam *param;
+    m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
-    //double maxval, minval;
-    minMaxLoc(m_opencvDiff, &m_minError, &m_maxError);
+    m_minError = 255., m_maxError = 0.;
+    findMinMax(m_imageDiff, &m_minError, &m_maxError);
 
     cv::Scalar templMean, templSdv;
 
@@ -1013,32 +1028,13 @@ void BaseMetric::computeStatistics()
     param->value = rms;
 
     // nb error
-    m_nbPixelError = computeNbErrors(m_opencvDiff);
+    m_nbPixelError = countNonBlack(m_imageDiff);
     param = getOutputParam("ErrorNum");
     param->value = m_nbPixelError;
 
     // % error
     param = getOutputParam("ErrorPercent");
-    param->value = m_nbPixelError * 100.0 / (m_opencvDiff.cols * m_opencvDiff.rows);
-}
-
-int BaseMetric::computeNbErrors(const cv::Mat &mat)
-{
-    cv::Mat thresh;
-    if ( mat.empty() )
-        return 0;
-
-    // caution must do threshold before rgbtogray !!
-    if (mat.channels()>1)
-        threshold(mat,thresh,0,255,cv::THRESH_BINARY);
-    else
-        thresh = mat;
-
-    // convert multichannel to a single plane
-    // CAUTION !! 2 channels isn't take into account (waiting some data to test this case !!)
-    if (thresh.channels()>=3)
-        cvtColor(thresh,thresh,CV_RGB2GRAY);
-    return countNonZero(thresh);
+    param->value = m_nbPixelError * 100.0 / (m_imageDiff.width() * m_imageDiff.height());
 }
 
 void BaseMetric::computeDifferenceMask()
