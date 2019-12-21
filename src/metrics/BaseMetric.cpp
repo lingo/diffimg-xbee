@@ -433,6 +433,26 @@ const QList<MetricParam *> & BaseMetric::getOutputParams()
     return m_outputParams;
 }
 
+static int qimageChannelCount(const QImage &img)
+{
+    switch(img.format()) {
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+    case QImage::Format_Alpha8:
+    case QImage::Format_Grayscale8:
+    case QImage::Format_Grayscale16:
+        return 1;
+    default:
+        break;
+    }
+    if (img.hasAlphaChannel()) {
+        return 4;
+    } else {
+        return 3;
+    }
+}
+
+
 void BaseMetric::computeStandardProperties()
 {
     // Dimension (pixels)
@@ -462,10 +482,10 @@ void BaseMetric::computeStandardProperties()
     m_properties << ImageProperty( tr("Format file2"), tr("Format of the image"),QString("%1").arg(fm2) );
 
     // bands
-    m_properties << ImageProperty( tr("Band"), tr("Number of band in the image (3 for RGB image)"),QString::number( m_opencvInput1.channels() ) );
+    m_properties << ImageProperty( tr("Band"), tr("Number of band in the image (3 for RGB image)"),QString::number( qimageChannelCount(m_image1) ) );
 
     // depth
-    m_properties << ImageProperty( tr("Band depth"), tr("Number of bits per band (U:unsigned, S:signed, F:float)"),MiscFunctions::matDepthToText( m_opencvInput1.depth() ) );
+    m_properties << ImageProperty( tr("Band depth"), tr("Bits per pixel"), QString::number(m_image1.depth()));
 
     m_minImage1 = 255.;
     m_minImage2 = 255.;
@@ -624,21 +644,7 @@ const QImage & BaseMetric::getImageMask() const
 
 int BaseMetric::getDifferenceChannels() const
 {
-    switch(m_imageDiff.format()) {
-    case QImage::Format_Mono:
-    case QImage::Format_MonoLSB:
-    case QImage::Format_Alpha8:
-    case QImage::Format_Grayscale8:
-    case QImage::Format_Grayscale16:
-        return 1;
-    default:
-        break;
-    }
-    if (m_imageDiff.hasAlphaChannel()) {
-        return 4;
-    } else {
-        return 3;
-    }
+    return qimageChannelCount(m_imageDiff);
 }
 
 double BaseMetric::getMaxImage1() const
@@ -663,12 +669,12 @@ double BaseMetric::getMinImage2() const
 
 int BaseMetric::getImage1Channels() const
 {
-    return m_opencvInput1.channels();
+    return qimageChannelCount(m_image1);
 }
 
 int BaseMetric::getImage2Channels() const
 {
-    return m_opencvInput2.channels();
+    return qimageChannelCount(m_image2);
 }
 
 void BaseMetric::setDiscriminatingParam(MetricParam *p)
@@ -726,30 +732,31 @@ bool BaseMetric::checkImages()
     m_valid = false;
 
     // check loading of files
-    if ( m_opencvInput1.empty() )
+    if ( m_image1.isNull() )
     {
+        qWarning() << "can't read 1";
         LogHandler::getInstance()->reportError( QString("Can't read %1").arg( m_file1 ) );
         return m_valid;
     }
-    if ( m_opencvInput2.empty() )
+    if ( m_image2.isNull() )
     {
+        qWarning() << "can't read 2";
         LogHandler::getInstance()->reportError( QString("Can't read %1").arg( m_file2 ) );
         return false;
     }
 
     // check size
-    if (m_opencvInput1.rows != m_opencvInput2.rows || m_opencvInput1.cols != m_opencvInput2.cols)
-    {
-        LogHandler::getInstance()->reportError( QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_opencvInput1.rows ).arg(m_opencvInput1.cols).arg(m_opencvInput2.rows).arg(m_opencvInput2.cols) );
+    if (m_image1.size() != m_image2.size()) {
+        qWarning() << QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_image1.width()).arg(m_image1.height()).arg(m_image2.width()).arg(m_image2.height());
+        LogHandler::getInstance()->reportError( QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_image1.width()).arg(m_image1.height()).arg(m_image2.width()).arg(m_image2.height()) );
         return false;
     }
 
     // check type
-    if ( m_opencvInput1.type() != m_opencvInput2.type() )
-    {
-        LogHandler::getInstance()->reportError( QString("Type mismatch (%1)/(%2)").arg( MiscFunctions::matTypeToText( m_opencvInput1.type() ) ).arg( MiscFunctions::matTypeToText( m_opencvInput2.type() ) ) );
-        return m_valid;
-    }
+    //if (m_opencvInput1.type() != m_opencvInput2.type()) {
+    //    LogHandler::getInstance()->reportError( QString("Type mismatch (%1)/(%2)").arg( MiscFunctions::matTypeToText( m_opencvInput1.type() ) ).arg( MiscFunctions::matTypeToText( m_opencvInput2.type() ) ) );
+    //    return m_valid;
+    //}
 
     m_valid = true;
     return m_valid;
@@ -898,10 +905,8 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
 
     m_opencvInput1.release();
 
-    //m_opencvTransf1.release();
     m_opencvInput2.release();
 
-    //m_opencvTransf2.release();
     m_opencvDiff.release();
     m_opencvMaskDiff.release();
 
@@ -909,41 +914,40 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     init();
     resetOutputParams();
 
-    QImage image1(m_file1);
-    if (image1.size().isEmpty()) {
+    m_image1 = QImage(m_file1);
+    if (m_image1.size().isEmpty()) {
         LogHandler::getInstance()->reportDebug( QString("Can't load %1").arg( m_file1 ) );
         return;
     }
 
-    QImage image2(m_file2);
-    if (image2.size().isEmpty()) {
+    m_image2 = QImage(m_file2);
+    if (m_image2.size().isEmpty()) {
         LogHandler::getInstance()->reportDebug( QString("Can't load %1").arg( m_file2 ) );
         return;
     }
 
-    if (image1.size() != image2.size()) {
-        int maxWidth = qMax(image1.width(), image2.width());
-        int maxHeight = qMax(image1.height(), image2.height());
-        if (image1.width() < image2.width() && image1.height() < image2.height()) {
-            image1 = image1.scaled(maxWidth, maxHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        } else if (image2.width() < image1.width() && image2.height() < image1.height()) {
-            image2 = image2.scaled(maxWidth, maxHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    if (m_image1.size() != m_image2.size()) {
+        int maxWidth = qMax(m_image1.width(), m_image2.width());
+        int maxHeight = qMax(m_image1.height(), m_image2.height());
+        if (m_image1.width() < m_image2.width() && m_image1.height() < m_image2.height()) {
+            m_image1 = m_image1.scaled(maxWidth, maxHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        } else if (m_image2.width() < m_image1.width() && m_image2.height() < m_image1.height()) {
+            m_image2 = m_image2.scaled(maxWidth, maxHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         } else {
-            image1 = image1.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
-            image2 = image2.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
+            m_image1 = m_image1.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
+            m_image2 = m_image2.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
         }
     }
 
-    m_opencvInput1 = MiscFunctions::qImageToOpencvMat(image1);
+    m_opencvInput1 = MiscFunctions::qImageToOpencvMat(m_image1);
     if ( m_opencvInput1.empty() )
     {
         LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file (%1)").arg( m_file1 ) );
         return;
     }
 
-    m_opencvInput2 = MiscFunctions::qImageToOpencvMat(image2);
-    // load file2
-    //m_opencvInput2 = cv::imread(m_file2.toStdString(),CV_LOAD_IMAGE_UNCHANGED );
+    m_opencvInput2 = MiscFunctions::qImageToOpencvMat(m_image2);
+
     if ( m_opencvInput2.empty() )
     {
         LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file (%1)").arg( m_file2 ) );
@@ -954,28 +958,17 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     if( !checkImages() ) {
         return;
     }
-    m_image1 = MiscFunctions::opencvMatToQImage(m_opencvInput1,false);
-    m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
 
     // compute "standard" properties
     computeStandardProperties();
 
     // perform the difference algorithm
     performDifference();
+    m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     // compute some statistics on difference image
     computeStatistics();
 
-    /*
-       cvtColor(m_opencvInput1, m_opencvTransf1,CV_BGR2RGB);
-       m_image1 = QImage((uchar*)m_opencvTransf1.data, m_opencvTransf1.cols, m_opencvTransf1.rows,m_opencvTransf1.step,QImage::Format_RGB888);
-       cvtColor(m_opencvInput2, m_opencvTransf2,CV_BGR2RGB);
-       m_image2 = QImage((uchar*)m_opencvTransf2.data, m_opencvTransf2.cols, m_opencvTransf2.rows,m_opencvTransf2.step,QImage::Format_RGB888);
-     */
-
-    m_image1 = MiscFunctions::opencvMatToQImage(m_opencvInput1,false);
-    m_image2 = MiscFunctions::opencvMatToQImage(m_opencvInput2,false);
-    m_imageDiff = MiscFunctions::opencvMatToQImage(m_opencvDiff,false).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     //equalize(m_imageDiff);
 
     m_imageMask = createDiffMask(m_imageDiff);
