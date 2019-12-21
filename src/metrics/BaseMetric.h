@@ -185,13 +185,6 @@ protected:
     QString m_file1;
     QString m_file2;
 
-    cv::Mat m_opencvInput1;
-
-    //cv::Mat m_opencvTransf1;
-    cv::Mat m_opencvInput2;
-
-    //cv::Mat m_opencvTransf2;
-    cv::Mat m_opencvMaskDiff;
     QImage m_image1;
     QImage m_image2;
     QImage m_imageDiff;

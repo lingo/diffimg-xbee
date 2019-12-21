@@ -80,17 +80,6 @@ public:
     static quint64 getFileSize(const QString &file);
     static QString bytesToString(quint64 bytes);
     static QString pixelsToString(quint64 pixels);
-
-    // opencv tools
-    static QImage opencvMatToQImage(const cv::Mat& mat, bool deepCopy = false);
-    static cv::Mat qImageToOpencvMat(const QImage &);
-    static cv::Mat searchDecoder(const QString &file);
-    static void computeHistogramValue(const cv::Mat& Image, cv::Mat& Hist);
-    static void ComputeHistogramBGR(const cv::Mat& Image,cv::Mat& HistB, cv::Mat& HistG, cv::Mat& HistR);
-    static void computeHistogram1D(const cv::Mat& Image, cv::Mat& Hist);
-    static QString dataToText(const cv::Mat& img, int x, int y);
-
-
 };
 
 #endif // _MISCFUNCTIONS_H_

@@ -914,12 +914,6 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     m_histoImage2.clear();
     m_histoImageDiff.clear();
 
-    m_opencvInput1.release();
-
-    m_opencvInput2.release();
-
-    m_opencvMaskDiff.release();
-
     m_properties.clear();
     init();
     resetOutputParams();
@@ -947,21 +941,6 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
             m_image1 = m_image1.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
             m_image2 = m_image2.convertToFormat(QImage::Format_ARGB32).copy(0, 0, maxWidth, maxHeight);
         }
-    }
-
-    m_opencvInput1 = MiscFunctions::qImageToOpencvMat(m_image1);
-    if ( m_opencvInput1.empty() )
-    {
-        LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file (%1)").arg( m_file1 ) );
-        return;
-    }
-
-    m_opencvInput2 = MiscFunctions::qImageToOpencvMat(m_image2);
-
-    if ( m_opencvInput2.empty() )
-    {
-        LogHandler::getInstance()->reportDebug( QString("OpenCV can't read file (%1)").arg( m_file2 ) );
-        return;
     }
 
     // check compatibility
