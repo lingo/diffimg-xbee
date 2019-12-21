@@ -688,19 +688,36 @@ void BaseMetric::setDiscriminatingParam(MetricParam *p)
     }
 }
 
+static QString description(const QImage &img, const int x, const int y)
+{
+    if (x < 0 || y < 0 || x >= img.width() || y >= img.height()) {
+        return QString();
+    }
+
+    const QRgb pixel = img.pixel(x, y);
+    QString ret;
+    ret += QObject::tr("Red: %1,").arg(qRed(pixel));
+    ret += QObject::tr("Green: %1,").arg(qGreen(pixel));
+    ret += QObject::tr("Blue: %1,").arg(qBlue(pixel));
+    if (img.hasAlphaChannel()) {
+        ret += QObject::tr("Alpha: %1").arg(qAlpha(pixel));
+    }
+    return ret;
+}
+
 QString BaseMetric::getImage1Data(int x,int y) const
 {
-    return MiscFunctions::dataToText(m_opencvInput1,x,y);
+    return description(m_image1, x, y);
 }
 
 QString BaseMetric::getImage2Data(int x,int y) const
 {
-    return MiscFunctions::dataToText(m_opencvInput2,x,y);
+    return description(m_image2, x, y);
 }
 
 QString BaseMetric::getErrorData(int x,int y) const
 {
-    return MiscFunctions::dataToText(m_opencvDiff,x,y);
+    return description(m_imageDiff, x, y);
 }
 
 QString BaseMetric::getImage1Data(const QPoint &pt) const
@@ -751,12 +768,6 @@ bool BaseMetric::checkImages()
         LogHandler::getInstance()->reportError( QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_image1.width()).arg(m_image1.height()).arg(m_image2.width()).arg(m_image2.height()) );
         return false;
     }
-
-    // check type
-    //if (m_opencvInput1.type() != m_opencvInput2.type()) {
-    //    LogHandler::getInstance()->reportError( QString("Type mismatch (%1)/(%2)").arg( MiscFunctions::matTypeToText( m_opencvInput1.type() ) ).arg( MiscFunctions::matTypeToText( m_opencvInput2.type() ) ) );
-    //    return m_valid;
-    //}
 
     m_valid = true;
     return m_valid;
