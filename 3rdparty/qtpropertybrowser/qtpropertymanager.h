@@ -742,6 +742,16 @@ private:
     Q_DISABLE_COPY(QtCursorPropertyManager)
 };
 
+class QtMetaEnumWrapper : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QSizePolicy::Policy policy READ policy)
+public:
+    QSizePolicy::Policy policy() const { return QSizePolicy::Ignored; }
+private:
+    QtMetaEnumWrapper(QObject *parent) : QObject(parent) {}
+};
+
 #if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
 #endif

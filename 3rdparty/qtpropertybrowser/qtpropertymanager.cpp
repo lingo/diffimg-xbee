@@ -383,16 +383,6 @@ static void setMaximumValue(PropertyManager *manager, PropertyManagerPrivate *ma
             property, &PropertyManagerPrivate::Data::maximumValue, &PropertyManagerPrivate::Data::setMaximumValue, maxVal, setSubPropertyRange);
 }
 
-class QtMetaEnumWrapper : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QSizePolicy::Policy policy READ policy)
-public:
-    QSizePolicy::Policy policy() const { return QSizePolicy::Ignored; }
-private:
-    QtMetaEnumWrapper(QObject *parent) : QObject(parent) {}
-};
-
 class QtMetaEnumProvider
 {
 public:
@@ -6422,4 +6412,4 @@ QT_END_NAMESPACE
 #endif
 
 #include "moc_qtpropertymanager.cpp"
-#include "qtpropertymanager.moc"
+//#include "qtpropertymanager.moc"
