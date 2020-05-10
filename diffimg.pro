@@ -3,7 +3,6 @@ QT += core gui widgets
 TARGET = diffimg
 TEMPLATE = app
 
-include(3rdparty/libyuv/libyuv.pri)
 include(3rdparty/perceptualdiff/perceptualdiff.pri)
 include(3rdparty/qtpropertybrowser/qtpropertybrowser.pri)
 
