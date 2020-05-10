@@ -58,5 +58,5 @@ BaseMetric *MetricsManager::getMetricByType(const QString &type)
         }
     }
 
-    return NULL;
+    return nullptr;
 }

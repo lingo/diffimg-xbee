@@ -123,21 +123,21 @@ DiffImgWindow::DiffImgWindow(QWidget *parent, Qt::WindowFlags flags)
         m_appName(PACKAGE_NAME),
 #endif
         m_firstTime(true),
-        m_about(NULL),
+        m_about(nullptr),
         m_logLevel(LogHandler::MSG_DEBUG),
-        m_widgetHistoCurveR(NULL),
-        m_widgetHistoCurveG(NULL),
-        m_widgetHistoCurveB(NULL),
+        m_widgetHistoCurveR(nullptr),
+        m_widgetHistoCurveG(nullptr),
+        m_widgetHistoCurveB(nullptr),
         m_resetConfig(false),
         m_maskOpacity(50),
         m_compareWithThreshold(false),
         m_metricType(0),
         m_thresholdType(0),
-        m_diffRes(NULL),
+        m_diffRes(nullptr),
         m_currentDisplayType(TYPE_ORIGINAL),
-        m_labelZoom(NULL),
-        m_labelPos(NULL),
-        m_labelInfos(NULL),
+        m_labelZoom(nullptr),
+        m_labelPos(nullptr),
+        m_labelInfos(nullptr),
         m_applyGain(false),
         m_applyOffset(false),
         m_currentGain(1.0f),
@@ -1182,7 +1182,7 @@ void DiffImgWindow::showRGBHistogramNew()
 void DiffImgWindow::applyHisto()
 {
     BaseMetric *met = MetricsManager::getMetrics()[m_metricType];
-    const QList<QPolygonF> *pHistos = NULL;
+    const QList<QPolygonF> *pHistos = nullptr;
 
     if (m_currentDisplayType == TYPE_ORIGINAL) {
         pHistos = &met->getHistogramImage1();

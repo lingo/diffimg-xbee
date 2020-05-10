@@ -400,7 +400,7 @@ MetricParam *BaseMetric::getInputParam(const QString &name)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 MetricParam *BaseMetric::getOutputParam(const QString &name)
@@ -411,7 +411,7 @@ MetricParam *BaseMetric::getOutputParam(const QString &name)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 QPixmap BaseMetric::getLogo() const
@@ -771,7 +771,7 @@ MetricParam *BaseMetric::getDiscriminatingParam() const
             return param;
         }
 
-    return NULL;
+    return nullptr;
 }
 
 bool BaseMetric::checkImages()

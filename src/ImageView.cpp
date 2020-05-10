@@ -36,9 +36,9 @@
 const double     scaleFactor = 1.3; //How fast we zoom
 
 ImageView::ImageView(QWidget *parent) : QGraphicsView(parent),
-    m_navigator(NULL),
-    m_imageItem(NULL),
-    m_maskItem(NULL),
+    m_navigator(nullptr),
+    m_imageItem(nullptr),
+    m_maskItem(nullptr),
     m_navigatorSize(0.15f),
     m_navigatorMargin(20),
     m_showNavigator(true),
@@ -47,7 +47,7 @@ ImageView::ImageView(QWidget *parent) : QGraphicsView(parent),
     m_drag(false),
     m_showMarker(false),
     m_wipeMode(false),
-    m_wipeItem(NULL),
+    m_wipeItem(nullptr),
     m_wipeMethod(WipeMethod::WIPE_HORIZONTAL)
 {
     // OpenGL

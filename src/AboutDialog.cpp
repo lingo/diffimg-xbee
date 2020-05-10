@@ -449,7 +449,7 @@ void AboutDialog::setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, Q
     }
 
     default:
-        lineEdit->setValidator(NULL);
+        lineEdit->setValidator(nullptr);
         break;
     }
 

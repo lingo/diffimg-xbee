@@ -59,7 +59,7 @@ public:
 
 /*!
  *	This allows the user to set the current Message handler. If the
- *	parameter is NULL, API reverts back to the default error handler,
+ *	parameter is nullptr, API reverts back to the default error handler,
  *	which redirects all warnings and errors to std::cerr.
  *
  *	\sa IMessageHandler
