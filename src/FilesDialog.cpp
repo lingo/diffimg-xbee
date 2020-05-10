@@ -48,16 +48,13 @@ FilesDialog::~FilesDialog()
 {
 }
 
-void FilesDialog::getPath(const QString &f1,const QString &f2)
+void FilesDialog::getPath(const QString &f1, const QString &f2)
 {
     // get the directory
-    if ( !f1.isEmpty() )
-    {
+    if (!f1.isEmpty()) {
         QFileInfo fi(f1);
         m_path = fi.absolutePath();
-    }
-    else if ( !f2.isEmpty() )
-    {
+    } else if (!f2.isEmpty()) {
         QFileInfo fi(f2);
         m_path = fi.absolutePath();
     }
@@ -65,53 +62,53 @@ void FilesDialog::getPath(const QString &f1,const QString &f2)
 
 void FilesDialog::on_pushButtonFile1_pressed()
 {
-    getPath( lineEditFile1->text(),lineEditFile2->text() );
+    getPath(lineEditFile1->text(), lineEditFile2->text());
 
     QString formats = MiscFunctions::getAvailablesImageFormats();
     QString file = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                m_path,
-                                                formats);
+                   m_path,
+                   formats);
 
-    if ( !file.isEmpty() )
+    if (!file.isEmpty()) {
         lineEditFile1->setText(file);
+    }
 }
 
 void FilesDialog::on_pushButtonFile2_pressed()
 {
-    getPath( lineEditFile2->text(),lineEditFile1->text() );
+    getPath(lineEditFile2->text(), lineEditFile1->text());
 
     QString formats = MiscFunctions::getAvailablesImageFormats();
     QString file = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                m_path,
-                                                formats);
+                   m_path,
+                   formats);
 
-    if ( !file.isEmpty() )
+    if (!file.isEmpty()) {
         lineEditFile2->setText(file);
+    }
 }
 
-void FilesDialog::on_lineEditFile1_textChanged ( const QString & text )
+void FilesDialog::on_lineEditFile1_textChanged(const QString &text)
 {
-    validPath(text,lineEditFile1);
+    validPath(text, lineEditFile1);
 }
 
-void FilesDialog::on_lineEditFile2_textChanged ( const QString & text )
+void FilesDialog::on_lineEditFile2_textChanged(const QString &text)
 {
-    validPath(text,lineEditFile2);
+    validPath(text, lineEditFile2);
 }
 
 void FilesDialog::validPath(const QString &path, QWidget *w)
 {
-    if (!w)
+    if (!w) {
         return;
+    }
 
-    if ( !QFileInfo(path).exists() )
-    {
+    if (!QFileInfo(path).exists()) {
         QPalette pal;
         pal.setColor(QPalette::Text, Qt::red);
         w->setPalette(pal);
-    }
-    else
-    {
+    } else {
         // restore normal palette
         QPalette pal;
         pal.setColor(QPalette::Text, Qt::black);
@@ -119,12 +116,12 @@ void FilesDialog::validPath(const QString &path, QWidget *w)
     }
 }
 
-void FilesDialog::getCurrentFiles(QString &file1,QString &file2)
+void FilesDialog::getCurrentFiles(QString &file1, QString &file2)
 {
     file1 = lineEditFile1->text();
     file2 = lineEditFile2->text();
 
-    FilesManager::getCurrentFiles(file1,file2);
+    FilesManager::getCurrentFiles(file1, file2);
 }
 
 void FilesDialog::setFile1(const QString &f)

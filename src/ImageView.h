@@ -37,7 +37,7 @@ public:
     QString filenameLeft;
     QString filenameRight;
 
-    ImageView(QWidget * map);
+    ImageView(QWidget *map);
     ~ImageView();
 
     //virtual void setImage(const QImage &newImg);
@@ -67,7 +67,7 @@ public:
     bool isMarkerEnabled() const;
 
     // Center
-    const QPointF& getCenter() const
+    const QPointF &getCenter() const
     {
         return m_centerPoint;
     }
@@ -75,7 +75,7 @@ public:
 public slots:
 
     void updateSceneRect(const QRectF &);
-    void setCenter(const QPointF& position);
+    void setCenter(const QPointF &position);
     void setMarkerPosition(const QPointF &);
     void zoomOut();
     void zoomIn();
@@ -85,18 +85,18 @@ signals:
 
     void mouseMoved(const QPointF &pos);
     void scaleChanged(qreal);
-    void somethingChanged( const QPointF &pt = QPointF() ); // scale or center point change
+    void somethingChanged(const QPointF &pt = QPointF());   // scale or center point change
 
 protected:
 
     //Take over the interaction
-    virtual void mouseMoveEvent(QMouseEvent* event);
+    virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void mousePressEvent(QMouseEvent *mouseEvent);
     virtual void mouseReleaseEvent(QMouseEvent *mouseEvent);
 
-    virtual void wheelEvent(QWheelEvent* event);
-    virtual void resizeEvent(QResizeEvent* event);
-    virtual void paintEvent(QPaintEvent* event);
+    virtual void wheelEvent(QWheelEvent *event);
+    virtual void resizeEvent(QResizeEvent *event);
+    virtual void paintEvent(QPaintEvent *event);
     virtual bool event(QEvent *e);
 
 private:
@@ -104,7 +104,7 @@ private:
     void initBackground();
     bool isImageInside();
     void drawMarker(QPainter &p);
-    void drawLines(const QPointF &,QPainter &p);
+    void drawLines(const QPointF &, QPainter &p);
 
     void createWipeItem();
 
@@ -112,7 +112,7 @@ private:
     QPointF m_centerPoint;
     QPixmap m_tileBg;
 
-    ImageNavigator* m_navigator;
+    ImageNavigator *m_navigator;
 
     QGraphicsPixmapItem *m_imageItem;
     QGraphicsPixmapItem *m_maskItem;

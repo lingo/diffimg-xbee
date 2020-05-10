@@ -57,12 +57,12 @@ QStringList MiscFunctions::getAvailablesImageFormatsList()
     QListIterator<QByteArray> supportedFormat(supportedFormats);
     QByteArray format;
 
-    while ( supportedFormat.hasNext() )
-    {
+    while (supportedFormat.hasNext()) {
         format = supportedFormat.next().toLower();
 
-        if ( !result.contains(format) )
+        if (!result.contains(format)) {
             result << format;
+        }
     }
 
     return result;
@@ -150,8 +150,10 @@ QString MiscFunctions::getAvailablesImageFormats()
 {
     QString imglist;
     QStringList formats = getAvailablesImageFormatsList();
-    for (int i = 0; i < formats.size(); ++i)
+
+    for (int i = 0; i < formats.size(); ++i) {
         imglist += "*." + formats[i] + " ";
+    }
 
     return imglist;
 }
@@ -165,10 +167,10 @@ QString MiscFunctions::getTranslationsPath(const QString &refLang)
 {
     // search in application path
     QStringList ldir;
-    ldir << QCoreApplication::applicationDirPath () + "/lang";
-    ldir << QCoreApplication::applicationDirPath () + "/../lang";
-    ldir << QCoreApplication::applicationDirPath () + "/../../lang";
-    ldir << QCoreApplication::applicationDirPath () + "/../translations"; // MacOSX
+    ldir << QCoreApplication::applicationDirPath() + "/lang";
+    ldir << QCoreApplication::applicationDirPath() + "/../lang";
+    ldir << QCoreApplication::applicationDirPath() + "/../../lang";
+    ldir << QCoreApplication::applicationDirPath() + "/../translations";  // MacOSX
     ldir << QString("/usr/share/%1/locale").arg(PACKAGE_NAME).toLower();
     ldir << QString("/usr/local/share/%1/locale").arg(PACKAGE_NAME).toLower();
     ldir << "/usr/local/share/locale";
@@ -177,13 +179,15 @@ QString MiscFunctions::getTranslationsPath(const QString &refLang)
 
 
     QString ext;
-    if ( !refLang.isEmpty() )
-        ext = "/" + getTranslationsFile(refLang);
 
-    foreach (const QString &dir, ldir)
-    {
-        if ( QFileInfo(dir + ext).exists() )
+    if (!refLang.isEmpty()) {
+        ext = "/" + getTranslationsFile(refLang);
+    }
+
+    foreach (const QString &dir, ldir) {
+        if (QFileInfo(dir + ext).exists()) {
             return dir;
+        }
     }
 
     return "";
@@ -192,28 +196,28 @@ QString MiscFunctions::getTranslationsPath(const QString &refLang)
 QMap<QString, QString> MiscFunctions::getAvailableLanguages()
 {
     QMap<QString, QString> languageMap;
-    QDir dir( MiscFunctions::getTranslationsPath("fr") );
-    QRegExp expr( QString("^%1_(\\w+)\\.qm$").arg(PACKAGE_NAME).toLower() );
+    QDir dir(MiscFunctions::getTranslationsPath("fr"));
+    QRegExp expr(QString("^%1_(\\w+)\\.qm$").arg(PACKAGE_NAME).toLower());
     QStringList files = dir.entryList(QDir::Files, QDir::Name);
 
-    LogHandler::getInstance()->reportDebug( QString("translations path %1").arg( dir.path() ) );
+    LogHandler::getInstance()->reportDebug(QString("translations path %1").arg(dir.path()));
 
-    foreach ( const QString &file, files )
-    {
-        if ( !file.contains(expr) )
+    foreach (const QString &file, files) {
+        if (!file.contains(expr)) {
             continue;
+        }
 
         QString lang = expr.cap(1);
-        QString name = QString("%1 (%2)").arg(QLocale::languageToString( QLocale(lang).language() ), lang);
+        QString name = QString("%1 (%2)").arg(QLocale::languageToString(QLocale(lang).language()), lang);
 
-        if (lang.contains("_")) // detect variant
-        {
+        if (lang.contains("_")) { // detect variant
             QString country = QLocale::countryToString(QLocale(lang).country());
-            name = QString("%1 (%2) (%3)").arg(QLocale::languageToString( QLocale(lang).language() ), country, lang);
+            name = QString("%1 (%2) (%3)").arg(QLocale::languageToString(QLocale(lang).language()), country, lang);
         }
 
         languageMap[name] = lang;
     }
+
     return languageMap;
 }
 
@@ -223,28 +227,27 @@ void MiscFunctions::setDefaultLanguage()
     AppSettings settings;
 
     settings.beginGroup("Application");
-    lang = settings.value("currentLanguage","auto").toString();
+    lang = settings.value("currentLanguage", "auto").toString();
     settings.endGroup();
 
-    if ( lang.isEmpty() )
+    if (lang.isEmpty()) {
         lang = QLocale::system().name().left(2);
+    }
 
-    if ( !lang.isEmpty() )
+    if (!lang.isEmpty()) {
         setLanguage(lang);
+    }
 }
 
-void MiscFunctions::setLanguage(const QString& lang)
+void MiscFunctions::setLanguage(const QString &lang)
 {
     QString language(lang);
-    LogHandler::getInstance()->reportDebug( QObject::tr("setting language to : %1").arg(language) );
+    LogHandler::getInstance()->reportDebug(QObject::tr("setting language to : %1").arg(language));
 
     // special cases
-    if (language == "auto") // auto detection
-    {
+    if (language == "auto") { // auto detection
         language = QLocale::system().name().left(2);
-    }
-    else if (language == "default") // no use of translator
-    {
+    } else if (language == "default") { // no use of translator
         return;
     }
 
@@ -252,38 +255,35 @@ void MiscFunctions::setLanguage(const QString& lang)
     QTranslator *qt = new QTranslator();
     QStringList excludedFiles;
     QString globalTranslationPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-    if ( !QFileInfo(globalTranslationPath).exists() )
-        globalTranslationPath = MiscFunctions::getTranslationsPath("fr");
 
-    if ( qt->load( "qt_" + language, globalTranslationPath ) )
-    {
-        LogHandler::getInstance()->reportDebug( QObject::tr("successfully loaded data from %1").arg( globalTranslationPath + "/qt_" + language ) );
+    if (!QFileInfo(globalTranslationPath).exists()) {
+        globalTranslationPath = MiscFunctions::getTranslationsPath("fr");
+    }
+
+    if (qt->load("qt_" + language, globalTranslationPath)) {
+        LogHandler::getInstance()->reportDebug(QObject::tr("successfully loaded data from %1").arg(globalTranslationPath + "/qt_" + language));
         QCoreApplication::installTranslator(qt);
         excludedFiles << "qt_" + language + ".qm";
-    }
-    else
-    {
+    } else {
         delete qt;
     }
 
     QString suff = language + ".qm";
-    QDir dir( MiscFunctions::getTranslationsPath("fr") );
+    QDir dir(MiscFunctions::getTranslationsPath("fr"));
 
-    foreach ( const QString &s, dir.entryList(QDir::Files | QDir::Readable) )
-    {
-        if ( !s.endsWith(suff) || excludedFiles.contains(s) )
+    foreach (const QString &s, dir.entryList(QDir::Files | QDir::Readable)) {
+        if (!s.endsWith(suff) || excludedFiles.contains(s)) {
             continue;
+        }
+
         QTranslator *t = new QTranslator();
 
-        if ( t->load( dir.filePath(s) ) )
-        {
+        if (t->load(dir.filePath(s))) {
             QCoreApplication::installTranslator(t);
-            LogHandler::getInstance()->reportDebug( QObject::tr("successfully loaded data from %1").arg( dir.filePath(s) ) );
-        }
-        else
-        {
+            LogHandler::getInstance()->reportDebug(QObject::tr("successfully loaded data from %1").arg(dir.filePath(s)));
+        } else {
             delete t;
-            LogHandler::getInstance()->reportDebug( QObject::tr("failed to load data from %1").arg( dir.filePath(s) ) );
+            LogHandler::getInstance()->reportDebug(QObject::tr("failed to load data from %1").arg(dir.filePath(s)));
         }
     }
 }
@@ -298,12 +298,13 @@ void MiscFunctions::updateApplicationIdentity()
 bool MiscFunctions::stringToFile(const QString &data, const QString &filename)
 {
     QFile file(filename);
-    if ( file.open(QFile::WriteOnly | QFile::Truncate) )
-    {
+
+    if (file.open(QFile::WriteOnly | QFile::Truncate)) {
         QTextStream out(&file);
         out << data;
         return true;
     }
+
     return false;
 }
 
@@ -311,11 +312,12 @@ QString MiscFunctions::fileToString(const QString &filename)
 {
     QFile file(filename);
     QString res;
-    if ( file.open(QIODevice::ReadOnly | QIODevice::Text) )
-    {
+
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
         res = in.readAll();
     }
+
     return res;
 }
 
@@ -330,16 +332,18 @@ QString MiscFunctions::bytesToString(quint64 bytes)
     quint64 size = bytes;
 
     QString bytesStr;
-    if ( !(size >> 10) )
+
+    if (!(size >> 10)) {
         bytesStr = QString::number(size) + ' ' + QObject::tr("Bytes");
-    else if ( !(size >> 20) )
-        bytesStr = QString::number(size / 1024.0, 'f', 3) + ' ' + QObject::tr("KB","Kilobyte");
-    else if ( !(size >> 30) )
-        bytesStr = QString::number( (size >> 10) / 1024.0, 'f', 3 ) + ' ' + QObject::tr("MB","Megabyte");
-    else if ( !(size >> 40) )
-        bytesStr = QString::number( (size >> 20) / 1024.0, 'f', 3 ) + ' ' + QObject::tr("GB","Gigabyte");
-    else
-        bytesStr = QString::number( (size >> 30) / 1024.0, 'f', 3 ) + ' ' + QObject::tr("TB","Terabyte");
+    } else if (!(size >> 20)) {
+        bytesStr = QString::number(size / 1024.0, 'f', 3) + ' ' + QObject::tr("KB", "Kilobyte");
+    } else if (!(size >> 30)) {
+        bytesStr = QString::number((size >> 10) / 1024.0, 'f', 3) + ' ' + QObject::tr("MB", "Megabyte");
+    } else if (!(size >> 40)) {
+        bytesStr = QString::number((size >> 20) / 1024.0, 'f', 3) + ' ' + QObject::tr("GB", "Gigabyte");
+    } else {
+        bytesStr = QString::number((size >> 30) / 1024.0, 'f', 3) + ' ' + QObject::tr("TB", "Terabyte");
+    }
 
     return bytesStr;
 }
@@ -349,16 +353,18 @@ QString MiscFunctions::pixelsToString(quint64 pixels)
     quint64 size = pixels;
 
     QString bytesStr;
-    if ( !(size >> 10) )
+
+    if (!(size >> 10)) {
         bytesStr = QString::number(size) + ' ' + QObject::tr("Pixels");
-    else if ( !(size >> 20) )
-        bytesStr = QString::number(size / 1000.0, 'f', 3) + ' ' + QObject::tr("Kp","Kilopixel");
-    else if ( !(size >> 30) )
-        bytesStr = QString::number( (size >> 10) / 1000.0, 'f', 3 ) + ' ' + QObject::tr("Mp","Megapixel");
-    else if ( !(size >> 40) )
-        bytesStr = QString::number( (size >> 20) / 1000.0, 'f', 3 ) + ' ' + QObject::tr("Gp","Gigapixel");
-    else
-        bytesStr = QString::number( (size >> 30) / 1000.0, 'f', 3 ) + ' ' + QObject::tr("Tp","Terapixel");
+    } else if (!(size >> 20)) {
+        bytesStr = QString::number(size / 1000.0, 'f', 3) + ' ' + QObject::tr("Kp", "Kilopixel");
+    } else if (!(size >> 30)) {
+        bytesStr = QString::number((size >> 10) / 1000.0, 'f', 3) + ' ' + QObject::tr("Mp", "Megapixel");
+    } else if (!(size >> 40)) {
+        bytesStr = QString::number((size >> 20) / 1000.0, 'f', 3) + ' ' + QObject::tr("Gp", "Gigapixel");
+    } else {
+        bytesStr = QString::number((size >> 30) / 1000.0, 'f', 3) + ' ' + QObject::tr("Tp", "Terapixel");
+    }
 
     return bytesStr;
 }

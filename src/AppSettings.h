@@ -36,7 +36,7 @@ class AppSettings : public QSettings
 
 public:
 
-    AppSettings( );
+    AppSettings();
 
 protected:
 };

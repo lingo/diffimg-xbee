@@ -24,13 +24,11 @@
 #include <QtCore/QString>
 #include <QImage>
 
-namespace cv
-{
+namespace cv {
 class Mat;
 }
 
-struct DiffStruct
-{
+struct DiffStruct {
     QImage maskDiffImage; // mask image
     QImage diffImage; // diff image
     unsigned int nbErr;
@@ -50,8 +48,7 @@ class MiscFunctions
 {
 public:
 
-    enum DiffMethodType
-    {
+    enum DiffMethodType {
         METHOD_BYCHANNEL = 0,
         METHOD_BYCHANNELMEAN,
         METHOD_BYLIGHTNESS,
@@ -64,11 +61,11 @@ public:
     static QMap<QString, QString> getLongImageFormats();
 
     // translations functions
-    static QString getTranslationsPath( const QString &refLang = QString() );
+    static QString getTranslationsPath(const QString &refLang = QString());
     static QString getTranslationsFile(const QString &lang);
     static QMap<QString, QString> getAvailableLanguages();
     static void setDefaultLanguage();
-    static void setLanguage(const QString& lang);
+    static void setLanguage(const QString &lang);
 
     static void updateApplicationIdentity();
 

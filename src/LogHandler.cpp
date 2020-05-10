@@ -21,18 +21,18 @@
 #include "LogHandler.h"
 #include <QtCore/QTime>
 
-LogHandler* LogHandler::m_Instance = 0;
+LogHandler *LogHandler::m_Instance = 0;
 
 LogHandler *LogHandler::getInstance()
 {
     static QMutex mutex;
 
-    if (!m_Instance)
-    {
+    if (!m_Instance) {
         mutex.lock();
 
-        if (!m_Instance)
+        if (!m_Instance) {
             m_Instance = new LogHandler;
+        }
 
         mutex.unlock();
     }
@@ -48,97 +48,94 @@ LogHandler::~LogHandler()
     mutex.unlock();
 }
 
-LogHandler::LogHandler(  ) :
+LogHandler::LogHandler() :
     m_currLevel(MSG_DEBUG),
     m_bufferized(true)
 {
 }
 
-void LogHandler::reportMessage(MessageLevel level, const QString &message )
+void LogHandler::reportMessage(MessageLevel level, const QString &message)
 {
     // message Ignored
-    if (level < m_currLevel)
+    if (level < m_currLevel) {
         return;
+    }
 
-    QString msgText( message );
-    msgText.replace( "<", "&lt;" );
-    msgText.replace( ">", "&gt;" );
+    QString msgText(message);
+    msgText.replace("<", "&lt;");
+    msgText.replace(">", "&gt;");
 
     // add the current time
     msgText = QTime::currentTime().toString("[hh:mm:ss]: ") + msgText;
     QString msg;
 
-    switch (level)
-    {
-        case MSG_DEBUG:
-        {
-            msg = QString( "<font color=\"blue\"><b>DEBUG</b></font>: " ) + msgText;
-            break;
-        }
+    switch (level) {
+    case MSG_DEBUG: {
+        msg = QString("<font color=\"blue\"><b>DEBUG</b></font>: ") + msgText;
+        break;
+    }
 
-        case MSG_INFO:
-        {
-            msg = QString( "<font color=\"green\"><b>INFO</b>: </font>" ) + msgText;
-            break;
-        }
+    case MSG_INFO: {
+        msg = QString("<font color=\"green\"><b>INFO</b>: </font>") + msgText;
+        break;
+    }
 
-        case MSG_WARNING:
-        {
-            msg = QString( "<font color=\"orange\"><b>WARNING</b>: </font>" ) + msgText;
-            break;
-        }
+    case MSG_WARNING: {
+        msg = QString("<font color=\"orange\"><b>WARNING</b>: </font>") + msgText;
+        break;
+    }
 
-        case MSG_ERROR:
-        {
-            msg = QString( " <font color=\"red\"><b>ERROR</b>:</font>" ) + msgText;
-            break;
-        }
+    case MSG_ERROR: {
+        msg = QString(" <font color=\"red\"><b>ERROR</b>:</font>") + msgText;
+        break;
+    }
 
-        default:
-        {
-            msg = msgText;
-            break;
-        }
+    default: {
+        msg = msgText;
+        break;
+    }
     }
 
 #ifdef _DEBUG
-    qDebug( "%s",msg.toStdString().c_str() );
+    qDebug("%s", msg.toStdString().c_str());
 #endif
-    if (m_bufferized)
+
+    if (m_bufferized) {
         m_buffer << msg;
-    else
+    } else {
         emit newMessage(msg);
+    }
 }
 
-void LogHandler::reportDebug(const QString &message )
+void LogHandler::reportDebug(const QString &message)
 {
-    reportMessage(IMessageHandler::MSG_DEBUG,message);
+    reportMessage(IMessageHandler::MSG_DEBUG, message);
 }
 
-void LogHandler::reportInfo(const QString &message )
+void LogHandler::reportInfo(const QString &message)
 {
-    reportMessage(IMessageHandler::MSG_INFO,message);
+    reportMessage(IMessageHandler::MSG_INFO, message);
 }
 
-void LogHandler::reportWarning(const QString &message )
+void LogHandler::reportWarning(const QString &message)
 {
-    reportMessage(IMessageHandler::MSG_WARNING,message);
+    reportMessage(IMessageHandler::MSG_WARNING, message);
 }
 
-void LogHandler::reportError(const QString &message )
+void LogHandler::reportError(const QString &message)
 {
-    reportMessage(IMessageHandler::MSG_ERROR,message);
+    reportMessage(IMessageHandler::MSG_ERROR, message);
 }
 
 void LogHandler::setBufferization(bool val)
 {
     m_bufferized = val;
-    if (!m_bufferized) // send all stored messages
-    {
-        foreach (const QString &mess, m_buffer)
-        {
+
+    if (!m_bufferized) { // send all stored messages
+        foreach (const QString &mess, m_buffer) {
             emit newMessage(mess);
         }
+
         m_buffer.clear();
     }
 }

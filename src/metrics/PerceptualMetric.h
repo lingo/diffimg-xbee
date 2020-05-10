@@ -18,7 +18,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *******************************************************************************/
 
- #ifndef _PERCEPTUALMETRIC_H_
+#ifndef _PERCEPTUALMETRIC_H_
 #define _PERCEPTUALMETRIC_H_
 
 #include "BaseMetric.h"

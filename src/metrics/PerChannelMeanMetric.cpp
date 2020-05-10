@@ -51,30 +51,35 @@ void PerChannelMeanMetric::performDifference()
     QImage output(m_image1.width(), m_image2.height(), QImage::Format_Grayscale8);
 
     QImage img1 = m_image1;
-    if(img1.depth() < 32){
+
+    if (img1.depth() < 32) {
         img1 = img1.convertToFormat(img1.hasAlphaChannel() ?  QImage::Format_ARGB32 : QImage::Format_RGB32);
     }
 
     QImage img2 = m_image2;
-    if(img2.depth() < 32){
+
+    if (img2.depth() < 32) {
         img2 = img2.convertToFormat(img2.hasAlphaChannel() ?  QImage::Format_ARGB32 : QImage::Format_RGB32);
     }
-    if(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied) {
+
+    if (img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied) {
         qDebug() << "premult";
-        for (int y=0; y<output.height(); y++) {
+
+        for (int y = 0; y < output.height(); y++) {
             uchar *dst = output.scanLine(y);
             const QRgb *src1 = (QRgb *)img1.constScanLine(y);
             const QRgb *src2 = (QRgb *)img2.constScanLine(y);
-            for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
+
+            for (int x = 0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
                 const QRgb pixel1 = qUnpremultiply(*src1);
                 const QRgb pixel2 = qUnpremultiply(*src2);
 
-                const uint8_t r1 = qRed(pixel1)/3;
-                const uint8_t r2 = qRed(pixel2)/3;
-                const uint8_t g1 = qGreen(pixel1)/3;
-                const uint8_t g2 = qGreen(pixel2)/3;
-                const uint8_t b1 = qBlue(pixel1)/3;
-                const uint8_t b2 = qBlue(pixel2)/3;
+                const uint8_t r1 = qRed(pixel1) / 3;
+                const uint8_t r2 = qRed(pixel2) / 3;
+                const uint8_t g1 = qGreen(pixel1) / 3;
+                const uint8_t g2 = qGreen(pixel2) / 3;
+                const uint8_t b1 = qBlue(pixel1) / 3;
+                const uint8_t b2 = qBlue(pixel2) / 3;
 
                 const uint8_t rd = qAbs(r1 - r2);
                 const uint8_t rg = qAbs(g1 - g2);
@@ -87,20 +92,21 @@ void PerChannelMeanMetric::performDifference()
         // TODO blah
         Q_ASSERT(img1.format() == QImage::Format_ARGB32_Premultiplied && img2.format() == QImage::Format_ARGB32_Premultiplied);
     } else {
-        for (int y=0; y<output.height(); y++) {
+        for (int y = 0; y < output.height(); y++) {
             uchar *dst = output.scanLine(y);
             const QRgb *src1 = (QRgb *)img1.constScanLine(y);
             const QRgb *src2 = (QRgb *)img2.constScanLine(y);
-            for(int x=0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
+
+            for (int x = 0; x < output.width(); ++x, ++src1, ++src2, ++dst) {
                 const QRgb pixel1 = *src1;
                 const QRgb pixel2 = *src2;
 
-                const uint8_t r1 = qRed(pixel1)/3;
-                const uint8_t r2 = qRed(pixel2)/3;
-                const uint8_t g1 = qGreen(pixel1)/3;
-                const uint8_t g2 = qGreen(pixel2)/3;
-                const uint8_t b1 = qBlue(pixel1)/3;
-                const uint8_t b2 = qBlue(pixel2)/3;
+                const uint8_t r1 = qRed(pixel1) / 3;
+                const uint8_t r2 = qRed(pixel2) / 3;
+                const uint8_t g1 = qGreen(pixel1) / 3;
+                const uint8_t g2 = qGreen(pixel2) / 3;
+                const uint8_t b1 = qBlue(pixel1) / 3;
+                const uint8_t b2 = qBlue(pixel2) / 3;
 
                 const uint8_t rd = qAbs(r1 - r2);
                 const uint8_t rg = qAbs(g1 - g2);

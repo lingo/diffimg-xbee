@@ -35,7 +35,7 @@ public:
     FilesDialog(QWidget *parent = 0);
     ~FilesDialog();
 
-    void getCurrentFiles(QString &file1,QString &file2);
+    void getCurrentFiles(QString &file1, QString &file2);
 
     void setFile1(const QString &);
     void setFile2(const QString &);
@@ -44,12 +44,12 @@ public slots:
 
     void on_pushButtonFile1_pressed();
     void on_pushButtonFile2_pressed();
-    void on_lineEditFile1_textChanged ( const QString & text );
-    void on_lineEditFile2_textChanged ( const QString & text );
+    void on_lineEditFile1_textChanged(const QString &text);
+    void on_lineEditFile2_textChanged(const QString &text);
 
 private:
 
-    void getPath(const QString &f1,const QString &f2);
+    void getPath(const QString &f1, const QString &f2);
     void validPath(const QString &path, QWidget *w);
 
     QString m_path;

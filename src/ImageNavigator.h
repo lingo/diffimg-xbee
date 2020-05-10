@@ -31,12 +31,12 @@ class ImageNavigator :   public QWidget
 
 public:
 
-    explicit ImageNavigator(QGraphicsView * parent = 0, Qt::WindowFlags f = 0);
+    explicit ImageNavigator(QGraphicsView *parent = 0, Qt::WindowFlags f = 0);
     virtual ~ImageNavigator() {}
 
     void setImage(const QImage &img);
 
-    void setTransforms(QTransform* worldMatrix, QTransform* imgMatrix);
+    void setTransforms(QTransform *worldMatrix, QTransform *imgMatrix);
 
     void setViewPortRect(const QRectF &viewPortRect);
 
@@ -53,15 +53,15 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
-    void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent *event);
     QTransform getScaledImageMatrix();
 
 private:
 
     QImage m_img;
     QImage m_imgT;
-    QTransform* m_worldMatrix;
-    QTransform* m_imgMatrix;
+    QTransform *m_worldMatrix;
+    QTransform *m_imgMatrix;
     QRectF m_viewPortRect;
     QPointF m_lastPos;
     QPointF m_enterPos;

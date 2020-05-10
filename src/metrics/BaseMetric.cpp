@@ -69,11 +69,11 @@ struct IntegerPixel {
 static bool equalize(QImage &img)
 {
     if (img.isNull()) {
-        return(false);
+        return (false);
     }
 
 
-    if(img.depth() < 32){
+    if (img.depth() < 32) {
         img = img.convertToFormat(img.hasAlphaChannel() ?
                                   QImage::Format_ARGB32 :
                                   QImage::Format_RGB32);
@@ -82,10 +82,11 @@ static bool equalize(QImage &img)
     // form histogram
     IntegerPixel histogram [256];
 
-    if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for (int line=0; line<img.height(); line++) {
+    if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = qUnpremultiply(*pixels);
                 histogram[qRed(pixel)].red++;
                 histogram[qGreen(pixel)].green++;
@@ -94,9 +95,10 @@ static bool equalize(QImage &img)
             }
         }
     } else {
-        for (int line=0; line<img.height(); line++) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = *pixels;
                 histogram[qRed(pixel)].red++;
                 histogram[qGreen(pixel)].green++;
@@ -109,7 +111,8 @@ static bool equalize(QImage &img)
     // integrate the histogram to get the equalization map
     IntegerPixel map[256];
     IntegerPixel intensity;
-    for (int i=0; i < 256; ++i){
+
+    for (int i = 0; i < 256; ++i) {
         intensity.red += histogram[i].red;
         intensity.green += histogram[i].green;
         intensity.blue += histogram[i].blue;
@@ -130,26 +133,28 @@ static bool equalize(QImage &img)
 
     CharPixel equalize_map[256];
 
-    for (int i=0; i < 256; ++i) {
-        if(deltaRed) {
-            equalize_map[i].red = uint8_t((255*(map[i].red - low.red)) / deltaRed);
+    for (int i = 0; i < 256; ++i) {
+        if (deltaRed) {
+            equalize_map[i].red = uint8_t((255 * (map[i].red - low.red)) / deltaRed);
         }
 
-        if(deltaGreen) {
-            equalize_map[i].green = uint8_t((255*(map[i].green - low.green)) / deltaGreen);
+        if (deltaGreen) {
+            equalize_map[i].green = uint8_t((255 * (map[i].green - low.green)) / deltaGreen);
         }
 
-        if(deltaBlue) {
-            equalize_map[i].blue = uint8_t((255*(map[i].blue - low.blue)) / deltaBlue);
+        if (deltaBlue) {
+            equalize_map[i].blue = uint8_t((255 * (map[i].blue - low.blue)) / deltaBlue);
         }
     }
 
     // stretch the histogram and write
     uint8_t r, g, b;
-    if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for (int line=0; line<img.height(); line++) {
+
+    if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = qUnpremultiply(*pixels);
                 r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
                 g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
@@ -158,9 +163,10 @@ static bool equalize(QImage &img)
             }
         }
     } else {
-        for (int line=0; line<img.height(); line++) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = *pixels;
                 r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
                 g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
@@ -170,14 +176,15 @@ static bool equalize(QImage &img)
         }
     }
 
-    return(true);
+    return (true);
 }
 
 
 bool MetricParam::isValid()
 {
-    if ( value.toFloat() > threshold.toFloat() )
+    if (value.toFloat() > threshold.toFloat()) {
         return false;
+    }
 
     return true;
 }
@@ -185,51 +192,55 @@ bool MetricParam::isValid()
 void MetricParam::reset(bool all)
 {
     value = defaultValue;
-    if (all)
+
+    if (all) {
         threshold = defaultValue;
+    }
 }
 
 void MetricParam::setThreshold(const QString &valText)
 {
-    switch ( uint(threshold.type()) )
-    {
-        case QVariant::Int:
-            threshold = valText.toInt();
-            break;
-        case QVariant::Double:
-        case QMetaType::Float:
-        {
-            threshold = valText.toFloat();
-            break;
-        }
-        default:
-            break;
+    switch (uint(threshold.type())) {
+    case QVariant::Int:
+        threshold = valText.toInt();
+        break;
+
+    case QVariant::Double:
+    case QMetaType::Float: {
+        threshold = valText.toFloat();
+        break;
+    }
+
+    default:
+        break;
     }
 }
 
 static void applyGainOffset(QImage &img, double gain, double offset)
 {
-    if(img.depth() < 32){
+    if (img.depth() < 32) {
         img = img.convertToFormat(img.hasAlphaChannel() ?
                                   QImage::Format_ARGB32 :
                                   QImage::Format_RGB32);
     }
 
-    if(img.format() == QImage::Format_ARGB32_Premultiplied){
-    for (int line=0; line<img.height(); line++) {
-        QRgb *pixels = (QRgb *)img.scanLine(line);
-        for(int i=0; i < img.width(); ++i, ++pixels) {
-            const QRgb pixel = qUnpremultiply(*pixels);
-            const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
-            const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
-            const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
-            *pixels = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
-        }
-    }
-    } else {
-        for (int line=0; line<img.height(); line++) {
+    if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
+                const QRgb pixel = qUnpremultiply(*pixels);
+                const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
+                const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
+                const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
+                *pixels = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
+            }
+        }
+    } else {
+        for (int line = 0; line < img.height(); line++) {
+            QRgb *pixels = (QRgb *)img.scanLine(line);
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = *pixels;
                 const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
                 const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
@@ -244,16 +255,17 @@ static double findMinMax(const QImage &inp, double *min, double *max)
     QImage img(inp);
     double mean = 0.;
 
-    if(img.depth() < 32){
+    if (img.depth() < 32) {
         img = img.convertToFormat(img.hasAlphaChannel() ?
                                   QImage::Format_ARGB32 :
                                   QImage::Format_RGB32);
     }
 
-    if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for (int line=0; line<img.height(); line++) {
+    if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = qUnpremultiply(*pixels);
                 *min = std::min(double(qRed(pixel)), *min);
                 *min = std::min(double(qGreen(pixel)), *min);
@@ -267,9 +279,10 @@ static double findMinMax(const QImage &inp, double *min, double *max)
             }
         }
     } else {
-        for (int line=0; line<img.height(); line++) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = *pixels;
                 *min = std::min(double(qRed(pixel)),   double(*min));
                 *min = std::min(double(qGreen(pixel)), double(*min));
@@ -283,6 +296,7 @@ static double findMinMax(const QImage &inp, double *min, double *max)
             }
         }
     }
+
     return mean / (img.width() * img.height() * 3);
 }
 
@@ -292,8 +306,8 @@ static double findMinMax(const QImage &inp, double *min, double *max)
 BaseMetric::BaseMetric(QObject *parent) :
     QObject(parent),
     m_type("Unknown"),
-    m_name( tr("Unknown") ),
-    m_desc( tr("No description") ),
+    m_name(tr("Unknown")),
+    m_desc(tr("No description")),
     m_valid(false),
     m_nbPixelError(0),
     m_maxError(0.0),
@@ -316,8 +330,9 @@ BaseMetric::~BaseMetric()
 
 void BaseMetric::init()
 {
-    if (m_init)
+    if (m_init) {
         return;
+    }
 
     createInputParams();
     createOutputParams();
@@ -345,8 +360,7 @@ void BaseMetric::clearOutputParams()
 
 void BaseMetric::resetOutputParams()
 {
-    foreach (MetricParam * param, m_outputParams)
-    {
+    foreach (MetricParam *param, m_outputParams) {
         param->reset(false);
     }
 }
@@ -358,43 +372,45 @@ void BaseMetric::createInputParams()
 void BaseMetric::createOutputParams()
 {
     // mean error
-    addOutputParam( new MetricParam("MeanError",tr("Mean error"),tr("Mean absolute error"),BaseMetric::defaultThresholdMeanError) );
+    addOutputParam(new MetricParam("MeanError", tr("Mean error"), tr("Mean absolute error"), BaseMetric::defaultThresholdMeanError));
 
     // min error
-    addOutputParam( new MetricParam("MinError",tr("Min error"),tr("Minimum error"),0) );
+    addOutputParam(new MetricParam("MinError", tr("Min error"), tr("Minimum error"), 0));
 
     // max error
-    addOutputParam( new MetricParam("MaxError",tr("Max error"),tr("Maximum error"),BaseMetric::defaultThresholdMaxError) );
+    addOutputParam(new MetricParam("MaxError", tr("Max error"), tr("Maximum error"), BaseMetric::defaultThresholdMaxError));
 
-    addOutputParam( new MetricParam("StandardDeviation",tr("Standard deviation"),tr("Standard deviation"),BaseMetric::defaultThresholdStandardDeviation) );
+    addOutputParam(new MetricParam("StandardDeviation", tr("Standard deviation"), tr("Standard deviation"), BaseMetric::defaultThresholdStandardDeviation));
 
     // Root Mean Square
-    addOutputParam( new MetricParam("RMS",tr("RMS error deviation"),tr("Root Mean Square error"),BaseMetric::defaultThresholdRMSError) );
+    addOutputParam(new MetricParam("RMS", tr("RMS error deviation"), tr("Root Mean Square error"), BaseMetric::defaultThresholdRMSError));
 
     // nb error
-    addOutputParam( new MetricParam("ErrorNum",tr("Error num (pixels)"),tr("Number of different pixels"),BaseMetric::defaultThresholdNumPixel) );
+    addOutputParam(new MetricParam("ErrorNum", tr("Error num (pixels)"), tr("Number of different pixels"), BaseMetric::defaultThresholdNumPixel));
 
     // % error
-    addOutputParam( new MetricParam("ErrorPercent",tr("Error (% pixels)"),tr("Number of different pixels in %"),0.0f) );
+    addOutputParam(new MetricParam("ErrorPercent", tr("Error (% pixels)"), tr("Number of different pixels in %"), 0.0f));
 }
 
-MetricParam * BaseMetric::getInputParam(const QString &name)
+MetricParam *BaseMetric::getInputParam(const QString &name)
 {
-    foreach (MetricParam * param, m_inputParams)
-    {
-        if (param->type == name)
+    foreach (MetricParam *param, m_inputParams) {
+        if (param->type == name) {
             return param;
+        }
     }
+
     return NULL;
 }
 
-MetricParam * BaseMetric::getOutputParam(const QString &name)
+MetricParam *BaseMetric::getOutputParam(const QString &name)
 {
-    foreach (MetricParam * param, m_outputParams)
-    {
-        if (param->type == name)
+    foreach (MetricParam *param, m_outputParams) {
+        if (param->type == name) {
             return param;
+        }
     }
+
     return NULL;
 }
 
@@ -403,33 +419,33 @@ QPixmap BaseMetric::getLogo() const
     return QPixmap("::/providers/providers/unknown.png");
 }
 
-const QString & BaseMetric::getType() const
+const QString &BaseMetric::getType() const
 {
     return m_type;
 }
 
-const QString & BaseMetric::getName() const
+const QString &BaseMetric::getName() const
 {
     return m_name;
 }
 
-const QString & BaseMetric::getDesc() const
+const QString &BaseMetric::getDesc() const
 {
     return m_desc;
 }
 
-const QList<ImageProperty> & BaseMetric::getProperties() const
+const QList<ImageProperty> &BaseMetric::getProperties() const
 {
     return m_properties;
 }
 
-const QList<MetricParam *> & BaseMetric::getInputParams()
+const QList<MetricParam *> &BaseMetric::getInputParams()
 {
     init();
     return m_inputParams;
 }
 
-const QList<MetricParam *> & BaseMetric::getOutputParams()
+const QList<MetricParam *> &BaseMetric::getOutputParams()
 {
     init();
     return m_outputParams;
@@ -437,16 +453,18 @@ const QList<MetricParam *> & BaseMetric::getOutputParams()
 
 static int qimageChannelCount(const QImage &img)
 {
-    switch(img.format()) {
+    switch (img.format()) {
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
     case QImage::Format_Alpha8:
     case QImage::Format_Grayscale8:
     case QImage::Format_Grayscale16:
         return 1;
+
     default:
         break;
     }
+
     if (img.hasAlphaChannel()) {
         return 4;
     } else {
@@ -458,36 +476,42 @@ static int qimageChannelCount(const QImage &img)
 void BaseMetric::computeStandardProperties()
 {
     // Dimension (pixels)
-    m_properties << ImageProperty( tr("Dimension (pixels)"), tr("Dimension in pixel of images"),QString("%1x%2").arg(m_image1.width()).arg(m_image1.height()) );
+    m_properties << ImageProperty(tr("Dimension (pixels)"), tr("Dimension in pixel of images"), QString("%1x%2").arg(m_image1.width()).arg(m_image1.height()));
 
     // size (pixels)
-    m_properties << ImageProperty( tr("Size (pixels)"), tr("Size in pixel of images"),MiscFunctions::pixelsToString(m_image1.width() * m_image1.height()) );
+    m_properties << ImageProperty(tr("Size (pixels)"), tr("Size in pixel of images"), MiscFunctions::pixelsToString(m_image1.width() * m_image1.height()));
 
     // size (bytes)
     int sz1 = MiscFunctions::getFileSize(m_file1);
-    m_properties << ImageProperty( tr("Size file1"), tr("Size in bytes of image"),tr("%1/%2").arg(sz1).arg( MiscFunctions::bytesToString(sz1) ) );
+    m_properties << ImageProperty(tr("Size file1"), tr("Size in bytes of image"), tr("%1/%2").arg(sz1).arg(MiscFunctions::bytesToString(sz1)));
     int sz2 = MiscFunctions::getFileSize(m_file2);
-    m_properties << ImageProperty( tr("Size file2"), tr("Size in bytes of image"),tr("%1/%2").arg(sz2).arg( MiscFunctions::bytesToString(sz2) ) );
+    m_properties << ImageProperty(tr("Size file2"), tr("Size in bytes of image"), tr("%1/%2").arg(sz2).arg(MiscFunctions::bytesToString(sz2)));
 
     // image format
     QMap<QString, QString> longFormats = MiscFunctions::getLongImageFormats();
     QString ext1 = QFileInfo(m_file1).suffix();
     QString fm1 = tr("Unknown");
-    if ( longFormats.contains(ext1) )
+
+    if (longFormats.contains(ext1)) {
         fm1 = QString("%1 (%2)").arg(longFormats[ext1]).arg(ext1);
-    m_properties << ImageProperty( tr("Format file1"), tr("Format of the image"),QString("%1").arg(fm1) );
+    }
+
+    m_properties << ImageProperty(tr("Format file1"), tr("Format of the image"), QString("%1").arg(fm1));
 
     QString ext2 = QFileInfo(m_file1).suffix();
     QString fm2 = tr("Unknown");
-    if ( longFormats.contains(ext2) )
+
+    if (longFormats.contains(ext2)) {
         fm2 = QString("%1 (%2)").arg(longFormats[ext2]).arg(ext2);
-    m_properties << ImageProperty( tr("Format file2"), tr("Format of the image"),QString("%1").arg(fm2) );
+    }
+
+    m_properties << ImageProperty(tr("Format file2"), tr("Format of the image"), QString("%1").arg(fm2));
 
     // bands
-    m_properties << ImageProperty( tr("Band"), tr("Number of band in the image (3 for RGB image)"),QString::number( qimageChannelCount(m_image1) ) );
+    m_properties << ImageProperty(tr("Band"), tr("Number of band in the image (3 for RGB image)"), QString::number(qimageChannelCount(m_image1)));
 
     // depth
-    m_properties << ImageProperty( tr("Band depth"), tr("Bits per pixel"), QString::number(m_image1.depth()));
+    m_properties << ImageProperty(tr("Band depth"), tr("Bits per pixel"), QString::number(m_image1.depth()));
 
     m_minImage1 = 255.;
     m_minImage2 = 255.;
@@ -508,10 +532,9 @@ void BaseMetric::loadSettings()
 
     settings.beginGroup("Input");
 
-    foreach (MetricParam * param, m_inputParams)
-    {
-        QVariant t = settings.value(param->type,param->defaultValue);
-        t.convert( param->defaultValue.type() );
+    foreach (MetricParam *param, m_inputParams) {
+        QVariant t = settings.value(param->type, param->defaultValue);
+        t.convert(param->defaultValue.type());
         param->threshold = t;
     }
 
@@ -519,16 +542,17 @@ void BaseMetric::loadSettings()
 
     settings.beginGroup("Output");
 
-    foreach (MetricParam * param, m_outputParams)
-    {
-        QVariant t = settings.value(param->type,param->defaultValue);
-        t.convert( param->defaultValue.type() );
+    foreach (MetricParam *param, m_outputParams) {
+        QVariant t = settings.value(param->type, param->defaultValue);
+        t.convert(param->defaultValue.type());
         param->threshold = t;
     }
 
-    QString typeUsed = settings.value("paramUsed","").toString();
-    if ( !typeUsed.isEmpty() )
-        setDiscriminatingParam( getOutputParam(typeUsed) );
+    QString typeUsed = settings.value("paramUsed", "").toString();
+
+    if (!typeUsed.isEmpty()) {
+        setDiscriminatingParam(getOutputParam(typeUsed));
+    }
 
     settings.endGroup();
     settings.endGroup();
@@ -545,9 +569,8 @@ void BaseMetric::saveSettings()
 
     settings.beginGroup("Input");
 
-    foreach (MetricParam * param, m_inputParams)
-    {
-        settings.setValue(param->type,param->threshold);
+    foreach (MetricParam *param, m_inputParams) {
+        settings.setValue(param->type, param->threshold);
         qDebug() << m_type << " " << param->type << " = " << param->threshold;
     }
 
@@ -555,11 +578,12 @@ void BaseMetric::saveSettings()
 
     settings.beginGroup("Output");
 
-    foreach (MetricParam * param, m_outputParams)
-    {
-        settings.setValue(param->type,param->threshold);
-        if (param->used)
-            settings.setValue("paramUsed",param->type);
+    foreach (MetricParam *param, m_outputParams) {
+        settings.setValue(param->type, param->threshold);
+
+        if (param->used) {
+            settings.setValue("paramUsed", param->type);
+        }
     }
 
     settings.endGroup();
@@ -592,6 +616,7 @@ QImage BaseMetric::getImage1WithGain(double gain, double offset)
     if (qFuzzyCompare(gain, 1.) && qFuzzyCompare(offset, 0.)) {
         return m_image1;
     }
+
     QImage ret = m_image1;
     applyGainOffset(ret, gain, offset);
     return ret;
@@ -619,17 +644,17 @@ QImage BaseMetric::getImageDifferenceWithGain(double gain, double offset)
     return ret;
 }
 
-const QImage & BaseMetric::getImage1() const
+const QImage &BaseMetric::getImage1() const
 {
     return m_image1;
 }
 
-const QImage & BaseMetric::getImage2() const
+const QImage &BaseMetric::getImage2() const
 {
     return m_image2;
 }
 
-const QImage & BaseMetric::getImageDifference() const
+const QImage &BaseMetric::getImageDifference() const
 {
     return m_imageDiff;
 }
@@ -639,7 +664,7 @@ bool BaseMetric::saveDifference(const QString &file) const
     return m_imageDiff.save(file);
 }
 
-const QImage & BaseMetric::getImageMask() const
+const QImage &BaseMetric::getImageMask() const
 {
     return m_imageMask;
 }
@@ -681,12 +706,12 @@ int BaseMetric::getImage2Channels() const
 
 void BaseMetric::setDiscriminatingParam(MetricParam *p)
 {
-    foreach (MetricParam * param, m_outputParams)
-    {
-        if (param == p)
+    foreach (MetricParam *param, m_outputParams) {
+        if (param == p) {
             param->used = true;
-        else
+        } else {
             param->used = false;
+        }
     }
 }
 
@@ -701,47 +726,50 @@ static QString description(const QImage &img, const int x, const int y)
     ret += QObject::tr("Red: %1,").arg(qRed(pixel));
     ret += QObject::tr("Green: %1,").arg(qGreen(pixel));
     ret += QObject::tr("Blue: %1,").arg(qBlue(pixel));
+
     if (img.hasAlphaChannel()) {
         ret += QObject::tr("Alpha: %1").arg(qAlpha(pixel));
     }
+
     return ret;
 }
 
-QString BaseMetric::getImage1Data(int x,int y) const
+QString BaseMetric::getImage1Data(int x, int y) const
 {
     return description(m_image1, x, y);
 }
 
-QString BaseMetric::getImage2Data(int x,int y) const
+QString BaseMetric::getImage2Data(int x, int y) const
 {
     return description(m_image2, x, y);
 }
 
-QString BaseMetric::getErrorData(int x,int y) const
+QString BaseMetric::getErrorData(int x, int y) const
 {
     return description(m_imageDiff, x, y);
 }
 
 QString BaseMetric::getImage1Data(const QPoint &pt) const
 {
-    return getImage1Data( pt.x(),pt.y() );
+    return getImage1Data(pt.x(), pt.y());
 }
 
 QString BaseMetric::getImage2Data(const QPoint &pt) const
 {
-    return getImage2Data( pt.x(),pt.y() );
+    return getImage2Data(pt.x(), pt.y());
 }
 
 QString BaseMetric::getErrorData(const QPoint &pt) const
 {
-    return getErrorData( pt.x(),pt.y() );
+    return getErrorData(pt.x(), pt.y());
 }
 
 MetricParam *BaseMetric::getDiscriminatingParam() const
 {
-    foreach (MetricParam * param, m_outputParams)
-    if (param->used == true)
-        return param;
+    foreach (MetricParam *param, m_outputParams)
+        if (param->used == true) {
+            return param;
+        }
 
     return NULL;
 }
@@ -751,23 +779,22 @@ bool BaseMetric::checkImages()
     m_valid = false;
 
     // check loading of files
-    if ( m_image1.isNull() )
-    {
+    if (m_image1.isNull()) {
         qWarning() << "can't read 1";
-        LogHandler::getInstance()->reportError( QString("Can't read %1").arg( m_file1 ) );
+        LogHandler::getInstance()->reportError(QString("Can't read %1").arg(m_file1));
         return m_valid;
     }
-    if ( m_image2.isNull() )
-    {
+
+    if (m_image2.isNull()) {
         qWarning() << "can't read 2";
-        LogHandler::getInstance()->reportError( QString("Can't read %1").arg( m_file2 ) );
+        LogHandler::getInstance()->reportError(QString("Can't read %1").arg(m_file2));
         return false;
     }
 
     // check size
     if (m_image1.size() != m_image2.size()) {
         qWarning() << QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_image1.width()).arg(m_image1.height()).arg(m_image2.width()).arg(m_image2.height());
-        LogHandler::getInstance()->reportError( QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_image1.width()).arg(m_image1.height()).arg(m_image2.width()).arg(m_image2.height()) );
+        LogHandler::getInstance()->reportError(QString("Size mismatch (%1x%2)/(%3/%4)").arg(m_image1.width()).arg(m_image1.height()).arg(m_image2.width()).arg(m_image2.height()));
         return false;
     }
 
@@ -777,40 +804,45 @@ bool BaseMetric::checkImages()
 
 bool BaseMetric::selectedStatsIsValid() const
 {
-    foreach (MetricParam * param, m_outputParams)
-    {
-        if ( param->used && !param->isValid() )
+    foreach (MetricParam *param, m_outputParams) {
+        if (param->used && !param->isValid()) {
             return false;
+        }
     }
+
     return true;
 }
 
 const QList<QPolygonF> &BaseMetric::getHistogramImage1()
 {
-    if ( m_histoImage1.isEmpty() )
-        computeHisto(m_image1,m_histoImage1);
+    if (m_histoImage1.isEmpty()) {
+        computeHisto(m_image1, m_histoImage1);
+    }
+
     return m_histoImage1;
 }
 
 const QList<QPolygonF> &BaseMetric::getHistogramImage2()
 {
-    if ( m_histoImage2.isEmpty() )
-        computeHisto(m_image2,m_histoImage2);
+    if (m_histoImage2.isEmpty()) {
+        computeHisto(m_image2, m_histoImage2);
+    }
+
     return m_histoImage2;
 }
 
 const QList<QPolygonF> &BaseMetric::getHistogramImageDiff(bool showZero)
 {
-    if ( m_histoImageDiff.isEmpty() || m_prevShowHistoZero != showZero )
-    {
+    if (m_histoImageDiff.isEmpty() || m_prevShowHistoZero != showZero) {
         m_histoImageDiff.clear();
-        computeHisto(m_imageDiff,m_histoImageDiff,!showZero);
+        computeHisto(m_imageDiff, m_histoImageDiff, !showZero);
     }
+
     m_prevShowHistoZero = showZero;
     return m_histoImageDiff;
 }
 
-void BaseMetric::computeHisto(const QImage &input,QList<QPolygonF> &polys, bool skipZeroLevel)
+void BaseMetric::computeHisto(const QImage &input, QList<QPolygonF> &polys, bool skipZeroLevel)
 {
     QImage img(input); // CoW, so don't care
 
@@ -820,21 +852,22 @@ void BaseMetric::computeHisto(const QImage &input,QList<QPolygonF> &polys, bool 
 
     polys.clear();
 
-    if ( img.isNull() ) {
+    if (img.isNull()) {
         return;
     }
 
-    typedef struct
-    {
+    typedef struct {
         quint32 red, green, blue, alpha;
     } HistogramListItem;
 
     // form histogram
     IntegerPixel histogram [256];
     int max = 0, min = 255;
-    for (int line=0; line<img.height(); line++) {
+
+    for (int line = 0; line < img.height(); line++) {
         QRgb *pixels = (QRgb *)img.scanLine(line);
-        for(int i=0; i < img.width(); ++i, ++pixels) {
+
+        for (int i = 0; i < img.width(); ++i, ++pixels) {
             const QRgb pixel = *pixels;
             histogram[qRed(pixel)].red++;
             histogram[qGreen(pixel)].green++;
@@ -854,7 +887,8 @@ void BaseMetric::computeHisto(const QImage &input,QList<QPolygonF> &polys, bool 
     }
 
     QPolygonF points[3];
-    for (int i= 0; i<256; i++) {
+
+    for (int i = 0; i < 256; i++) {
         if (!skipZeroLevel || histogram[i].red) {
             points[0] << QPointF(i, histogram[i].red);
         }
@@ -870,6 +904,7 @@ void BaseMetric::computeHisto(const QImage &input,QList<QPolygonF> &polys, bool 
 
     polys << points[0] << points[1] << points[2];
     float maxX = 0;
+
     for (const QPolygonF &pol : polys) {
         for (const QPointF &p : pol) {
             maxX = std::max(maxX, float(p.x()));
@@ -880,14 +915,18 @@ QImage BaseMetric::createDiffMask(const QImage &img)
 {
     QImage ret(img.width(), img.height(), QImage::Format_ARGB32_Premultiplied);
     ret.fill(Qt::transparent);
-    for (int line=0; line<img.height(); line++) {
+
+    for (int line = 0; line < img.height(); line++) {
         const QRgb *pixels = (const QRgb *)img.scanLine(line);
         QRgb *dest = (QRgb *)ret.scanLine(line);
-        for(int i=0; i < img.width(); ++i, ++pixels, ++dest) {
+
+        for (int i = 0; i < img.width(); ++i, ++pixels, ++dest) {
             const int val = qGray(*pixels);
+
             if (val == 0) {
                 continue;
             }
+
             if (val > m_meanError) {
                 *dest = qRgba(0, 255, 255, 255);
             } else {
@@ -899,7 +938,7 @@ QImage BaseMetric::createDiffMask(const QImage &img)
     return ret;
 }
 
-void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
+void BaseMetric::checkDifferences(const QString &file1, const QString &file2)
 {
     m_file1 = file1;
     m_file2 = file2;
@@ -921,20 +960,23 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     resetOutputParams();
 
     m_image1 = QImage(m_file1);
+
     if (m_image1.size().isEmpty()) {
-        LogHandler::getInstance()->reportDebug( QString("Can't load %1").arg( m_file1 ) );
+        LogHandler::getInstance()->reportDebug(QString("Can't load %1").arg(m_file1));
         return;
     }
 
     m_image2 = QImage(m_file2);
+
     if (m_image2.size().isEmpty()) {
-        LogHandler::getInstance()->reportDebug( QString("Can't load %1").arg( m_file2 ) );
+        LogHandler::getInstance()->reportDebug(QString("Can't load %1").arg(m_file2));
         return;
     }
 
     if (m_image1.size() != m_image2.size()) {
         int maxWidth = qMax(m_image1.width(), m_image2.width());
         int maxHeight = qMax(m_image1.height(), m_image2.height());
+
         if (m_image1.width() < m_image2.width() && m_image1.height() < m_image2.height()) {
             m_image1 = m_image1.scaled(maxWidth, maxHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         } else if (m_image2.width() < m_image1.width() && m_image2.height() < m_image1.height()) {
@@ -946,7 +988,7 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
     }
 
     // check compatibility
-    if( !checkImages() ) {
+    if (!checkImages()) {
         return;
     }
 
@@ -967,9 +1009,11 @@ void BaseMetric::checkDifferences(const QString &file1,const QString &file2)
 static size_t countNonBlack(const QImage &img)
 {
     size_t ret = 0;
-    for (int line=0; line<img.height(); line++) {
+
+    for (int line = 0; line < img.height(); line++) {
         QRgb *pixels = (QRgb *)img.scanLine(line);
-        for(int i=0; i < img.width(); ++i, ++pixels) {
+
+        for (int i = 0; i < img.width(); ++i, ++pixels) {
             // I think it should use qGray(), but to preserve compatibility with opencv we do it the bad way
             //if (qGray(*pixels)) {
             if (qRed(*pixels) || qGreen(*pixels) || qBlue(*pixels)) {
@@ -977,25 +1021,29 @@ static size_t countNonBlack(const QImage &img)
             }
         }
     }
+
     return ret;
 }
 
 static double findStdDev(const QImage &input, const double mean)
 {
     QImage img;
-    if(input.depth() < 32){
+
+    if (input.depth() < 32) {
         img = input.convertToFormat(img.hasAlphaChannel() ?
-                                  QImage::Format_ARGB32 :
-                                  QImage::Format_RGB32);
+                                    QImage::Format_ARGB32 :
+                                    QImage::Format_RGB32);
     } else {
         img = input;
     }
 
     double stddev = 0;
-    if(img.format() == QImage::Format_ARGB32_Premultiplied){
-        for (int line=0; line<img.height(); line++) {
+
+    if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = qUnpremultiply(*pixels);
                 stddev += (qRed(pixel) - mean) * (qRed(pixel) - mean);
                 stddev += (qGreen(pixel) - mean) * (qGreen(pixel) - mean);
@@ -1003,9 +1051,10 @@ static double findStdDev(const QImage &input, const double mean)
             }
         }
     } else {
-        for (int line=0; line<img.height(); line++) {
+        for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
-            for(int i=0; i < img.width(); ++i, ++pixels) {
+
+            for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = *pixels;
                 stddev += (qRed(pixel) - mean) * (qRed(pixel) - mean);
                 stddev += (qGreen(pixel) - mean) * (qGreen(pixel) - mean);
@@ -1013,6 +1062,7 @@ static double findStdDev(const QImage &input, const double mean)
             }
         }
     }
+
     return std::sqrt(stddev / (img.width() * img.height() * 3));
 }
 

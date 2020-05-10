@@ -28,8 +28,8 @@
 #include "qtpropertymanager.h"
 #include "BaseMetric.h"
 
-PropertyWidget::PropertyWidget( QWidget *parent ) :
-    QtTreePropertyBrowser( parent )
+PropertyWidget::PropertyWidget(QWidget *parent) :
+    QtTreePropertyBrowser(parent)
 {
     m_variantManager = new QtVariantPropertyManager(this);
 }
@@ -37,8 +37,10 @@ PropertyWidget::PropertyWidget( QWidget *parent ) :
 void PropertyWidget::displayData(BaseMetric *met)
 {
     clear();
-    if (!met)
+
+    if (!met) {
         return;
+    }
 
     displayProperties(met);
     displayStatistics(met);
@@ -51,13 +53,12 @@ void PropertyWidget::displayProperties(BaseMetric *met)
     const QList<ImageProperty> &props = met->getProperties();
 
     // Range list
-    parent = m_variantManager->addProperty( QVariant::String, tr("Properties") );
+    parent = m_variantManager->addProperty(QVariant::String, tr("Properties"));
     parent->setValue("");
     addProperty(parent);
 
-    foreach (const ImageProperty &prop, props)
-    {
-        QtVariantProperty *property = m_variantManager->addProperty( QVariant::String, prop.name );
+    foreach (const ImageProperty &prop, props) {
+        QtVariantProperty *property = m_variantManager->addProperty(QVariant::String, prop.name);
         property->setValue(prop.value);
         property->setToolTip(prop.desc);
         property->setStatusTip(prop.value);
@@ -73,20 +74,23 @@ void PropertyWidget::displayStatistics(BaseMetric *met)
     const QList<MetricParam *> params = met->getOutputParams();
 
     // Range list
-    parent = m_variantManager->addProperty( QVariant::String, tr("Statistics") );
+    parent = m_variantManager->addProperty(QVariant::String, tr("Statistics"));
     parent->setValue("");
     addProperty(parent);
 
-    foreach (MetricParam * param, params)
-    {
-        if ( !param->isValid() )
-            property = m_variantManager->addProperty( QVariant::String, param->name + " (*)" );
-        else
-            property = m_variantManager->addProperty( QVariant::String, param->name );
-        if (param->value.type() == QMetaType::Double || param->value.type() == QMetaType::Float)
-            property->setValue( QString().sprintf( "%.5f",param->value.toFloat() ) );
-        else
+    foreach (MetricParam *param, params) {
+        if (!param->isValid()) {
+            property = m_variantManager->addProperty(QVariant::String, param->name + " (*)");
+        } else {
+            property = m_variantManager->addProperty(QVariant::String, param->name);
+        }
+
+        if (param->value.type() == QMetaType::Double || param->value.type() == QMetaType::Float) {
+            property->setValue(QString().sprintf("%.5f", param->value.toFloat()));
+        } else {
             property->setValue(param->value);
+        }
+
         property->setToolTip(param->desc);
         parent->addSubProperty(property);
     }

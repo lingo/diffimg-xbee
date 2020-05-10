@@ -34,10 +34,10 @@ public:
     explicit MetricsManager(QObject *parent = 0);
     virtual ~MetricsManager();
 
-    static void registerMetrics(BaseMetric*);
+    static void registerMetrics(BaseMetric *);
 
-    static const QList<BaseMetric *> & getMetrics();
-    static BaseMetric* getMetricByType(const QString &type);
+    static const QList<BaseMetric *> &getMetrics();
+    static BaseMetric *getMetricByType(const QString &type);
 
     static void clear();
 

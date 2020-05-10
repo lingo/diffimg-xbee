@@ -70,45 +70,46 @@ void PerceptualMetric::createInputParams()
      */
 
     // FOV
-    addInputParam( new MetricParam("FOV",tr("Field of view"),tr("Field of view in degrees (0.1 to 89.9)"),defaultFieldOfView) );
+    addInputParam(new MetricParam("FOV", tr("Field of view"), tr("Field of view in degrees (0.1 to 89.9)"), defaultFieldOfView));
 
     // Gamma
-    addInputParam( new MetricParam("Gamma",tr("Gamma of screen"),tr("Value to convert rgb into linear space (default 2.2)"),defaultGamma) );
+    addInputParam(new MetricParam("Gamma", tr("Gamma of screen"), tr("Value to convert rgb into linear space (default 2.2)"), defaultGamma));
 
     // Luminance
-    addInputParam( new MetricParam("Luminance",tr("White luminance"),tr("White luminance (default 100.0 cdm^-2)"),defaultLuminance) );
+    addInputParam(new MetricParam("Luminance", tr("White luminance"), tr("White luminance (default 100.0 cdm^-2)"), defaultLuminance));
 
     // Luminance only
-    addInputParam( new MetricParam("LuminanceOnly",tr("Luminance only"),tr("Only consider luminance; ignore chroma (color) in the comparison"),defaultLuminanceOnly) );
+    addInputParam(new MetricParam("LuminanceOnly", tr("Luminance only"), tr("Only consider luminance; ignore chroma (color) in the comparison"), defaultLuminanceOnly));
 
     // FOV
-    addInputParam( new MetricParam("ColorFactor",tr("Color factor"),tr("How much of color to use, 0.0 to 1.0, 0.0 = ignore color."),defaultColorFactor) );
+    addInputParam(new MetricParam("ColorFactor", tr("Color factor"), tr("How much of color to use, 0.0 to 1.0, 0.0 = ignore color."), defaultColorFactor));
 
     // FOV
-    addInputParam( new MetricParam("Downsample",tr("Downsample"),tr("How many powers of two to down sample the image"),defaultDownSample) );
+    addInputParam(new MetricParam("Downsample", tr("Downsample"), tr("How many powers of two to down sample the image"), defaultDownSample));
 }
 
-RGBAImage* qImageToRGBAImage(const QImage &input)
+RGBAImage *qImageToRGBAImage(const QImage &input)
 {
     if (input.isNull()) {
         return 0;
     }
+
     QImage img(input); // CoW, so don't care
 
 
     const int w = img.width();
     const int h = img.height();
 
-    RGBAImage* result = new RGBAImage(w, h, "unknown");
+    RGBAImage *result = new RGBAImage(w, h, "unknown");
 
     if (img.format() != QImage::Format_ARGB32) {
         img = img.convertToFormat(QImage::Format_ARGB32);
     }
 
     // Copy the image over to our internal format, FreeImage has the scanlines bottom to top though.
-    unsigned int* dest = result->Get_Data();
+    unsigned int *dest = result->Get_Data();
 
-    for( int y = 0; y < h; y++, dest += w ) {
+    for (int y = 0; y < h; y++, dest += w) {
         //const unsigned int* scanline = (const unsigned int*)FreeImage_GetScanLine(freeImage, h - y - 1 );
         //const unsigned int * ptr = tmpImg.ptr<unsigned int>(y);
         memcpy(dest, img.scanLine(y), sizeof(dest[0]) * w);
@@ -119,16 +120,18 @@ RGBAImage* qImageToRGBAImage(const QImage &input)
 
 QImage RGBAImageToQImage(RGBAImage *image)
 {
-    if (!image)
+    if (!image) {
         return QImage();
+    }
 
     int Width = image->Get_Width();
     int Height = image->Get_Height();
 
     QImage output(Width, Height, QImage::Format_RGB32);
 
-    const unsigned int* source = image->Get_Data();
-    for( int y = 0; y < Height; y++, source += Width ) {
+    const unsigned int *source = image->Get_Data();
+
+    for (int y = 0; y < Height; y++, source += Width) {
         //unsigned int * ptr = mat.ptr<unsigned int>(y);
         //unsigned int* scanline = (unsigned int*)FreeImage_GetScanLine(bitmap, Height - y - 1 );
         memcpy(output.scanLine(y), source, sizeof(source[0]) * Width);
@@ -155,9 +158,8 @@ void PerceptualMetric::performDifference()
     args.ImgB = qImageToRGBAImage(m_image2);
     args.ImgDiff = new RGBAImage(m_image1.width(), m_image2.height(), "");
 
-    if (!args.ImgA ||!args.ImgB) // convert problem
-    {
-        LogHandler::getInstance()->reportError( "PerceptualDiff: Error during image conversion");
+    if (!args.ImgA || !args.ImgB) { // convert problem
+        LogHandler::getInstance()->reportError("PerceptualDiff: Error during image conversion");
         return;
     }
 

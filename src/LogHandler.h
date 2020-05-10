@@ -52,11 +52,11 @@ public:
 
 public slots:
 
-    void reportMessage(MessageLevel level, const QString &message );
-    void reportDebug(const QString &message );
-    void reportInfo(const QString &message );
-    void reportWarning(const QString &message );
-    void reportError(const QString &message );
+    void reportMessage(MessageLevel level, const QString &message);
+    void reportDebug(const QString &message);
+    void reportInfo(const QString &message);
+    void reportWarning(const QString &message);
+    void reportError(const QString &message);
 
 signals:
 
@@ -64,16 +64,16 @@ signals:
 
 private:
 
-    LogHandler(  );
+    LogHandler();
 
     LogHandler(const LogHandler &); // hide copy constructor
-    LogHandler& operator=(const LogHandler &); // hide assign op
+    LogHandler &operator=(const LogHandler &); // hide assign op
     // we leave just the declarations, so the compiler will warn us
     // if we try to use those two functions by accident
 
 private:
 
-    static LogHandler* m_Instance;
+    static LogHandler *m_Instance;
     MessageLevel m_currLevel;
     QStringList m_buffer;
     bool m_bufferized;
