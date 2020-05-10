@@ -1,5 +1,7 @@
 QT += core gui widgets
 
+CONFIG += sanitizer sanitize_undefined sanitize_address
+
 TARGET = diffimg
 TEMPLATE = app
 
@@ -38,6 +40,7 @@ HEADERS += \
     $$PWD/src/metrics/PerLuminanceMetric.h \
     $$PWD/src/MiscFunctions.h \
     $$PWD/src/PropertyWidget.h \
+    $$PWD/src/ChannelCurve.h
 
     #$$PWD/src/formats/BaseFormat.h \
     #$$PWD/src/formats/FormatsManager.h \
@@ -64,6 +67,7 @@ SOURCES +=  \
     $$PWD/src/metrics/PerLuminanceMetric.cpp \
     $$PWD/src/MiscFunctions.cpp \
     $$PWD/src/PropertyWidget.cpp \
+    $$PWD/src/ChannelCurve.cpp
 
     #$$PWD/src/formats/BaseFormat.cpp \
     #$$PWD/src/formats/FormatsManager.cpp \

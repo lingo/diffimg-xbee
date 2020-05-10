@@ -31,6 +31,7 @@
 #include "MetricsManager.h"
 #include "FilesManager.h"
 #include "WipeMethod.h"
+#include "ChannelCurve.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QFileInfo>
@@ -72,38 +73,6 @@
 
 const int defaultThumbnailSize = 128;
 const int updateWaitTime = 200;
-
-// QWT
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-
-class ChannelCurve : public QwtPlotCurve
-{
-public:
-
-    ChannelCurve(const QString &title) :
-        QwtPlotCurve(title)
-    {
-#if QT_VERSION >= 0x040000
-        setRenderHint(QwtPlotItem::RenderAntialiased);
-#endif
-    }
-
-    void setColor(const QColor &color)
-    {
-#if QT_VERSION >= 0x040000
-        QColor c = color;
-        c.setAlpha(50);
-
-        setPen(c);
-        setBrush(c);
-#else
-        setPen(color);
-        setBrush(QBrush(color, Qt::Dense4Pattern));
-#endif
-    }
-};
 
 DiffImgWindow::DiffImgWindow(QWidget *parent, Qt::WindowFlags flags)
     :   QMainWindow(parent, flags),
@@ -1157,20 +1126,18 @@ void DiffImgWindow::initHistoNew()
     }
 
     if (nbChannels == 1) {
-        // prepare RGB curves
         m_widgetHistoCurveR = new ChannelCurve("Value");
         m_widgetHistoCurveR->setColor(Qt::black);
     } else {
-        // prepare RGB curves
         m_widgetHistoCurveR = new ChannelCurve("Red");
         m_widgetHistoCurveR->setColor(Qt::red);
-
-        m_widgetHistoCurveG = new ChannelCurve("Green");
-        m_widgetHistoCurveG->setColor(Qt::green);
-
-        m_widgetHistoCurveB = new ChannelCurve("Blue");
-        m_widgetHistoCurveB->setColor(Qt::blue);
     }
+
+    m_widgetHistoCurveG = new ChannelCurve("Green");
+    m_widgetHistoCurveG->setColor(Qt::green);
+
+    m_widgetHistoCurveB = new ChannelCurve("Blue");
+    m_widgetHistoCurveB->setColor(Qt::blue);
 }
 
 void DiffImgWindow::showRGBHistogramNew()
