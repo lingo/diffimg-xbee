@@ -134,11 +134,11 @@ void qSleep(int ms)
 void listMetrics()
 {
     QTextStream out(stdout);
-    out << endl;
-    out << QObject::tr("Image Difference tool.") << endl;
-    out << endl;
-    out << QObject::tr("Available metrics:") << endl;
-    out << endl;
+    out << Qt::endl;
+    out << QObject::tr("Image Difference tool.") << Qt::endl;
+    out << Qt::endl;
+    out << QObject::tr("Available metrics:") << Qt::endl;
+    out << Qt::endl;
 
     // metrics registering
     MetricsRegistering::registerAll();
@@ -147,55 +147,55 @@ void listMetrics()
     const QList<BaseMetric *> &list = MetricsManager::getMetrics();
 
     foreach (BaseMetric *met, list) {
-        out << met->getType() << ": " << met->getName() << endl;
+        out << met->getType() << ": " << met->getName() << Qt::endl;
 
         // input parameters
         const QList<MetricParam *> &listInput = met->getInputParams();
 
         if (!listInput.isEmpty()) {
-            out << QObject::tr("\tInput parameters:") << endl;
+            out << QObject::tr("\tInput parameters:") << Qt::endl;
 
             foreach (MetricParam *param, listInput) {
-                out << "\t\t" << param->type << " = " << param->threshold.toString() << " (" << param->name << ")" << endl;
+                out << "\t\t" << param->type << " = " << param->threshold.toString() << " (" << param->name << ")" << Qt::endl;
             }
         }
 
         // output parameters
         const QList<MetricParam *> &listOutput = met->getOutputParams();
-        out << QObject::tr("\tOutput parameters:") << endl;
+        out << QObject::tr("\tOutput parameters:") << Qt::endl;
 
         foreach (MetricParam *param, listOutput) {
-            out << "\t\t" << param->type << " = " << param->threshold.toString() << " (" << param->name << ")" << endl;
+            out << "\t\t" << param->type << " = " << param->threshold.toString() << " (" << param->name << ")" << Qt::endl;
         }
 
-        out << endl;
+        out << Qt::endl;
     }
 
-    out << endl;
-    out << QObject::tr("How to use batch mode:") << endl;
-    out << QObject::tr("Example 1: --batch --metric PerChannelMeanMetric img1 img2: Use of per channel mean metric", "Do not translate parameters, only comments") << endl;
-    out << QObject::tr("Example 2: --batch --metric PerChannelMetric --threshold ErrorNum=250 img1 img2: Use of per channel metric and exit with error if pixel with difference number is upper to 250", "Do not translate parameters, only comments") << endl;
-    out << QObject::tr("Example 3: --batch --metric PerceptualMetric --in Gamma=1.8 --in FOV=75 --threshold ErrorNum=250 img1 img2: Use of perceptual metric with some input parameters set and exit with error if pixel with difference number is upper to 250", "Do not translate parameters, only comments") << endl;
-    out << endl;
+    out << Qt::endl;
+    out << QObject::tr("How to use batch mode:") << Qt::endl;
+    out << QObject::tr("Example 1: --batch --metric PerChannelMeanMetric img1 img2: Use of per channel mean metric", "Do not translate parameters, only comments") << Qt::endl;
+    out << QObject::tr("Example 2: --batch --metric PerChannelMetric --threshold ErrorNum=250 img1 img2: Use of per channel metric and exit with error if pixel with difference number is upper to 250", "Do not translate parameters, only comments") << Qt::endl;
+    out << QObject::tr("Example 3: --batch --metric PerceptualMetric --in Gamma=1.8 --in FOV=75 --threshold ErrorNum=250 img1 img2: Use of perceptual metric with some input parameters set and exit with error if pixel with difference number is upper to 250", "Do not translate parameters, only comments") << Qt::endl;
+    out << Qt::endl;
 }
 
 void usage()
 {
     QTextStream out(stdout);
-    out << endl;
-    out << QObject::tr("Image Difference tool.") << endl;
-    out << endl;
-    out << QObject::tr("Usage: ") << QApplication::arguments().at(0) << " " << QObject::tr("[options]") << " " << QObject::tr("img1 img2") << endl;
-    out << QObject::tr("") << endl;
-    out << QObject::tr("Following options are available:") << endl;
-    out << QObject::tr(" --list                 : list all metrics with their parameters.") << endl;
-    out << QObject::tr(" --portable             : use settings file location near the executable (for portable use).") << endl;
-    out << QObject::tr("") << endl;
-    out << QObject::tr(" --batch                : batch mode. Differences are computed without GUI and return code is used as result.") << endl;
-    out << QObject::tr(" --output filename      : save difference image. The difference is only saved when the input files aren't strictly identical.") << endl;
-    out << QObject::tr(" --metric name          : metric tag name. Display list of metrics with --list option.") << endl;
-    out << QObject::tr(" --in  name=value       : input parameter update.") << endl;
-    out << QObject::tr(" --threshold name=value : output parameter used to define comparison batch mode. If you set several threshold parameters, only the last one will be kept.") << endl;
+    out << Qt::endl;
+    out << QObject::tr("Image Difference tool.") << Qt::endl;
+    out << Qt::endl;
+    out << QObject::tr("Usage: ") << QApplication::arguments().at(0) << " " << QObject::tr("[options]") << " " << QObject::tr("img1 img2") << Qt::endl;
+    out << QObject::tr("") << Qt::endl;
+    out << QObject::tr("Following options are available:") << Qt::endl;
+    out << QObject::tr(" --list                 : list all metrics with their parameters.") << Qt::endl;
+    out << QObject::tr(" --portable             : use settings file location near the executable (for portable use).") << Qt::endl;
+    out << QObject::tr("") << Qt::endl;
+    out << QObject::tr(" --batch                : batch mode. Differences are computed without GUI and return code is used as result.") << Qt::endl;
+    out << QObject::tr(" --output filename      : save difference image. The difference is only saved when the input files aren't strictly identical.") << Qt::endl;
+    out << QObject::tr(" --metric name          : metric tag name. Display list of metrics with --list option.") << Qt::endl;
+    out << QObject::tr(" --in  name=value       : input parameter update.") << Qt::endl;
+    out << QObject::tr(" --threshold name=value : output parameter used to define comparison batch mode. If you set several threshold parameters, only the last one will be kept.") << Qt::endl;
 
 }
 
@@ -287,7 +287,7 @@ int makeDiffBatch(const QString &file1, const QString &file2, const QString &met
     QTextStream out(stdout);
 
     foreach (MetricParam *param, listInput) {
-        out << "  " << param->type << " = " << param->threshold.toString() << endl;
+        out << "  " << param->type << " = " << param->threshold.toString() << Qt::endl;
     }
 
     foreach (MetricParam *param, listOutput) {
@@ -297,17 +297,17 @@ int makeDiffBatch(const QString &file1, const QString &file2, const QString &met
             out << "  ";
         }
 
-        out << param->type << " = " << param->value.toString() << " (threshold = " << param->threshold.toString() << ")" << endl;
+        out << param->type << " = " << param->value.toString() << " (threshold = " << param->threshold.toString() << ")" << Qt::endl;
     }
 
     if (!outFile.isEmpty()) {
         if (!met->saveDifference(outFile)) {
-            out << QObject::tr("Can't save difference image in %1").arg(outFile) << endl;
+            out << QObject::tr("Can't save difference image in %1").arg(outFile) << Qt::endl;
         }
     }
 
     if (met->selectedStatsIsValid()) {
-        out << QObject::tr("Files are identical (under the threshold)") << endl;
+        out << QObject::tr("Files are identical (under the threshold)") << Qt::endl;
         return EXIT_OK;
     }
 
