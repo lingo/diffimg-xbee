@@ -22,7 +22,7 @@
 
 #include <QFileDialog>
 #include <QCompleter>
-#include <QDirModel>
+#include <QFileSystemModel>
 
 #include "FilesDialog.h"
 #include "MiscFunctions.h"
@@ -37,7 +37,7 @@ FilesDialog::FilesDialog(QWidget *parent)
 
     // add completer to line edit
     QCompleter *completerDir = new QCompleter(this);
-    QDirModel *dirModelDir = new QDirModel(completerDir);
+    QFileSystemModel *dirModelDir = new QFileSystemModel(completerDir);
     dirModelDir->setFilter(QDir::Dirs);
     completerDir->setModel(dirModelDir);
     lineEditFile1->setCompleter(completerDir);

@@ -31,7 +31,7 @@ class ImageNavigator :   public QWidget
 
 public:
 
-    explicit ImageNavigator(QGraphicsView *parent = 0, Qt::WindowFlags f = 0);
+    explicit ImageNavigator(QGraphicsView *parent = 0);
     virtual ~ImageNavigator() {}
 
     void setImage(const QImage &img);

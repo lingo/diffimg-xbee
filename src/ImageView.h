@@ -126,9 +126,9 @@ private:
     bool m_drag;
     bool m_showMarker;
     QPointF m_posMarker;
+    WipeItem *m_wipeItem;
     bool m_wipeMode;
     int m_wipeMethod;
-    WipeItem *m_wipeItem;
 };
 
 #endif // _EDITORVIEW_H_

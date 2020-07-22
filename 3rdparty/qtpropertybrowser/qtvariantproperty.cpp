@@ -145,7 +145,6 @@ static QtProperty *wrappedProperty(QtProperty *property)
 
 class QtVariantPropertyPrivate
 {
-    QtVariantProperty *q_ptr;
 public:
     QtVariantPropertyPrivate(QtVariantPropertyManager *m) : manager(m) {}
 
@@ -575,9 +574,7 @@ void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, con
 
 void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, const QKeySequence &val)
 {
-    QVariant v;
-    qVariantSetValue(v, val);
-    valueChanged(property, v);
+    valueChanged(property, QVariant::fromValue(val));
 }
 
 void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, const QChar &val)
@@ -662,9 +659,7 @@ void QtVariantPropertyManagerPrivate::slotEnumNamesChanged(QtProperty *property,
 void QtVariantPropertyManagerPrivate::slotEnumIconsChanged(QtProperty *property, const QMap<int, QIcon> &enumIcons)
 {
     if (QtVariantProperty *varProp = m_internalToProperty.value(property, 0)) {
-        QVariant v;
-        qVariantSetValue(v, enumIcons);
-        emit q_ptr->attributeChanged(varProp, m_enumIconsAttribute, v);
+        emit q_ptr->attributeChanged(varProp, m_enumIconsAttribute, QVariant::fromValue(enumIcons));
     }
 }
 
@@ -1565,9 +1560,7 @@ QVariant QtVariantPropertyManager::attributeValue(const QtProperty *property, co
         if (attribute == d_ptr->m_enumNamesAttribute)
             return enumManager->enumNames(internProp);
         if (attribute == d_ptr->m_enumIconsAttribute) {
-            QVariant v;
-            qVariantSetValue(v, enumManager->enumIcons(internProp));
-            return v;
+            return QVariant::fromValue(enumManager->enumIcons(internProp));
         }
         return QVariant();
     } else if (QtFlagPropertyManager *flagManager = qobject_cast<QtFlagPropertyManager *>(manager)) {

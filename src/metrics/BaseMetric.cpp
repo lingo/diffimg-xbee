@@ -66,7 +66,8 @@ float BaseMetric::defaultThresholdStandardDeviation = 0.3f;
 struct IntegerPixel {
     quint32 red{}, green{}, blue{}, alpha{};
 };
-static bool equalize(QImage &img)
+
+inline bool equalize(QImage &img)
 {
     if (img.isNull()) {
         return (false);
@@ -856,13 +857,8 @@ void BaseMetric::computeHisto(const QImage &input, QList<QPolygonF> &polys, bool
         return;
     }
 
-    typedef struct {
-        quint32 red, green, blue, alpha;
-    } HistogramListItem;
-
     // form histogram
     IntegerPixel histogram [256];
-    int max = 0, min = 255;
 
     for (int line = 0; line < img.height(); line++) {
         QRgb *pixels = (QRgb *)img.scanLine(line);
@@ -873,16 +869,6 @@ void BaseMetric::computeHisto(const QImage &input, QList<QPolygonF> &polys, bool
             histogram[qGreen(pixel)].green++;
             histogram[qBlue(pixel)].blue++;
             histogram[qAlpha(pixel)].alpha++;
-
-            //max = std::max(qRed(pixel), max);
-            //max = std::max(qGreen(pixel), max);
-            //max = std::max(qBlue(pixel), max);
-            //max = std::max(qAlpha(pixel), max);
-
-            //min = std::min(qRed(pixel), min);
-            //min = std::min(qGreen(pixel), min);
-            //min = std::min(qBlue(pixel), min);
-            //min = std::min(qAlpha(pixel), min);
         }
     }
 

@@ -74,8 +74,8 @@
 const int defaultThumbnailSize = 128;
 const int updateWaitTime = 200;
 
-DiffImgWindow::DiffImgWindow(QWidget *parent, Qt::WindowFlags flags)
-    :   QMainWindow(parent, flags),
+DiffImgWindow::DiffImgWindow(QWidget *parent)
+    :   QMainWindow(parent),
         m_displayOverlayDiff(true),
         m_displayOriginalImage(true),
         m_displayModifiedImage(false),

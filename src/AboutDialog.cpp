@@ -60,9 +60,6 @@ void AboutDialog::updateAbout()
     // setup image format list
     updateInfosImageFormats();
 
-    // setup user image format parameters
-    updateUserImageParameterLanguages();
-
     // setup languages list
     updateInfosLanguages();
 
@@ -83,19 +80,6 @@ void AboutDialog::updateWipeEffects()
     comboBoxWipeEffectAxis->clear();
     comboBoxWipeEffectAxis->addItem(tr("Horizontal effect"), WipeMethod::WIPE_HORIZONTAL);
     comboBoxWipeEffectAxis->addItem(tr("Vertical effect"), WipeMethod::WIPE_VERTICAL);
-}
-
-void AboutDialog::updateUserImageParameterLanguages()
-{
-    comboBoxImageFormatName->clear();
-
-    // update comboBoxUploaders
-    //const QList<BaseFormat *> &list = FormatsManager::getFormats();
-    //foreach (BaseFormat * fmt, list)
-    //{
-    //    comboBoxImageFormatName->addItem( fmt->getName(),qVariantFromValue( (void *) fmt ) ); // store directly pointer
-    //}
-
 }
 
 void AboutDialog::updateInfosImageFormats()
@@ -276,7 +260,7 @@ void AboutDialog::initMetrics()
     const QList<BaseMetric *> &list = MetricsManager::getMetrics();
 
     foreach (BaseMetric *met, list) {
-        comboBoxMetrics->addItem(met->getName(), qVariantFromValue((void *) met));    // store directly pointer
+        comboBoxMetrics->addItem(met->getName(), QVariant::fromValue((void *) met));    // store directly pointer
     }
 }
 
@@ -289,39 +273,6 @@ void AboutDialog::on_listWidgetTranslations_itemClicked(QListWidgetItem *item)
     QTranslator translator;
     translator.load(file);
     labelTranslation->setText(translator.translate("", "release of translation and translator name please", "put your name here dear translator and the release of the translation file!!"));
-}
-
-void AboutDialog::on_comboBoxImageFormatName_currentIndexChanged(int index)
-{
-    labelFormatDesc->setText("");
-
-    if (index < 0) {
-        return;
-    }
-
-    //BaseFormat *fmt = static_cast<BaseFormat *>( comboBoxImageFormatName->itemData(index,Qt::UserRole).value<void *>() );
-    //labelFormatDesc->setText( fmt->getDesc() );
-
-    //// update comboBoxFormatParam
-    //comboBoxFormatParam->clear();
-    //const QList<FormatProperty*> &listInput = fmt->getProperties();
-
-    //lineEditFormatParam->setText("");
-    //lineEditFormatParam->setToolTip("");
-    //lineEditFormatParam->setEnabled( !listInput.isEmpty() );
-    //comboBoxFormatParam->setToolTip("");
-    //comboBoxcomboBoxFormatParamValues->setToolTip("");
-
-    //foreach (FormatProperty * prop, listInput)
-    //{
-    //    comboBoxFormatParam->addItem( prop->name,qVariantFromValue( (void *) prop ) ); // store directly pointer
-    //}
-
-}
-
-void AboutDialog::on_comboBoxFormatParam_currentIndexChanged(int index)
-{
-    setupFormatParam(index, comboBoxFormatParam, lineEditFormatParam, comboBoxcomboBoxFormatParamValues, pushButtonApplyUserParam);
 }
 
 void AboutDialog::on_comboBoxMetrics_currentIndexChanged(int index)
@@ -348,7 +299,7 @@ void AboutDialog::on_comboBoxMetrics_currentIndexChanged(int index)
     pushButtonApplyInputParam->setEnabled(false);
 
     foreach (MetricParam *param, listInput) {
-        comboBoxInputParam->addItem(param->name, qVariantFromValue((void *) param));    // store directly pointer
+        comboBoxInputParam->addItem(param->name, QVariant::fromValue((void *) param));    // store directly pointer
     }
 
     // update comboBoxOutputParameter
@@ -361,7 +312,7 @@ void AboutDialog::on_comboBoxMetrics_currentIndexChanged(int index)
     comboBoxOutputParam->setToolTip("");
 
     foreach (MetricParam *param, listOutput) {
-        comboBoxOutputParam->addItem(param->name, qVariantFromValue((void *) param));    // store directly pointer
+        comboBoxOutputParam->addItem(param->name, QVariant::fromValue((void *) param));    // store directly pointer
 
         if (param->used) {
             comboBoxOutputParam->setCurrentIndex(comboBoxOutputParam->count() - 1);
@@ -392,37 +343,6 @@ void AboutDialog::on_comboBoxOutputParam_currentIndexChanged(int index)
     BaseMetric *met = static_cast<BaseMetric *>(comboBoxMetrics->itemData(comboBoxMetrics->currentIndex(), Qt::UserRole).value<void *>());
     met->setDiscriminatingParam(param);
 }
-void AboutDialog::setupFormatParam(int index, QComboBox *combo, QLineEdit *lineEdit, QComboBox *comboEdit, QPushButton *)
-{
-#if 0
-
-    if (index < 0) {
-        return;
-    }
-
-    FormatProperty *prop = static_cast<FormatProperty *>(combo->itemData(index, Qt::UserRole).value<void *>());
-
-    lineEdit->setToolTip(prop->desc);
-    comboEdit->setToolTip(prop->desc);
-    combo->setToolTip(prop->desc);
-
-    comboEdit->setVisible(!prop->availableValues.isEmpty());
-    lineEdit->setVisible(prop->availableValues.isEmpty());
-
-    if (prop->availableValues.isEmpty()) {
-        lineEdit->setText(prop->value.toString());
-    } else {
-        comboEdit->clear();
-
-        foreach (const QString &key, prop->availableValues) {
-            comboEdit->addItem(key);
-        }
-
-        comboEdit->setCurrentIndex(comboEdit->findText(prop->value.toString()));
-    }
-
-#endif
-}
 
 void AboutDialog::setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, QPushButton *button)
 {
@@ -436,7 +356,7 @@ void AboutDialog::setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, Q
     lineEdit->setToolTip(param->desc);
 
     // update the validator
-    switch (param->threshold.type()) {
+    switch (QMetaType::Type(param->threshold.type())) {
     case QMetaType::Int: {
         lineEdit->setValidator(m_iValidator);
         break;
@@ -472,32 +392,6 @@ void AboutDialog::on_lineEditThreshold_textEdited(const QString &text)
 void AboutDialog::on_pushButtonApplyInputParam_pressed()
 {
     applyParam(comboBoxInputParam, lineEditInputParam, pushButtonApplyInputParam);
-}
-
-void AboutDialog::on_pushButtonApplyUserParam_pressed()
-{
-    applyFormatProperty(comboBoxFormatParam, lineEditFormatParam, comboBoxcomboBoxFormatParamValues, pushButtonApplyUserParam);
-}
-
-void AboutDialog::applyFormatProperty(QComboBox *combo, QLineEdit *lineEdit, QComboBox *comboValue, QPushButton *)
-{
-    //changePalette(true,lineEdit,button);
-
-    // apply the modification
-#if 0
-    FormatProperty *prop = static_cast<FormatProperty *>(combo->itemData(combo->currentIndex(), Qt::UserRole).value<void *>());
-
-    if (!prop) {
-        return;
-    }
-
-    if (prop->availableValues.isEmpty()) {
-        prop->value = lineEdit->text().toLower();
-    } else {
-        prop->value = comboValue->currentText();
-    }
-
-#endif
 }
 
 void AboutDialog::on_pushButtonApplyImageParam_pressed()

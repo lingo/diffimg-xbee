@@ -46,8 +46,8 @@ ImageView::ImageView(QWidget *parent) : QGraphicsView(parent),
     m_showMask(true),
     m_drag(false),
     m_showMarker(false),
-    m_wipeMode(false),
     m_wipeItem(nullptr),
+    m_wipeMode(false),
     m_wipeMethod(WipeMethod::WIPE_HORIZONTAL)
 {
     // OpenGL
@@ -132,7 +132,7 @@ void ImageView::setShowOverview(bool val)
 
 void ImageView::setScale(qreal val)
 {
-    setMatrix(QMatrix());
+    resetTransform();
     scale(val, val);
     emit scaleChanged(transform().m22());
 }
@@ -269,7 +269,7 @@ void ImageView::fitScale()
 
 void ImageView::resetScale()
 {
-    setMatrix(QMatrix());
+    resetTransform();
     setCenter(scene()->sceneRect().center());
     emit scaleChanged(transform().m22());
     emit somethingChanged();
@@ -382,7 +382,7 @@ void ImageView::zoom(double factor)
 void ImageView::wheelEvent(QWheelEvent *event)
 {
     //Scale the view ie. do the zoom
-    if (event->delta() > 0) {
+    if (event->angleDelta().y() > 0) {
         zoomIn();
     } else {
         zoomOut();

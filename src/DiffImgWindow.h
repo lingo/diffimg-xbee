@@ -42,7 +42,7 @@ public:
 
 
 
-    DiffImgWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    DiffImgWindow(QWidget *parent = 0);
     ~DiffImgWindow();
 
 public slots:

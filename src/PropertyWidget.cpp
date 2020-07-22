@@ -85,10 +85,14 @@ void PropertyWidget::displayStatistics(BaseMetric *met)
             property = m_variantManager->addProperty(QVariant::String, param->name);
         }
 
-        if (param->value.type() == QMetaType::Double || param->value.type() == QMetaType::Float) {
-            property->setValue(QString().sprintf("%.5f", param->value.toFloat()));
-        } else {
+        switch(QMetaType::Type(param->value.type())) {
+        case QMetaType::Double:
+        case QMetaType::Float:
+            property->setValue(QString::number(param->value.toFloat(), 'f', 5));
+            break;
+        default:
             property->setValue(param->value);
+            break;
         }
 
         property->setToolTip(param->desc);

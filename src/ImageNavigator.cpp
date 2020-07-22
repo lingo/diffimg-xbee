@@ -29,7 +29,7 @@ const double factorMaxSize = 0.15; // max xx% of parent widget
 
 // ImageNavigator --------------------------------------------------------------------
 
-ImageNavigator::ImageNavigator(QGraphicsView *parent, Qt::WindowFlags flags) : QWidget(parent, flags),
+ImageNavigator::ImageNavigator(QGraphicsView *parent) : QWidget(parent),
     m_worldMatrix(new QTransform()),
     m_imgMatrix(new QTransform()),
     m_backgroundColor(QColor(0, 0, 0, 150)),
