@@ -1,7 +1,5 @@
 QT += core gui widgets
 
-CONFIG += sanitizer sanitize_undefined sanitize_address
-
 TARGET = diffimg
 TEMPLATE = app
 
