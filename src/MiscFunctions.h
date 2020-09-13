@@ -22,15 +22,13 @@
 #define _MISCFUNCTIONS_H_
 
 #include <QtCore/QString>
-#include <QtGui/QImage>
+#include <QImage>
 
-namespace cv
-{
+namespace cv {
 class Mat;
 }
 
-struct DiffStruct
-{
+struct DiffStruct {
     QImage maskDiffImage; // mask image
     QImage diffImage; // diff image
     unsigned int nbErr;
@@ -50,8 +48,7 @@ class MiscFunctions
 {
 public:
 
-    enum DiffMethodType
-    {
+    enum DiffMethodType {
         METHOD_BYCHANNEL = 0,
         METHOD_BYCHANNELMEAN,
         METHOD_BYLIGHTNESS,
@@ -64,33 +61,20 @@ public:
     static QMap<QString, QString> getLongImageFormats();
 
     // translations functions
-    static QString getTranslationsPath( const QString &refLang = QString() );
+    static QString getTranslationsPath(const QString &refLang = QString());
     static QString getTranslationsFile(const QString &lang);
     static QMap<QString, QString> getAvailableLanguages();
     static void setDefaultLanguage();
-    static void setLanguage(const QString& lang);
+    static void setLanguage(const QString &lang);
 
     static void updateApplicationIdentity();
 
     static bool stringToFile(const QString &data, const QString &filename);
     static QString fileToString(const QString &filename);
 
-    static QString matTypeToText(int);
-    static QString matDepthToText(int);
     static quint64 getFileSize(const QString &file);
     static QString bytesToString(quint64 bytes);
     static QString pixelsToString(quint64 pixels);
-
-    // opencv tools
-    static QImage opencvMatToQImage(const cv::Mat& mat, bool deepCopy = false);
-    static cv::Mat qImageToOpencvMat(const QImage &);
-    static cv::Mat searchDecoder(const QString &file);
-    static void computeHistogramValue(const cv::Mat& Image, cv::Mat& Hist);
-    static void ComputeHistogramBGR(const cv::Mat& Image,cv::Mat& HistB, cv::Mat& HistG, cv::Mat& HistR);
-    static void computeHistogram1D(const cv::Mat& Image, cv::Mat& Hist);
-    static QString dataToText(const cv::Mat& img, int x, int y);
-
-
 };
 
 #endif // _MISCFUNCTIONS_H_

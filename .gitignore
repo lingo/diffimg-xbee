@@ -1,3 +1,10 @@
 release/
+moc_*.h
+moc_*.cpp
+qrc_*.cpp
+*.moc
+.qmake.stash
+build/Makefile*
+*.o
 *.a
 *.qm

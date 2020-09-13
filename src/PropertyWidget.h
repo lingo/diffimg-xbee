@@ -35,7 +35,7 @@ class PropertyWidget :  public QtTreePropertyBrowser
 
 public:
 
-    PropertyWidget( QWidget *parent = 0 );
+    PropertyWidget(QWidget *parent = 0);
     ~PropertyWidget() {}
 
     void displayData(BaseMetric *met);

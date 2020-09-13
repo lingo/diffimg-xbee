@@ -21,10 +21,10 @@
 // Qt
 #include <QtCore/QtDebug>
 
-#include <QtGui/QMouseEvent>
-#include <QtGui/QGraphicsScene>
+#include <QMouseEvent>
+#include <QGraphicsScene>
 
-#include <QtGui/QGraphicsPixmapItem>
+#include <QGraphicsPixmapItem>
 
 //#include <QtOpenGL/QGLWidget>
 
@@ -35,49 +35,49 @@
 
 const double     scaleFactor = 1.3; //How fast we zoom
 
-ImageView::ImageView(QWidget * parent) : QGraphicsView(parent),
-    m_navigator(NULL),
-    m_imageItem(NULL),
-    m_maskItem(NULL),
+ImageView::ImageView(QWidget *parent) : QGraphicsView(parent),
+    m_navigator(nullptr),
+    m_imageItem(nullptr),
+    m_maskItem(nullptr),
     m_navigatorSize(0.15f),
-    m_navigatorMargin(10),
+    m_navigatorMargin(20),
     m_showNavigator(true),
     m_maskOpacity(0.5f),
     m_showMask(true),
     m_drag(false),
     m_showMarker(false),
+    m_wipeItem(nullptr),
     m_wipeMode(false),
-    m_wipeItem(NULL),
     m_wipeMethod(WipeMethod::WIPE_HORIZONTAL)
 {
     // OpenGL
     //setViewport(new QGLWidget(this));
 
     // GUI
-    setContentsMargins(1,1,1,1);
+    setContentsMargins(1, 1, 1, 1);
 
     // Initialize properties
     setMouseTracking(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setDragMode(QGraphicsView::ScrollHandDrag);
-    setViewportUpdateMode (QGraphicsView::FullViewportUpdate); // because artifact (view rect diff scene rect !!)
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);  // because artifact (view rect diff scene rect !!)
 
     // Center
-    m_centerPoint = QPointF(0.0f,0.0f);
+    m_centerPoint = QPointF(0.0f, 0.0f);
     centerOn(m_centerPoint);
     initBackground();
 
     QGraphicsScene *scene = new QGraphicsScene(this);
 
     // trace change in the scene (in order to view more than only scene rect
-    connect( scene,SIGNAL( sceneRectChanged ( const QRectF &) ),this,SLOT( updateSceneRect(const QRectF &) ) );
+    connect(scene, SIGNAL(sceneRectChanged(const QRectF &)), this, SLOT(updateSceneRect(const QRectF &)));
     setScene(scene);
 
     // navigator windows
     m_navigator = new ImageNavigator(this);
-    connect( m_navigator, SIGNAL( moveView(const QPointF &) ), this, SLOT( setCenter(const QPointF &) ) );
-    connect( m_navigator, SIGNAL( moveView(const QPointF &) ), this, SIGNAL( somethingChanged(const QPointF &) ) ); // must inform "connected" views
+    connect(m_navigator, SIGNAL(moveView(const QPointF &)), this, SLOT(setCenter(const QPointF &)));
+    connect(m_navigator, SIGNAL(moveView(const QPointF &)), this, SIGNAL(somethingChanged(const QPointF &)));       // must inform "connected" views
 }
 
 ImageView::~ImageView()
@@ -87,8 +87,10 @@ ImageView::~ImageView()
 void ImageView::setMaskOpacity(qreal opa)
 {
     m_maskOpacity = opa;
-    if (m_maskItem)
+
+    if (m_maskItem) {
         m_maskItem->setOpacity(m_maskOpacity);
+    }
 }
 
 qreal ImageView::maskOpacity() const
@@ -99,8 +101,8 @@ qreal ImageView::maskOpacity() const
 void ImageView::setEnabledMask(bool val)
 {
     m_showMask = val;
-    if (m_maskItem)
-    {
+
+    if (m_maskItem) {
         m_maskItem->setVisible(m_showMask);
         viewport()->update();
     }
@@ -130,9 +132,9 @@ void ImageView::setShowOverview(bool val)
 
 void ImageView::setScale(qreal val)
 {
-    setMatrix( QMatrix() );
-    scale(val,val);
-    emit scaleChanged( transform().m22() );
+    resetTransform();
+    scale(val, val);
+    emit scaleChanged(transform().m22());
 }
 
 qreal ImageView::getScale() const
@@ -142,21 +144,25 @@ qreal ImageView::getScale() const
 
 void ImageView::setImage(const QImage &newImg)
 {
-    m_navigator->setImage( newImg );  // reset overview
+    m_navigator->setImage(newImg);    // reset overview
 
-    if (!m_imageItem)
-        m_imageItem = scene()->addPixmap( QPixmap::fromImage(newImg) );
-    else
-        m_imageItem->setPixmap( QPixmap::fromImage(newImg) );
-    scene()->setSceneRect( newImg.rect() );
+    if (!m_imageItem) {
+        m_imageItem = scene()->addPixmap(QPixmap::fromImage(newImg));
+    } else {
+        m_imageItem->setPixmap(QPixmap::fromImage(newImg));
+    }
+
+    scene()->setSceneRect(newImg.rect());
 }
 
 void ImageView::setMask(const QImage &newMask)
 {
-    if (!m_maskItem)
-        m_maskItem = scene()->addPixmap( QPixmap::fromImage(newMask) );
-    else
-        m_maskItem->setPixmap( QPixmap::fromImage(newMask) );
+    if (!m_maskItem) {
+        m_maskItem = scene()->addPixmap(QPixmap::fromImage(newMask));
+    } else {
+        m_maskItem->setPixmap(QPixmap::fromImage(newMask));
+    }
+
     m_maskItem->setOpacity(m_maskOpacity);
     m_maskItem->setVisible(m_showMask);
 }
@@ -164,58 +170,78 @@ void ImageView::setMask(const QImage &newMask)
 void ImageView::updateSceneRect(const QRectF &rect)
 {
     // the view can "see" sceneRect x 2
-    setSceneRect( rect.adjusted(-rect.width() / 2,-rect.height() / 2,rect.width() / 2,rect.height() / 2) );
+    setSceneRect(rect.adjusted(-rect.width() / 2, -rect.height() / 2, rect.width() / 2, rect.height() / 2));
 }
 
 bool ImageView::isImageInside()
 {
     // view rect is completely inside the image rect ?
-    if ( scene() )
-        return mapToScene( rect() ).boundingRect().contains( scene()->sceneRect() );
-    else
+    if (scene()) {
+        return mapToScene(rect()).boundingRect().contains(scene()->sceneRect());
+    } else {
         return false;
+    }
 }
 
-void ImageView::paintEvent(QPaintEvent* event)
+void ImageView::paintEvent(QPaintEvent *event)
 {
-    QPainter painter( viewport() );
+    QPainter painter(viewport());
 
     // draw background
     painter.drawTiledPixmap(rect(), m_tileBg);
+    painter.end();
     QGraphicsView::paintEvent(event);
+    painter.begin(viewport());
 
-    if (!isImageInside() && m_showNavigator)
-    {
-        if ( m_navigator->isVisible() )
-        {
+    if (!isImageInside() && m_showNavigator) {
+        if (m_navigator->isVisible()) {
             // top left placement
             m_navigator->move(m_navigatorMargin, m_navigatorMargin);
-        }
-        else
-        {
+        } else {
             m_navigator->show();
             m_navigator->update();
         }
-    }
-    else
-    {
+    } else {
         m_navigator->hide();
     }
 
-    if (m_showMarker)
+    if (m_showMarker) {
         drawMarker(painter);
+    }
+
+    QFont font = painter.font();
+    font.setBold(true);
+    painter.setFont(font);
+
+    QColor bgColor = painter.background().color();
+    bgColor.setAlpha(128);
+
+    if (!filenameLeft.isEmpty()) {
+        const int flags = Qt::AlignLeft | Qt::AlignTop;
+        QRect boundingRect = painter.fontMetrics().boundingRect(rect(), flags, filenameLeft);
+        painter.fillRect(boundingRect, bgColor);
+        painter.drawText(rect(), flags, filenameLeft);
+    }
+
+    if (!filenameRight.isEmpty()) {
+        const int flags = Qt::AlignRight | Qt::AlignTop;
+        QRect boundingRect = painter.fontMetrics().boundingRect(rect(), flags, filenameRight);
+        painter.fillRect(boundingRect, bgColor);
+        painter.drawText(rect(), flags, filenameRight);
+    }
 }
 
 bool ImageView::event(QEvent *e)
 {
-    switch ( e->type() )
-    {
-        case QEvent::Leave:
-            emit mouseMoved( QPointF() );
-            break;
-        default:
-            break;
+    switch (e->type()) {
+    case QEvent::Leave:
+        emit mouseMoved(QPointF());
+        break;
+
+    default:
+        break;
     }
+
     return QGraphicsView::event(e);
 }
 
@@ -233,53 +259,72 @@ void ImageView::initBackground()
 
 void ImageView::fitScale()
 {
-    if ( scene() )
-    {
-        fitInView(scene()->sceneRect(), Qt::KeepAspectRatio );
-        setCenter( scene()->sceneRect().center() );
-        emit scaleChanged( transform().m22() );
+    if (scene()) {
+        fitInView(scene()->sceneRect().marginsAdded(QMarginsF(10, 10, 10, 10)), Qt::KeepAspectRatio);
+        setCenter(scene()->sceneRect().center());
+        emit scaleChanged(transform().m22());
         emit somethingChanged();
     }
 }
 
 void ImageView::resetScale()
 {
-    setMatrix( QMatrix() );
-    setCenter( scene()->sceneRect().center() );
-    emit scaleChanged( transform().m22() );
+    resetTransform();
+    setCenter(scene()->sceneRect().center());
+    emit scaleChanged(transform().m22());
     emit somethingChanged();
 }
 
 void ImageView::mousePressEvent(QMouseEvent *event)
 {
     m_drag = false;
-    if (event->button() == Qt::LeftButton)
-    {
+
+    if (!(m_wipeMode && isImageInside()) && event->button() == Qt::LeftButton) {
         m_drag = true;
     }
+
     QGraphicsView::mousePressEvent(event);
 }
 
 void ImageView::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-    {
-        m_drag = false;
-    }
+    m_drag = false;
+
     QGraphicsView::mouseReleaseEvent(event);
+
+    if (!m_imageItem) {
+        return;
+    }
+
+    const QRectF fullRect = mapToScene(rect()).boundingRect();
+    const QRectF imageRect = m_imageItem->boundingRect();
+
+    if (!fullRect.contains(imageRect) && !imageRect.contains(fullRect)) {
+        const qreal dx = qMax(fullRect.left() - imageRect.left(), imageRect.right() - fullRect.right());
+        const qreal dy = qMax(fullRect.top() - imageRect.top(), imageRect.bottom() - fullRect.bottom());
+
+        const qreal currentScale = qMin(transform().m11(), transform().m22());
+
+        if (dx * currentScale < 25  && dy * currentScale < 25) {
+            ensureVisible(m_imageItem, 0, 0);
+        }
+    }
 }
 
 /**
    *Handles the mouse move event
  */
-void ImageView::mouseMoveEvent(QMouseEvent* event)
+void ImageView::mouseMoveEvent(QMouseEvent *event)
 {
-    QPointF mousePos = QGraphicsView::mapToScene( event->pos() );
+    QPointF mousePos = QGraphicsView::mapToScene(event->pos());
     emit mouseMoved(mousePos);
-    m_centerPoint = QGraphicsView::mapToScene( rect().center() );
+
+    m_centerPoint = QGraphicsView::mapToScene(rect().center());
     QGraphicsView::mouseMoveEvent(event);
-    if (m_drag)
+
+    if (m_drag) {
         emit somethingChanged();
+    }
 }
 
 /**
@@ -288,7 +333,7 @@ void ImageView::mouseMoveEvent(QMouseEvent* event)
 
 void ImageView::zoomOut()
 {
-    zoom(1.0/scaleFactor);
+    zoom(1.0 / scaleFactor);
 }
 
 void ImageView::zoomIn()
@@ -298,18 +343,28 @@ void ImageView::zoomIn()
 
 void ImageView::zoom(double factor)
 {
+    const qreal currentScale = qMin(transform().m11(), transform().m22());
+
+    if (factor < 1. && currentScale < 0.1) {
+        return;
+    }
+
+    if (factor > 1. && currentScale > 10) {
+        return;
+    }
+
     //Get the position of the mouse before scaling, in scene coords
-    QPointF pointBeforeScale( QGraphicsView::mapToScene( mapFromGlobal(QCursor::pos()) ) );
+    QPointF pointBeforeScale(QGraphicsView::mapToScene(mapFromGlobal(QCursor::pos())));
 
     //Get the original screen centerpoint
-    QPointF screenCenter = mapToScene( rect().center() );
+    QPointF screenCenter = mapToScene(rect().center());
 
     scale(factor, factor);
 
-    emit scaleChanged( transform().m22() );
+    emit scaleChanged(transform().m22());
 
     //Get the position after scaling, in scene coords
-    QPointF pointAfterScale( QGraphicsView::mapToScene( mapFromGlobal(QCursor::pos()) ) );
+    QPointF pointAfterScale(QGraphicsView::mapToScene(mapFromGlobal(QCursor::pos())));
 
     //Get the offset of how the screen moved
     QPointF offset = pointBeforeScale - pointAfterScale;
@@ -319,53 +374,56 @@ void ImageView::zoom(double factor)
     setCenter(newCenter);
 
     // mouse position has changed!!
- //   emit mouseMoved( QGraphicsView::mapToScene( event->pos() ) );
-    emit mouseMoved( QGraphicsView::mapToScene( mapFromGlobal(QCursor::pos()) ) );
+//   emit mouseMoved( QGraphicsView::mapToScene( event->pos() ) );
+    emit mouseMoved(QGraphicsView::mapToScene(mapFromGlobal(QCursor::pos())));
     emit somethingChanged();
 }
 
-void ImageView::wheelEvent(QWheelEvent* event)
+void ImageView::wheelEvent(QWheelEvent *event)
 {
     //Scale the view ie. do the zoom
-    if(event->delta() > 0 )
+    if (event->angleDelta().y() > 0) {
         zoomIn();
-    else
+    } else {
         zoomOut();
- 
-/*
-    if ( scaled )
-    {
-        //Get the position after scaling, in scene coords
-        QPointF pointAfterScale( QGraphicsView::mapToScene( event->pos() ) );
-
-        //Get the offset of how the screen moved
-        QPointF offset = pointBeforeScale - pointAfterScale;
-
-        //Adjust to the new center for correct zooming
-        QPointF newCenter = screenCenter + offset;
-        setCenter(newCenter);
     }
 
-    // mouse position has changed!!
-    emit mouseMoved( QGraphicsView::mapToScene( event->pos() ) );
-    emit somethingChanged();
-    */
+    /*
+        if ( scaled )
+        {
+            //Get the position after scaling, in scene coords
+            QPointF pointAfterScale( QGraphicsView::mapToScene( event->pos() ) );
+
+            //Get the offset of how the screen moved
+            QPointF offset = pointBeforeScale - pointAfterScale;
+
+            //Adjust to the new center for correct zooming
+            QPointF newCenter = screenCenter + offset;
+            setCenter(newCenter);
+        }
+
+        // mouse position has changed!!
+        emit mouseMoved( QGraphicsView::mapToScene( event->pos() ) );
+        emit somethingChanged();
+        */
 }
 
 void ImageView::setMarkerPosition(const QPointF &p)
 {
     m_posMarker = mapFromScene(p);
-    if (m_showMarker)
+
+    if (m_showMarker) {
         viewport()->update();
+    }
 }
 
-void ImageView::setCenter(const QPointF& position)
+void ImageView::setCenter(const QPointF &position)
 {
     m_centerPoint = position;
     centerOn(m_centerPoint);
 }
 
-void ImageView::resizeEvent(QResizeEvent* event)
+void ImageView::resizeEvent(QResizeEvent *event)
 {
     //Scale the view ie. do the zoom
     double heightscale;
@@ -374,17 +432,16 @@ void ImageView::resizeEvent(QResizeEvent* event)
     heightscale = (double)event->size().height() / event->oldSize().height();
 
     // Not on the width direction double doscale = widthscale<heightscale?widthscale:heightscale;
-    if ( heightscale > 0 )
-    {
-        scale(heightscale,heightscale);
-        emit scaleChanged( transform().m22() );
+    if (heightscale > 0) {
+        scale(heightscale, heightscale);
+        emit scaleChanged(transform().m22());
     }
 
     // Set center
     centerOn(m_centerPoint);
 
     // navigator
-    m_navigator->setViewPortRect( geometry() );
+    m_navigator->setViewPortRect(geometry());
 
     //Call the subclass resize so the scrollbars are updated correctly
     QGraphicsView::resizeEvent(event);
@@ -395,16 +452,16 @@ void ImageView::drawLines(const QPointF &center, QPainter &p)
     int markerSize = 10;
 
     // horizontal lines
-    p.drawLine( QPointF( center.x() - markerSize, center.y() ),
-                QPointF( center.x() - markerSize / 2, center.y() ) );
-    p.drawLine( QPointF( center.x() + markerSize / 2, center.y() ),
-                QPointF( center.x() + markerSize, center.y() ) );
+    p.drawLine(QPointF(center.x() - markerSize, center.y()),
+               QPointF(center.x() - markerSize / 2, center.y()));
+    p.drawLine(QPointF(center.x() + markerSize / 2, center.y()),
+               QPointF(center.x() + markerSize, center.y()));
 
     // vertical lines
-    p.drawLine( QPointF(center.x(), center.y() - markerSize ),
-                QPointF(center.x(), center.y() - markerSize / 2) );
-    p.drawLine( QPointF(center.x(), center.y() + markerSize / 2 ),
-                QPointF(center.x(), center.y() + markerSize) );
+    p.drawLine(QPointF(center.x(), center.y() - markerSize),
+               QPointF(center.x(), center.y() - markerSize / 2));
+    p.drawLine(QPointF(center.x(), center.y() + markerSize / 2),
+               QPointF(center.x(), center.y() + markerSize));
 }
 
 void ImageView::drawMarker(QPainter &p)
@@ -414,13 +471,13 @@ void ImageView::drawMarker(QPainter &p)
 
     QPen pen = p.pen();
     pen.setWidthF(3.0);
-    pen.setColor( QColor(255,255,255,255) );
+    pen.setColor(QColor(255, 255, 255, 255));
     p.setPen(pen);
 
     drawLines(m_posMarker, p);
 
     pen.setWidthF(2.0);
-    pen.setColor( QColor(50,50,50,255) );
+    pen.setColor(QColor(50, 50, 50, 255));
     p.setPen(pen);
 
     drawLines(m_posMarker, p);
@@ -431,34 +488,36 @@ void ImageView::drawMarker(QPainter &p)
 void ImageView::setWipeMode(bool val)
 {
     m_wipeMode = val;
-    if (val)
-    {
-        if (m_wipeItem)
+
+    if (val) {
+        if (m_wipeItem) {
             m_wipeItem->show();
-    }
-    else
-    {
-        if (m_wipeItem)
+        }
+    } else {
+        if (m_wipeItem) {
             m_wipeItem->hide();
+        }
     }
 }
 
 void ImageView::createWipeItem()
 {
-    if (!m_wipeItem)
-    {
+    if (!m_wipeItem) {
         m_wipeItem = new WipeItem();
         m_wipeItem->setWipeMethod(m_wipeMethod);
         scene()->addItem(m_wipeItem);
     }
+
     m_wipeItem->show();
 }
 
 void ImageView::setWipeMethod(int method)
 {
     m_wipeMethod = method;
-    if (m_wipeItem)
+
+    if (m_wipeItem) {
         m_wipeItem->setWipeMethod(m_wipeMethod);
+    }
 }
 
 void ImageView::setWipeImage1(const QImage &img)

@@ -29,8 +29,7 @@ class IMessageHandler
 {
 public:
 
-    enum MessageLevel
-    {
+    enum MessageLevel {
         MSG_DEBUG = 0,                      /*!< Message only for debugging purpose. */
         MSG_INFO,                           /*!< Information message. */
         MSG_WARNING,                            /*!< Warning, abnormal event. */
@@ -41,30 +40,30 @@ public:
     virtual ~IMessageHandler() {}
 
     //! This method is called  when a message is to be reported to the client
-    virtual void reportMessage( MessageLevel level, const QString & message ) = 0;
+    virtual void reportMessage(MessageLevel level, const QString &message) = 0;
 
     //! Report only a debug message
-    virtual void reportDebug(const QString & message ) = 0;
+    virtual void reportDebug(const QString &message) = 0;
 
     //! Report only a debug message
-    virtual void reportInfo(const QString & message ) = 0;
+    virtual void reportInfo(const QString &message) = 0;
 
     //! Report only a debug message
-    virtual void reportWarning(const QString & message ) = 0;
+    virtual void reportWarning(const QString &message) = 0;
 
     //! Report only a debug message
-    virtual void reportError(const QString & message ) = 0;
+    virtual void reportError(const QString &message) = 0;
 };
 
 //! Sets the error handler to be used for error and warning reporting
 
 /*!
  *	This allows the user to set the current Message handler. If the
- *	parameter is NULL, API reverts back to the default error handler,
+ *	parameter is nullptr, API reverts back to the default error handler,
  *	which redirects all warnings and errors to std::cerr.
  *
  *	\sa IMessageHandler
  */
-void setMessageHandler( IMessageHandler* Hdl );
+void setMessageHandler(IMessageHandler *Hdl);
 
 #endif  // _IMESSAGEHANDLER_H_

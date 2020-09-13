@@ -6,12 +6,11 @@ class WipeMethod
 {
 public:
 
-enum Method
-{
-    WIPE_HORIZONTAL = 0,
-    WIPE_VERTICAL
+    enum Method {
+        WIPE_HORIZONTAL = 0,
+        WIPE_VERTICAL
     };
-    
+
 };
 
 #endif // _WIPEMETHOD_H_

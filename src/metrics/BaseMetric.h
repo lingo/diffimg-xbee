@@ -23,14 +23,10 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
-#include <QtGui/QPixmap>
+#include <QPixmap>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-struct ImageProperty
-{
-    ImageProperty(const QString & n, const QString &d, const QString &v) :
+struct ImageProperty {
+    ImageProperty(const QString &n, const QString &d, const QString &v) :
         name(n),
         desc(d),
         value(v)
@@ -57,7 +53,7 @@ public:
     {
     }
 
-    virtual ~MetricParam(){}
+    virtual ~MetricParam() {}
 
     bool isValid();
     void reset(bool all = true);
@@ -83,15 +79,15 @@ public:
 
     virtual QPixmap getLogo() const;
 
-    const QString & getType() const;
-    const QString & getName() const;
-    const QString & getDesc() const;
+    const QString &getType() const;
+    const QString &getName() const;
+    const QString &getDesc() const;
 
-    const QList<ImageProperty> & getProperties() const;
-    const QList<MetricParam *> & getOutputParams();
-    const QList<MetricParam *> & getInputParams();
+    const QList<ImageProperty> &getProperties() const;
+    const QList<MetricParam *> &getOutputParams();
+    const QList<MetricParam *> &getInputParams();
 
-    virtual void checkDifferences(const QString &file1,const QString &file2);
+    virtual void checkDifferences(const QString &file1, const QString &file2);
 
     static int defaultThresholdNumPixel;
     static float defaultThresholdMeanError;
@@ -103,10 +99,10 @@ public:
     QImage getImage1WithGain(double gain, double offset);
     QImage getImage2WithGain(double gain, double offset);
     QImage getImageDifferenceWithGain(double gain, double offset);
-    const QImage & getImage1() const;
-    const QImage & getImage2() const;
-    const QImage & getImageDifference() const;
-    const QImage & getImageMask() const;
+    const QImage &getImage1() const;
+    const QImage &getImage2() const;
+    const QImage &getImageDifference() const;
+    const QImage &getImageMask() const;
 
     const QList<QPolygonF> &getHistogramImage1();
     const QList<QPolygonF> &getHistogramImage2();
@@ -130,17 +126,17 @@ public:
     double getMinImage1() const;
     double getMinImage2() const;
 
-    QString getImage1Data(int x,int y) const;
-    QString getImage2Data(int x,int y) const;
-    QString getErrorData(int x,int y) const;
+    QString getImage1Data(int x, int y) const;
+    QString getImage2Data(int x, int y) const;
+    QString getErrorData(int x, int y) const;
     QString getImage1Data(const QPoint &) const;
     QString getImage2Data(const QPoint &) const;
     QString getErrorData(const QPoint &) const;
 
     virtual bool selectedStatsIsValid() const;
 
-    MetricParam * getOutputParam(const QString &name);
-    MetricParam * getInputParam(const QString &name);
+    MetricParam *getOutputParam(const QString &name);
+    MetricParam *getInputParam(const QString &name);
 
 public slots:
 
@@ -164,9 +160,8 @@ protected:
     virtual void computeStatistics();
     virtual void performDifference() = 0;
 
-    int computeNbErrors(const cv::Mat &mat);
-    void computeHisto(const cv::Mat img,QList<QPolygonF> &polys, bool skipZeroLevel = false);
-    void computeDifferenceMask();
+    void computeHisto(const QImage &input, QList<QPolygonF> &polys, bool skipZeroLevel = false);
+    QImage createDiffMask(const QImage &img);
 
     QString m_type;
     QString m_name;
@@ -184,14 +179,6 @@ protected:
     QString m_file1;
     QString m_file2;
 
-    cv::Mat m_opencvInput1;
-
-    //cv::Mat m_opencvTransf1;
-    cv::Mat m_opencvInput2;
-
-    //cv::Mat m_opencvTransf2;
-    cv::Mat m_opencvDiff;
-    cv::Mat m_opencvMaskDiff;
     QImage m_image1;
     QImage m_image2;
     QImage m_imageDiff;

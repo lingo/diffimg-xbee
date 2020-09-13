@@ -21,7 +21,7 @@
 #ifndef _DIFFIMGWINDOW_H_
 #define _DIFFIMGWINDOW_H_
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "ui_DiffImgWindow.h"
 
 // forward declarations
@@ -42,12 +42,12 @@ public:
 
 
 
-    DiffImgWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
+    DiffImgWindow(QWidget *parent = 0);
     ~DiffImgWindow();
 
 public slots:
 
-    void setFiles(const QString &original,const QString &modified);
+    void setFiles(const QString &original, const QString &modified);
     void load();
 
     void on_actionDifferenceMask_toggled(bool val);
@@ -67,7 +67,7 @@ public slots:
     void on_actionOpen_triggered();
     void on_actionHelp_triggered();
     void on_actionSaveDifference_triggered();
-    void on_actionShowComment_toggled (bool);
+    void on_actionShowComment_toggled(bool);
 
     void on_actionShowDocks_triggered();
 
@@ -95,7 +95,7 @@ public slots:
     void on_actionAbout_triggered();
     void on_actionPreferences_triggered();
 
-    void printToLog(const QString & mess);
+    void printToLog(const QString &mess);
 
     void restart();
     void setPreferences();
@@ -106,11 +106,11 @@ public slots:
     void setPanel2Visibility(bool);
 
 protected slots:
-
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dragMoveEvent(QDragMoveEvent *event);
-    void dropEvent(QDropEvent *event);
-    void keyPressEvent ( QKeyEvent * event );
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
 
@@ -160,18 +160,16 @@ private:
 
     void updateSmileyStatus();
     QString readComment(const QString &imageFile);
-    void writeComment(const QString& comment,const QString &imageFile);
+    void writeComment(const QString &comment, const QString &imageFile);
     void updateImageComment();
 
-    enum typImage
-    {
+    enum typImage {
         TYPE_ORIGINAL = 0,
         TYPE_MODIFIED,
         TYPE_DIFFERENCE
     };
 
-    enum typPage
-    {
+    enum typPage {
         PAGE_DUALVIEW = 0,
         PAGE_WIPEVIEW
     };
@@ -210,8 +208,6 @@ private:
     QImage m_maskDiffImage;
 
     QString m_currentLanguage;
-    bool m_splashscreenAtStartup;
-    bool m_splashscreenTransparentBackground;
 
     AboutDialog *m_about;
     int m_logLevel;

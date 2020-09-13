@@ -1,7 +1,6 @@
 <RCC>
   <qresource prefix="/diffimg">
     <file>wipe_effect.png</file>
-    <file>icon_paypal.png</file>
     <file>delete.png</file>
     <file>comment.png</file>
     <file>save.png</file>

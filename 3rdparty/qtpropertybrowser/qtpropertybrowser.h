@@ -41,9 +41,10 @@
 #ifndef QTPROPERTYBROWSER_H
 #define QTPROPERTYBROWSER_H
 
-#include <QtGui/QWidget>
-#include <QtCore/QSet>
-#include <QtCore/QMap>
+#include <QWidget>
+#include <QSet>
+#include <QList>
+#include <QMap>
 
 #if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
@@ -82,6 +83,7 @@ public:
     QString statusTip() const;
     QString whatsThis() const;
     QString propertyName() const;
+    QString propertyId() const;
     bool isEnabled() const;
     bool isModified() const;
 
@@ -89,13 +91,17 @@ public:
     QIcon valueIcon() const;
     QString valueText() const;
 
+    virtual bool compare(QtProperty* otherProperty)const;
+
     void setToolTip(const QString &text);
     void setStatusTip(const QString &text);
     void setWhatsThis(const QString &text);
     void setPropertyName(const QString &text);
+    void setPropertyId(const QString &text);
     void setEnabled(bool enable);
     void setModified(bool modified);
 
+    bool isSubProperty()const;
     void addSubProperty(QtProperty *property);
     void insertSubProperty(QtProperty *property, QtProperty *afterProperty);
     void removeSubProperty(QtProperty *property);
@@ -121,6 +127,7 @@ public:
     void clear() const;
 
     QtProperty *addProperty(const QString &name = QString());
+    QtProperty *qtProperty(const QString &id)const;
 Q_SIGNALS:
 
     void propertyInserted(QtProperty *property,
@@ -323,6 +330,59 @@ private:
 
 };
 
+class QtPropertyPrivate
+{
+public:
+    QtPropertyPrivate(QtAbstractPropertyManager *manager) : m_enabled(true), m_modified(false), m_manager(manager) {}
+    QtProperty *q_ptr;
+
+    QSet<QtProperty *> m_parentItems;
+    QList<QtProperty *> m_subItems;
+
+    QString m_toolTip;
+    QString m_statusTip;
+    QString m_whatsThis;
+    QString m_name;
+    QString m_id;
+    bool m_enabled;
+    bool m_modified;
+
+    QtAbstractPropertyManager * const m_manager;
+};
+
+class QtAbstractPropertyManagerPrivate
+{
+    QtAbstractPropertyManager *q_ptr;
+    Q_DECLARE_PUBLIC(QtAbstractPropertyManager)
+public:
+    void propertyDestroyed(QtProperty *property);
+    void propertyChanged(QtProperty *property) const;
+    void propertyRemoved(QtProperty *property,
+                QtProperty *parentProperty) const;
+    void propertyInserted(QtProperty *property, QtProperty *parentProperty,
+                QtProperty *afterProperty) const;
+
+    QSet<QtProperty *> m_properties;
+};
+class QtBrowserItemPrivate
+{
+public:
+    QtBrowserItemPrivate(QtAbstractPropertyBrowser *browser, QtProperty *property, QtBrowserItem *parent)
+        : m_browser(browser), m_property(property), m_parent(parent), q_ptr(0) {}
+
+    void addChild(QtBrowserItem *index, QtBrowserItem *after);
+    void removeChild(QtBrowserItem *index);
+
+    QtAbstractPropertyBrowser * const m_browser;
+    QtProperty *m_property;
+    QtBrowserItem *m_parent;
+
+    QtBrowserItem *q_ptr;
+
+    QList<QtBrowserItem *> m_children;
+
+};
+
 class QtAbstractPropertyBrowserPrivate
 {
     QtAbstractPropertyBrowser *q_ptr;
@@ -356,7 +416,6 @@ public:
 
     QtBrowserItem *m_currentItem;
 };
-
 
 #if QT_VERSION >= 0x040400
 QT_END_NAMESPACE

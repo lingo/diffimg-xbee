@@ -42,6 +42,7 @@
 #define QTVARIANTPROPERTY_H
 
 #include "qtpropertybrowser.h"
+#include "qteditorfactory.h"
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
 
@@ -63,6 +64,8 @@ public:
     int valueType() const;
     int propertyType() const;
 
+    virtual bool compare(QtProperty* otherProperty)const;
+
     void setValue(const QVariant &value);
     void setAttribute(const QString &attribute, const QVariant &value);
 protected:
@@ -82,6 +85,8 @@ public:
     ~QtVariantPropertyManager();
 
     virtual QtVariantProperty *addProperty(int propertyType, const QString &name = QString());
+
+    void setProperties(QSet<QtProperty *> properties);
 
     int propertyType(const QtProperty *property) const;
     int valueType(const QtProperty *property) const;
@@ -169,6 +174,7 @@ protected:
     void connectPropertyManager(QtVariantPropertyManager *manager);
     QWidget *createEditor(QtVariantPropertyManager *manager, QtProperty *property,
                 QWidget *parent);
+    QWidget *createEditor(QtProperty *property, QWidget *parent);
     void disconnectPropertyManager(QtVariantPropertyManager *manager);
 private:
     QtVariantEditorFactoryPrivate *d_ptr;
@@ -253,6 +259,30 @@ public:
     const QString m_maximumAttribute;
     const QString m_minimumAttribute;
     const QString m_regExpAttribute;
+};
+
+class QtVariantEditorFactoryPrivate
+{
+    QtVariantEditorFactory *q_ptr;
+    Q_DECLARE_PUBLIC(QtVariantEditorFactory)
+public:
+
+    QtSpinBoxFactory           *m_spinBoxFactory;
+    QtDoubleSpinBoxFactory     *m_doubleSpinBoxFactory;
+    QtCheckBoxFactory          *m_checkBoxFactory;
+    QtLineEditFactory          *m_lineEditFactory;
+    QtDateEditFactory          *m_dateEditFactory;
+    QtTimeEditFactory          *m_timeEditFactory;
+    QtDateTimeEditFactory      *m_dateTimeEditFactory;
+    QtKeySequenceEditorFactory *m_keySequenceEditorFactory;
+    QtCharEditorFactory        *m_charEditorFactory;
+    QtEnumEditorFactory        *m_comboBoxFactory;
+    QtCursorEditorFactory      *m_cursorEditorFactory;
+    QtColorEditorFactory       *m_colorEditorFactory;
+    QtFontEditorFactory        *m_fontEditorFactory;
+
+    QMap<QtAbstractEditorFactoryBase *, int> m_factoryToType;
+    QMap<int, QtAbstractEditorFactoryBase *> m_typeToFactory;
 };
 
 #if QT_VERSION >= 0x040400

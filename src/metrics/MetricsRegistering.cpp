@@ -29,12 +29,11 @@
 
 int MetricsRegistering::registerAll()
 {
-    if ( MetricsManager::getMetrics().isEmpty() ) // avoid multiple init
-    {
-        MetricsManager::registerMetrics( new PerChannelMetric() );
-        MetricsManager::registerMetrics( new PerChannelMeanMetric() );
-        MetricsManager::registerMetrics( new PerLuminanceMetric() );
-        MetricsManager::registerMetrics( new PerceptualMetric() );
+    if (MetricsManager::getMetrics().isEmpty()) { // avoid multiple init
+        MetricsManager::registerMetrics(new PerChannelMetric());
+        MetricsManager::registerMetrics(new PerChannelMeanMetric());
+        MetricsManager::registerMetrics(new PerLuminanceMetric());
+        MetricsManager::registerMetrics(new PerceptualMetric());
     }
 
     return MetricsManager::getMetrics().size();

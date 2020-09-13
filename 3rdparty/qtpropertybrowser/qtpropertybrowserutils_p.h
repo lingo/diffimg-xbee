@@ -54,7 +54,7 @@
 
 #include <QtCore/QMap>
 #include <QtGui/QIcon>
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QtCore/QStringList>
 
 #if QT_VERSION >= 0x040400
@@ -118,6 +118,7 @@ Q_SIGNALS:
 
 protected:
     void mousePressEvent(QMouseEvent * event);
+    void paintEvent(QPaintEvent *);
 
 private:
     QCheckBox *m_checkBox;
@@ -141,6 +142,7 @@ protected:
     void focusOutEvent(QFocusEvent *e);
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *e);
+    void paintEvent(QPaintEvent *);
     bool event(QEvent *e);
 private slots:
     void slotClearShortcut();

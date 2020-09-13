@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 CONFIG += warn_on debug_and_release
 
-SUBDIRS += qtpropertybrowser perceptualdiff libyuv
+SUBDIRS += qtpropertybrowser perceptualdiff
 
 win32|os2-g++ {
 
