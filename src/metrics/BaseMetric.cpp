@@ -217,6 +217,14 @@ void MetricParam::setThreshold(const QString &valText)
     }
 }
 
+// Branchless, pretty massive speed improvement especially for gain/offset
+#define MIN_INT(x, y) (y ^ ((x ^ y) & -(x < y)))
+#define MAX_INT(x, y) (x ^ ((x ^ y) & -(x < y)))
+//#define MIN(x, y) (x < y ? x : y)
+//#define MAX(x, y) (x > y ? x : y)
+
+#define BOUND_INT(lower, x, upper) (MAX_INT(lower, MIN_INT(upper, int(x))))
+
 static void applyGainOffset(QImage &img, double gain, double offset)
 {
     if (img.depth() < 32) {
@@ -231,74 +239,86 @@ static void applyGainOffset(QImage &img, double gain, double offset)
 
             for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = qUnpremultiply(*pixels);
-                const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
-                const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
-                const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
+                const uint8_t r = BOUND_INT(0, qRed(pixel)   * gain + offset, 255);
+                const uint8_t g = BOUND_INT(0, qGreen(pixel) * gain + offset, 255);
+                const uint8_t b = BOUND_INT(0, qBlue(pixel)  * gain + offset, 255);
                 *pixels = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
             }
         }
     } else {
         for (int line = 0; line < img.height(); line++) {
-            QRgb *pixels = (QRgb *)img.scanLine(line);
+            uchar *pixels = img.scanLine(line);
 
-            for (int i = 0; i < img.width(); ++i, ++pixels) {
-                const QRgb pixel = *pixels;
-                const uint8_t r = qBound(0, int(qRed(pixel)   * gain + offset), 255);
-                const uint8_t g = qBound(0, int(qGreen(pixel) * gain + offset), 255);
-                const uint8_t b = qBound(0, int(qBlue(pixel)  * gain + offset), 255);
-                *pixels = qRgba(r, g, b, qAlpha(pixel));
+            for (int i = 0; i < img.width(); ++i, pixels += 4) {
+                pixels[0] = BOUND_INT(0, pixels[0] * gain + offset, 255);
+                pixels[1] = BOUND_INT(0, pixels[1] * gain + offset, 255);
+                pixels[2] = BOUND_INT(0, pixels[2] * gain + offset, 255);
             }
         }
     }
 }
-static double findMinMax(const QImage &inp, double *min, double *max)
-{
-    QImage img(inp);
-    double mean = 0.;
 
-    if (img.depth() < 32) {
-        img = img.convertToFormat(img.hasAlphaChannel() ?
+static double findMinMax(const QImage &img, double *min, double *max)
+{
+    uint64_t mean = 0;
+
+    if (img.depth() != 32) {
+        qWarning() << "Invalid depth, converting" << img.depth();
+        return findMinMax(
+                img.convertToFormat(img.hasAlphaChannel() ?
                                   QImage::Format_ARGB32 :
-                                  QImage::Format_RGB32);
+                                  QImage::Format_RGB32),
+                min, max
+        );
     }
+
+    int min_ = std::numeric_limits<int>::max();
+    int max_ = std::numeric_limits<int>::min();
 
     if (img.format() == QImage::Format_ARGB32_Premultiplied) {
         for (int line = 0; line < img.height(); line++) {
-            QRgb *pixels = (QRgb *)img.scanLine(line);
+            const QRgb *pixels = (const QRgb *)img.scanLine(line);
 
             for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = qUnpremultiply(*pixels);
-                *min = std::min(double(qRed(pixel)), *min);
-                *min = std::min(double(qGreen(pixel)), *min);
-                *min = std::min(double(qBlue(pixel)), *min);
+                const int r = qRed(pixel);
+                const int g = qGreen(pixel);
+                const int b = qBlue(pixel);
 
-                *max = std::max(double(qRed(pixel)), *max);
-                *max = std::max(double(qGreen(pixel)), *max);
-                *max = std::max(double(qBlue(pixel)), *max);
+                min_ = MIN_INT(r, min_);
+                min_ = MIN_INT(g, min_);
+                min_ = MIN_INT(b, min_);
 
-                mean += qRed(pixel) + qGreen(pixel) + qBlue(pixel);
+                max_ = MAX_INT(r, max_);
+                max_ = MAX_INT(g, max_);
+                max_ = MAX_INT(b, max_);
+                mean += r + g + b;
             }
         }
     } else {
         for (int line = 0; line < img.height(); line++) {
-            QRgb *pixels = (QRgb *)img.scanLine(line);
+            const uchar *pixels = img.scanLine(line);
 
-            for (int i = 0; i < img.width(); ++i, ++pixels) {
-                const QRgb pixel = *pixels;
-                *min = std::min(double(qRed(pixel)),   double(*min));
-                *min = std::min(double(qGreen(pixel)), double(*min));
-                *min = std::min(double(qBlue(pixel)),  double(*min));
+            for (int i = 0; i < img.width(); ++i, pixels += 4) {
+                const int r = pixels[0];
+                const int g = pixels[1];
+                const int b = pixels[2];
 
-                *max = std::max(double(qRed(pixel)),   double(*max));
-                *max = std::max(double(qGreen(pixel)), double(*max));
-                *max = std::max(double(qBlue(pixel)),  double(*max));
+                min_ = MIN_INT(r, min_);
+                min_ = MIN_INT(g, min_);
+                min_ = MIN_INT(b, min_);
 
-                mean += qRed(pixel) + qGreen(pixel) + qBlue(pixel);
+                max_ = MAX_INT(r, max_);
+                max_ = MAX_INT(g, max_);
+                max_ = MAX_INT(b, max_);
+                mean += r + g + b;
             }
         }
     }
+    *max = max_;
+    *min = min_;
 
-    return mean / (img.width() * img.height() * 3);
+    return double(mean) / (img.width() * img.height() * 3);
 }
 
 
