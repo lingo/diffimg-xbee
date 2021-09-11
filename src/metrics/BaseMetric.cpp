@@ -84,6 +84,7 @@ inline bool equalize(QImage &img)
     IntegerPixel histogram [256];
 
     if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        qWarning() << "Has alpha!";
         for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
 
@@ -97,14 +98,13 @@ inline bool equalize(QImage &img)
         }
     } else {
         for (int line = 0; line < img.height(); line++) {
-            QRgb *pixels = (QRgb *)img.scanLine(line);
+            const uchar *pixels = img.scanLine(line);
 
-            for (int i = 0; i < img.width(); ++i, ++pixels) {
-                const QRgb pixel = *pixels;
-                histogram[qRed(pixel)].red++;
-                histogram[qGreen(pixel)].green++;
-                histogram[qBlue(pixel)].blue++;
-                histogram[qAlpha(pixel)].alpha++;
+            for (int i = 0; i < img.width(); ++i, pixels += 4) {
+                histogram[pixels[0]].red++;
+                histogram[pixels[1]].green++;
+                histogram[pixels[2]].blue++;
+                histogram[pixels[3]].alpha++;
             }
         }
     }
@@ -126,25 +126,21 @@ inline bool equalize(QImage &img)
     const uint32_t deltaGreen = high.green - low.green;
     const uint32_t deltaBlue = high.blue - low.blue;
 
-    // Yes, a normal pixel can be used instead but this is easier to read
-    // and no shifts to get components.
-    struct CharPixel {
-        quint8 red{}, green{}, blue{}, alpha{};
-    };
-
-    CharPixel equalize_map[256];
+    quint8 equalize_map_red[256]{0};
+    quint8 equalize_map_green[256]{0};
+    quint8 equalize_map_blue[256]{0};
 
     for (int i = 0; i < 256; ++i) {
         if (deltaRed) {
-            equalize_map[i].red = uint8_t((255 * (map[i].red - low.red)) / deltaRed);
+            equalize_map_red[i] = uint8_t((255 * (map[i].red - low.red)) / deltaRed);
         }
 
         if (deltaGreen) {
-            equalize_map[i].green = uint8_t((255 * (map[i].green - low.green)) / deltaGreen);
+            equalize_map_green[i] = uint8_t((255 * (map[i].green - low.green)) / deltaGreen);
         }
 
         if (deltaBlue) {
-            equalize_map[i].blue = uint8_t((255 * (map[i].blue - low.blue)) / deltaBlue);
+            equalize_map_blue[i] = uint8_t((255 * (map[i].blue - low.blue)) / deltaBlue);
         }
     }
 
@@ -152,27 +148,39 @@ inline bool equalize(QImage &img)
     uint8_t r, g, b;
 
     if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        qWarning() << "Has alpha!";
         for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
 
             for (int i = 0; i < img.width(); ++i, ++pixels) {
                 const QRgb pixel = qUnpremultiply(*pixels);
-                r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
-                g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
-                b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
+                r = (deltaRed) ? equalize_map_red[qRed(pixel)] : qRed(pixel);
+                g = (deltaGreen) ? equalize_map_green[qGreen(pixel)] : qGreen(pixel);
+                b = (deltaBlue) ?  equalize_map_blue[qBlue(pixel)] : qBlue(pixel);
                 *pixels = qPremultiply(qRgba(r, g, b, qAlpha(pixel)));
             }
         }
     } else {
         for (int line = 0; line < img.height(); line++) {
-            QRgb *pixels = (QRgb *)img.scanLine(line);
+            uchar *pixels = img.scanLine(line);
+            if (deltaRed) {
+                for (int i = 0; i < img.width(); ++i, pixels += 4) {
+                    pixels[0] = equalize_map_red[pixels[0]];
+                }
+            }
 
-            for (int i = 0; i < img.width(); ++i, ++pixels) {
-                const QRgb pixel = *pixels;
-                r = (deltaRed) ? equalize_map[qRed(pixel)].red : qRed(pixel);
-                g = (deltaGreen) ? equalize_map[qGreen(pixel)].green : qGreen(pixel);
-                b = (deltaBlue) ?  equalize_map[qBlue(pixel)].blue : qBlue(pixel);
-                *pixels = qRgba(r, g, b, qAlpha(pixel));
+            pixels = img.scanLine(line);
+            if (deltaGreen) {
+                for (int i = 0; i < img.width(); ++i, pixels += 4) {
+                    pixels[1] = equalize_map_green[pixels[1]];
+                }
+            }
+
+            pixels = img.scanLine(line);
+            if (deltaBlue) {
+                for (int i = 0; i < img.width(); ++i, pixels += 4) {
+                    pixels[2] = equalize_map_blue[pixels[2]];
+                }
             }
         }
     }
@@ -234,6 +242,7 @@ static void applyGainOffset(QImage &img, double gain, double offset)
     }
 
     if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+        qWarning() << "Have alpha channel!";
         for (int line = 0; line < img.height(); line++) {
             QRgb *pixels = (QRgb *)img.scanLine(line);
 
