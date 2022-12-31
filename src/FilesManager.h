@@ -30,20 +30,20 @@ class FilesManager
 {
 public:
 
-    static void getCurrentFiles(QString &file1,QString &file2);
-    static void getNextFiles(QString &file1,QString &file2);
-    static void getPrevFiles(QString &file1,QString &file2);
-    static const QStringList & getFilelist1();
-    static const QStringList & getFilelist2();
+    static void getCurrentFiles(QString &file1, QString &file2);
+    static void getNextFiles(QString &file1, QString &file2);
+    static void getPrevFiles(QString &file1, QString &file2);
+    static const QStringList &getFilelist1();
+    static const QStringList &getFilelist2();
 
 private:
 
-    static QString getValidFile(const QString &basename,const QString &refpath, const QStringList &refList);
-    static void getFollowingFiles(QString &file1,QString &file2, int increment = 1);
+    static QString getValidFile(const QString &basename, const QString &refpath, const QStringList &refList);
+    static void getFollowingFiles(QString &file1, QString &file2, int increment = 1);
 
     static void rescan1(const QString &);
     static void rescan2(const QString &);
-    static void rescan(const QString &file, QString & refPath, QStringList &refList);
+    static void rescan(const QString &file, QString &refPath, QStringList &refList);
 
     static QStringList m_lFiles1;
     static QString m_refPath1;

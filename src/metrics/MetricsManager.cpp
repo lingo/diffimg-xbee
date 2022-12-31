@@ -45,17 +45,18 @@ void MetricsManager::registerMetrics(BaseMetric *metric)
     m_metrics << metric;
 }
 
-const QList<BaseMetric *> & MetricsManager::getMetrics()
+const QList<BaseMetric *> &MetricsManager::getMetrics()
 {
     return m_metrics;
 }
 
-BaseMetric* MetricsManager::getMetricByType(const QString &type)
+BaseMetric *MetricsManager::getMetricByType(const QString &type)
 {
-    foreach (BaseMetric *met , m_metrics)
-    {
-        if (met->getType() == type)
+    foreach (BaseMetric *met, m_metrics) {
+        if (met->getType() == type) {
             return met;
+        }
     }
-    return NULL;
+
+    return nullptr;
 }

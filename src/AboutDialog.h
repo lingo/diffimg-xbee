@@ -21,7 +21,7 @@
 #ifndef _DIALOGABOUT_H_
 #define _DIALOGABOUT_H_
 
-#include <QtGui/QDialog>
+#include <QDialog>
 #include "ui_AboutDialog.h"
 
 using namespace Ui;
@@ -47,19 +47,16 @@ public slots:
 
     void on_pushButtonClearLog_pressed();
     void on_comboBoxLanguage_activated(int index);
-    void on_listWidgetTranslations_itemClicked( QListWidgetItem * item);
+    void on_listWidgetTranslations_itemClicked(QListWidgetItem *item);
     void on_comboBoxMetrics_currentIndexChanged(int);
-    void on_comboBoxImageFormatName_currentIndexChanged(int index);
     void on_comboBoxOutputParam_currentIndexChanged(int);
     void on_comboBoxInputParam_currentIndexChanged(int);
-    void on_comboBoxFormatParam_currentIndexChanged(int index);
-    void on_lineEditThreshold_textEdited ( const QString & text );
-    void on_lineEditInputParam_textEdited ( const QString & text );
+    void on_lineEditThreshold_textEdited(const QString &text);
+    void on_lineEditInputParam_textEdited(const QString &text);
     void on_pushButtonApplyInputParam_pressed();
     void on_pushButtonApplyImageParam_pressed();
-    void on_pushButtonApplyUserParam_pressed();
-    void on_groupBoxEnableThreshold_toggled ( bool on );
-    void on_tabWidget_currentChanged ( int index );
+    void on_groupBoxEnableThreshold_toggled(bool on);
+    void on_tabWidget_currentChanged(int index);
 
 signals:
 
@@ -74,17 +71,14 @@ private:
     void updatePrefsLanguages();
     void updateInfosLanguages();
     void updateInfosImageFormats();
-    void updateUserImageParameterLanguages();
     void updateWipeEffects();
     void initMetrics();
     void changePalette(bool modified, QLineEdit *lineEdit, QPushButton *button);
-    void setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, QPushButton *button );
-    void setupFormatParam(int index, QComboBox *combo, QLineEdit *lineEdit, QComboBox *comboEdit,QPushButton *button );
-    void applyParam(QComboBox *combo, QLineEdit *lineEdit, QPushButton *button );
-    void applyFormatProperty(QComboBox *combo, QLineEdit *lineEdit, QComboBox *comboValue, QPushButton *button );
+    void setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, QPushButton *button);
+    void applyParam(QComboBox *combo, QLineEdit *lineEdit, QPushButton *button);
 
     QString m_currentLanguage;
-    QMap<int,QString> m_descMethodHash;
+    QMap<int, QString> m_descMethodHash;
     QDoubleValidator *m_dValidator;
     QIntValidator *m_iValidator;
 };

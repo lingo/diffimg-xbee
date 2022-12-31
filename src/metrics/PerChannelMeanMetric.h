@@ -38,12 +38,6 @@ signals:
 protected:
 
     virtual void performDifference();
-
-private slots:
-
-private:
-
-    cv::Mat mat2mean(const cv::Mat& src);
 };
 
 #endif // _BYCHANNELMEANMETRIC_H_

@@ -26,22 +26,20 @@
 #include "MetricsManager.h"
 #include "BaseMetric.h"
 
-#include "FormatsManager.h"
-#include "BaseFormat.h"
 #include "WipeMethod.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 #include <QtCore/QTranslator>
 
-#include <QtGui/QMessageBox>
-#include <QtGui/QIntValidator>
-#include <QtGui/QDoubleValidator>
+#include <QMessageBox>
+#include <QIntValidator>
+#include <QDoubleValidator>
 
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent),
-    m_dValidator( new QDoubleValidator(this) ),
-    m_iValidator( new QIntValidator(this) )
+      m_dValidator(new QDoubleValidator(this)),
+      m_iValidator(new QIntValidator(this))
 {
     setupUi(this);
     updateAbout();
@@ -62,9 +60,6 @@ void AboutDialog::updateAbout()
     // setup image format list
     updateInfosImageFormats();
 
-    // setup user image format parameters
-    updateUserImageParameterLanguages();
-
     // setup languages list
     updateInfosLanguages();
 
@@ -77,36 +72,14 @@ void AboutDialog::updateAbout()
     // init combobox metrics
     initMetrics();
 
-    labelRelease->setText( QString(PACKAGE_NAME) + " " + QString(PACKAGE_VERSION) );
-    labelCheckRelease->setText( tr("<a href=\"%1\">Check for new release ...</a>").arg(PACKAGE_CHECK_RELEASE_URL) );
-
-    // paypal
-
-    pushButtonPaypal->setBusinessId(PAYPAL_BUSINESS_ID);
-    pushButtonPaypal->setItemName( "Support TheHive" );
-    pushButtonPaypal->setItemId( "TheHive-DONATION" );
-    pushButtonPaypal->setCurrencyCode( "EUR" );
-
+    labelRelease->setText(QString(PACKAGE_NAME) + " " + QString(PACKAGE_VERSION));
 }
 
 void AboutDialog::updateWipeEffects()
 {
     comboBoxWipeEffectAxis->clear();
-    comboBoxWipeEffectAxis->addItem(tr("Horizontal effect"),WipeMethod::WIPE_HORIZONTAL);
-    comboBoxWipeEffectAxis->addItem(tr("Vertical effect"),WipeMethod::WIPE_VERTICAL);
-}
-
-void AboutDialog::updateUserImageParameterLanguages()
-{
-    comboBoxImageFormatName->clear();
-
-    // update comboBoxUploaders
-    const QList<BaseFormat *> &list = FormatsManager::getFormats();
-    foreach (BaseFormat * fmt, list)
-    {
-        comboBoxImageFormatName->addItem( fmt->getName(),qVariantFromValue( (void *) fmt ) ); // store directly pointer
-    }
-
+    comboBoxWipeEffectAxis->addItem(tr("Horizontal effect"), WipeMethod::WIPE_HORIZONTAL);
+    comboBoxWipeEffectAxis->addItem(tr("Vertical effect"), WipeMethod::WIPE_VERTICAL);
 }
 
 void AboutDialog::updateInfosImageFormats()
@@ -119,16 +92,16 @@ void AboutDialog::updateInfosImageFormats()
     QStringList formats = MiscFunctions::getAvailablesImageFormatsList();
     QMap<QString, QString> longFormats = MiscFunctions::getLongImageFormats();
 
-    foreach (const QString &format, formats)
-    {
-        if ( longFormats.contains(format) )
+    foreach (const QString &format, formats) {
+        if (longFormats.contains(format)) {
             new QListWidgetItem(longFormats[format] + " (*." + format + ")", listWidgetFormats);
-        else
+        } else {
             new QListWidgetItem(format, listWidgetFormats);
+        }
     }
 
     // Qt version
-    labelQtVersion->setText( tr("Qt version %1").arg(QT_VERSION_STR) );
+    labelQtVersion->setText(tr("Qt version %1").arg(QT_VERSION_STR));
 }
 
 void AboutDialog::updateInfosLanguages()
@@ -136,74 +109,74 @@ void AboutDialog::updateInfosLanguages()
     // get the current Language from settings
     AppSettings settings;
     settings.beginGroup("Application");
-    m_currentLanguage = settings.value("currentLanguage","auto").toString();
+    m_currentLanguage = settings.value("currentLanguage", "auto").toString();
     QString currentLang = m_currentLanguage;
 
-    if (currentLang.isEmpty() || currentLang == "auto")
+    if (currentLang.isEmpty() || currentLang == "auto") {
         currentLang = QLocale::system().name().left(2);
+    }
 
     // update translation list
     const QMap<QString, QString> &mapLang = MiscFunctions::getAvailableLanguages();
     QStringList names = mapLang.keys();
     listWidgetTranslations->clear();
-    foreach (const QString &lang, names)
-    {
+
+    foreach (const QString &lang, names) {
         QString text;
 
-        if (mapLang[lang] == currentLang)
+        if (mapLang[lang] == currentLang) {
             text = lang + " *";
-        else
+        } else {
             text = lang;
+        }
 
         QListWidgetItem *item = new QListWidgetItem(text, listWidgetTranslations);
-        item->setData(Qt::UserRole,mapLang[lang]); // save the lang acronym
+        item->setData(Qt::UserRole, mapLang[lang]); // save the lang acronym
     }
 }
 
 void AboutDialog::updateCredits()
 {
-    fillTextedit("CREDITS.txt",textEditCredits);
+    fillTextedit("CREDITS.txt", textEditCredits);
 }
 
 void AboutDialog::updateChangelog()
 {
-    fillTextedit("Changelog.txt",textEditChangelog);
+    fillTextedit("Changelog.txt", textEditChangelog);
 }
 
 void AboutDialog::fillTextedit(const QString &file, QTextEdit *text)
 {
-    text->viewport ()->setAutoFillBackground(false);
+    text->viewport()->setAutoFillBackground(false);
     QStringList paths;
     QString filePath;
-    paths << QApplication::applicationDirPath () + "/" + file;
-    paths << QApplication::applicationDirPath () + "/../" + file;
-    paths << QApplication::applicationDirPath () + "/../../" + file;
-    paths << QApplication::applicationDirPath () + "/../../../" + file;
-    paths << QApplication::applicationDirPath () + "/../Resources/" + file; // MaxOSX
+    paths << QApplication::applicationDirPath() + "/" + file;
+    paths << QApplication::applicationDirPath() + "/../" + file;
+    paths << QApplication::applicationDirPath() + "/../../" + file;
+    paths << QApplication::applicationDirPath() + "/../../../" + file;
+    paths << QApplication::applicationDirPath() + "/../Resources/" + file;  // MaxOSX
     paths << "/usr/share/" + QString("%1").arg(PACKAGE_NAME).toLower() + "/" + file;
     paths << "/usr/local/share/" + QString("%1").arg(PACKAGE_NAME).toLower() + "/" + file;
 
-    foreach (const QString &path, paths)
-    {
-        if ( QFileInfo(path).exists() )
-        {
+    foreach (const QString &path, paths) {
+        if (QFileInfo(path).exists()) {
             filePath = path;
             break;
         }
     }
 
     // perhaps, not found !!
-    if ( QFileInfo(filePath).exists() )
-    {
-        QFile file( filePath );
-        if( file.open( QIODevice::ReadOnly | QIODevice::Text ) )
-        {
-            text->setText( file.readAll() );
+    if (QFileInfo(filePath).exists()) {
+        QFile file(filePath);
+
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            text->setText(file.readAll());
             file.close();
             return;
         }
     }
-    text->setText( tr("The %1 file can't be found, sorry ...").arg(file) );
+
+    text->setText(tr("The %1 file can't be found, sorry ...").arg(file));
 }
 
 void AboutDialog::on_pushButtonClearLog_pressed()
@@ -213,12 +186,12 @@ void AboutDialog::on_pushButtonClearLog_pressed()
 
 void AboutDialog::showAbout()
 {
-    tabWidget->setCurrentIndex (0);
+    tabWidget->setCurrentIndex(0);
 }
 
 void AboutDialog::showPreferences()
 {
-    tabWidget->setCurrentIndex (1);
+    tabWidget->setCurrentIndex(1);
 }
 
 void AboutDialog::updatePrefsLanguages()
@@ -227,35 +200,44 @@ void AboutDialog::updatePrefsLanguages()
 
     // set detected language
     QString detectedLanguage = QLocale::system().name().left(2);
-    labelDetectedLanguage->setText( tr("detected language: %1").arg(detectedLanguage) );
+    labelDetectedLanguage->setText(tr("detected language: %1").arg(detectedLanguage));
 
     // fill comboBox
     const QMap<QString, QString> &mapLang = MiscFunctions::getAvailableLanguages();
     QStringList names = mapLang.keys();
     comboBoxLanguage->addItem(tr("Automatic detection"), "auto");
-    if (m_currentLanguage == "auto")
+
+    if (m_currentLanguage == "auto") {
         comboBoxLanguage->setCurrentIndex(comboBoxLanguage->count() - 1);
-    comboBoxLanguage->addItem(tr("Default (no use of translation files)"),"default");
-    if (m_currentLanguage == "default")
+    }
+
+    comboBoxLanguage->addItem(tr("Default (no use of translation files)"), "default");
+
+    if (m_currentLanguage == "default") {
         comboBoxLanguage->setCurrentIndex(comboBoxLanguage->count() - 1);
-    foreach (const QString &lang, names)
-    {
-        comboBoxLanguage->addItem(lang,mapLang[lang]);
-        if (mapLang[lang] == m_currentLanguage)
+    }
+
+    foreach (const QString &lang, names) {
+        comboBoxLanguage->addItem(lang, mapLang[lang]);
+
+        if (mapLang[lang] == m_currentLanguage) {
             comboBoxLanguage->setCurrentIndex(comboBoxLanguage->count() - 1);
+        }
     }
 }
 
 void AboutDialog::setCurrentLanguage(const QString &lang)
 {
-    comboBoxLanguage->setCurrentIndex( comboBoxLanguage->findData(lang) );
+    comboBoxLanguage->setCurrentIndex(comboBoxLanguage->findData(lang));
 }
 
 void AboutDialog::on_comboBoxLanguage_activated(int index)
 {
     QString lang = comboBoxLanguage->itemData(index).toString();
-    if (lang == m_currentLanguage)
+
+    if (lang == m_currentLanguage) {
         return;
+    }
 
     m_currentLanguage = lang;
 
@@ -265,9 +247,8 @@ void AboutDialog::on_comboBoxLanguage_activated(int index)
                                     QMessageBox::Yes
                                     | QMessageBox::No);
 
-    if (ret == QMessageBox::Yes)
-    {
-        emit accepted ();
+    if (ret == QMessageBox::Yes) {
+        emit accepted();
         emit restart();
     }
 }
@@ -277,66 +258,35 @@ void AboutDialog::initMetrics()
     comboBoxMetrics->clear();
     // update comboBoxUploaders
     const QList<BaseMetric *> &list = MetricsManager::getMetrics();
-    foreach (BaseMetric * met, list)
-    {
-        comboBoxMetrics->addItem( met->getName(),qVariantFromValue( (void *) met ) ); // store directly pointer
+
+    foreach (BaseMetric *met, list) {
+        comboBoxMetrics->addItem(met->getName(), QVariant::fromValue((void *) met));    // store directly pointer
     }
 }
 
-void AboutDialog::on_listWidgetTranslations_itemClicked( QListWidgetItem * item)
+void AboutDialog::on_listWidgetTranslations_itemClicked(QListWidgetItem *item)
 {
     QString lang = item->data(Qt::UserRole).toString();
-    QString file( MiscFunctions::getTranslationsPath("fr") );
-    file += QString("/%1_%2.qm").arg( QString(PACKAGE_NAME).toLower() ).arg(lang);
+    QString file(MiscFunctions::getTranslationsPath("fr"));
+    file += QString("/%1_%2.qm").arg(QString(PACKAGE_NAME).toLower()).arg(lang);
 
     QTranslator translator;
     translator.load(file);
-    labelTranslation->setText( translator.translate("","release of translation and translator name please","put your name here dear translator and the release of the translation file!!") );
-}
-
-void AboutDialog::on_comboBoxImageFormatName_currentIndexChanged(int index)
-{
-    labelFormatDesc->setText("");
-
-    if (index < 0)
-        return;
-
-    BaseFormat *fmt = static_cast<BaseFormat *>( comboBoxImageFormatName->itemData(index,Qt::UserRole).value<void *>() );
-    labelFormatDesc->setText( fmt->getDesc() );
-
-    // update comboBoxFormatParam
-    comboBoxFormatParam->clear();
-    const QList<FormatProperty*> &listInput = fmt->getProperties();
-
-    lineEditFormatParam->setText("");
-    lineEditFormatParam->setToolTip("");
-    lineEditFormatParam->setEnabled( !listInput.isEmpty() );
-    comboBoxFormatParam->setToolTip("");
-    comboBoxcomboBoxFormatParamValues->setToolTip("");
-
-    foreach (FormatProperty * prop, listInput)
-    {
-        comboBoxFormatParam->addItem( prop->name,qVariantFromValue( (void *) prop ) ); // store directly pointer
-    }
-
-}
-
-void AboutDialog::on_comboBoxFormatParam_currentIndexChanged(int index)
-{
-    setupFormatParam(index,comboBoxFormatParam,lineEditFormatParam,comboBoxcomboBoxFormatParamValues,pushButtonApplyUserParam);
+    labelTranslation->setText(translator.translate("", "release of translation and translator name please", "put your name here dear translator and the release of the translation file!!"));
 }
 
 void AboutDialog::on_comboBoxMetrics_currentIndexChanged(int index)
 {
-    labelMetricPixmap->setPixmap( QPixmap() );
+    labelMetricPixmap->setPixmap(QPixmap());
     labelMetricDesc->setText("");
 
-    if (index < 0)
+    if (index < 0) {
         return;
+    }
 
-    BaseMetric *met = static_cast<BaseMetric *>( comboBoxMetrics->itemData(index,Qt::UserRole).value<void *>() );
-    labelMetricPixmap->setPixmap( met->getLogo().scaled(QSize(48,48),Qt::KeepAspectRatio,Qt::SmoothTransformation) );
-    labelMetricDesc->setText( met->getDesc() );
+    BaseMetric *met = static_cast<BaseMetric *>(comboBoxMetrics->itemData(index, Qt::UserRole).value<void *>());
+    labelMetricPixmap->setPixmap(met->getLogo().scaled(QSize(48, 48), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    labelMetricDesc->setText(met->getDesc());
 
     // update comboBoxInputParam
     comboBoxInputParam->clear();
@@ -344,13 +294,12 @@ void AboutDialog::on_comboBoxMetrics_currentIndexChanged(int index)
 
     lineEditInputParam->setText("");
     lineEditInputParam->setToolTip("");
-    lineEditInputParam->setEnabled( !listInput.isEmpty() );
+    lineEditInputParam->setEnabled(!listInput.isEmpty());
     comboBoxInputParam->setToolTip("");
     pushButtonApplyInputParam->setEnabled(false);
 
-    foreach (MetricParam * param, listInput)
-    {
-        comboBoxInputParam->addItem( param->name,qVariantFromValue( (void *) param ) ); // store directly pointer
+    foreach (MetricParam *param, listInput) {
+        comboBoxInputParam->addItem(param->name, QVariant::fromValue((void *) param));    // store directly pointer
     }
 
     // update comboBoxOutputParameter
@@ -359,22 +308,23 @@ void AboutDialog::on_comboBoxMetrics_currentIndexChanged(int index)
 
     lineEditThreshold->setText("");
     lineEditThreshold->setToolTip("");
-    lineEditThreshold->setEnabled( !listOutput.isEmpty() && groupBoxEnableThreshold->isChecked() );
+    lineEditThreshold->setEnabled(!listOutput.isEmpty() && groupBoxEnableThreshold->isChecked());
     comboBoxOutputParam->setToolTip("");
 
-    foreach (MetricParam * param, listOutput)
-    {
-        comboBoxOutputParam->addItem( param->name,qVariantFromValue( (void *) param ) ); // store directly pointer
-        if (param->used)
+    foreach (MetricParam *param, listOutput) {
+        comboBoxOutputParam->addItem(param->name, QVariant::fromValue((void *) param));    // store directly pointer
+
+        if (param->used) {
             comboBoxOutputParam->setCurrentIndex(comboBoxOutputParam->count() - 1);
+        }
     }
 }
 
-void AboutDialog::on_groupBoxEnableThreshold_toggled ( bool on )
+void AboutDialog::on_groupBoxEnableThreshold_toggled(bool on)
 {
-    BaseMetric *met = static_cast<BaseMetric *>( comboBoxMetrics->itemData(comboBoxMetrics->currentIndex(),Qt::UserRole).value<void *>() );
-    if (met)
-    {
+    BaseMetric *met = static_cast<BaseMetric *>(comboBoxMetrics->itemData(comboBoxMetrics->currentIndex(), Qt::UserRole).value<void *>());
+
+    if (met) {
         const QList<MetricParam *> &list = met->getOutputParams();
         lineEditThreshold->setEnabled(!list.isEmpty() && on);
     }
@@ -382,130 +332,82 @@ void AboutDialog::on_groupBoxEnableThreshold_toggled ( bool on )
 
 void AboutDialog::on_comboBoxInputParam_currentIndexChanged(int index)
 {
-    setupParam(index,comboBoxInputParam,lineEditInputParam,pushButtonApplyInputParam);
+    setupParam(index, comboBoxInputParam, lineEditInputParam, pushButtonApplyInputParam);
 }
 
 void AboutDialog::on_comboBoxOutputParam_currentIndexChanged(int index)
 {
-    setupParam(index,comboBoxOutputParam,lineEditThreshold,pushButtonApplyImageParam);
+    setupParam(index, comboBoxOutputParam, lineEditThreshold, pushButtonApplyImageParam);
 
-    MetricParam *param = static_cast<MetricParam *>( comboBoxOutputParam->itemData(index,Qt::UserRole).value<void *>() );
-    BaseMetric *met = static_cast<BaseMetric *>( comboBoxMetrics->itemData(comboBoxMetrics->currentIndex(),Qt::UserRole).value<void *>() );
+    MetricParam *param = static_cast<MetricParam *>(comboBoxOutputParam->itemData(index, Qt::UserRole).value<void *>());
+    BaseMetric *met = static_cast<BaseMetric *>(comboBoxMetrics->itemData(comboBoxMetrics->currentIndex(), Qt::UserRole).value<void *>());
     met->setDiscriminatingParam(param);
 }
-void AboutDialog::setupFormatParam(int index, QComboBox *combo, QLineEdit *lineEdit,QComboBox *comboEdit, QPushButton * )
+
+void AboutDialog::setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, QPushButton *button)
 {
-    if (index < 0)
+    if (index < 0) {
         return;
-
-    FormatProperty *prop = static_cast<FormatProperty *>( combo->itemData(index,Qt::UserRole).value<void *>() );
-
-    lineEdit->setToolTip(prop->desc);
-    comboEdit->setToolTip(prop->desc);
-    combo->setToolTip(prop->desc);
-
-    comboEdit->setVisible(!prop->availableValues.isEmpty());
-    lineEdit->setVisible(prop->availableValues.isEmpty());
-
-    if (prop->availableValues.isEmpty())
-    {   
-        lineEdit->setText( prop->value.toString() );
     }
-    else
-    {
-        comboEdit->clear();
-        foreach (const QString&key , prop->availableValues)
-            comboEdit->addItem(key);
 
-        comboEdit->setCurrentIndex(comboEdit->findText( prop->value.toString()));
-    }
-}
-
-void AboutDialog::setupParam(int index, QComboBox *combo, QLineEdit *lineEdit, QPushButton *button )
-{
-    if (index < 0)
-        return;
-
-    MetricParam *param = static_cast<MetricParam *>( combo->itemData(index,Qt::UserRole).value<void *>() );
+    MetricParam *param = static_cast<MetricParam *>(combo->itemData(index, Qt::UserRole).value<void *>());
     combo->setToolTip(param->desc);
-    lineEdit->setText( param->threshold.toString() );
+    lineEdit->setText(param->threshold.toString());
     lineEdit->setToolTip(param->desc);
 
     // update the validator
-    switch ( param->threshold.type() )
-    {
-        case QMetaType::Int:
-        {
-            lineEdit->setValidator(m_iValidator);
-            break;
-        }
-        case QMetaType::Double:
-        case  QMetaType::Float:
-        {
-            lineEdit->setValidator(m_dValidator);
-            break;
-        }
-        default:
-            lineEdit->setValidator(NULL);
-            break;
+    switch (QMetaType::Type(param->threshold.type())) {
+    case QMetaType::Int: {
+        lineEdit->setValidator(m_iValidator);
+        break;
+    }
+
+    case QMetaType::Double:
+    case  QMetaType::Float: {
+        lineEdit->setValidator(m_dValidator);
+        break;
+    }
+
+    default:
+        lineEdit->setValidator(nullptr);
+        break;
     }
 
     // restore the standard palette
-    changePalette(false,lineEdit,button );
+    changePalette(false, lineEdit, button);
 }
 
-void AboutDialog::on_lineEditInputParam_textEdited ( const QString & text )
+void AboutDialog::on_lineEditInputParam_textEdited(const QString &text)
 {
     Q_UNUSED(text);
-    changePalette(true,lineEditInputParam,pushButtonApplyInputParam);
+    changePalette(true, lineEditInputParam, pushButtonApplyInputParam);
 }
 
-void AboutDialog::on_lineEditThreshold_textEdited ( const QString & text )
+void AboutDialog::on_lineEditThreshold_textEdited(const QString &text)
 {
     Q_UNUSED(text);
-    changePalette(true,lineEditThreshold,pushButtonApplyImageParam);
+    changePalette(true, lineEditThreshold, pushButtonApplyImageParam);
 }
 
 void AboutDialog::on_pushButtonApplyInputParam_pressed()
 {
-    applyParam(comboBoxInputParam, lineEditInputParam, pushButtonApplyInputParam );
-}
-
-void AboutDialog::on_pushButtonApplyUserParam_pressed()
-{
-    applyFormatProperty(comboBoxFormatParam, lineEditFormatParam, comboBoxcomboBoxFormatParamValues, pushButtonApplyUserParam );
-}
-
-void AboutDialog::applyFormatProperty(QComboBox *combo, QLineEdit *lineEdit, QComboBox *comboValue, QPushButton * )
-{
-    //changePalette(true,lineEdit,button);
-
-    // apply the modification
-    FormatProperty *prop = static_cast<FormatProperty *>( combo->itemData(combo->currentIndex(),Qt::UserRole).value<void *>() );
-
-    if (!prop)
-        return;
-
-    if (prop->availableValues.isEmpty())
-        prop->value = lineEdit->text().toLower();
-    else
-        prop->value = comboValue->currentText();
+    applyParam(comboBoxInputParam, lineEditInputParam, pushButtonApplyInputParam);
 }
 
 void AboutDialog::on_pushButtonApplyImageParam_pressed()
 {
-    applyParam(comboBoxOutputParam, lineEditThreshold, pushButtonApplyImageParam );
+    applyParam(comboBoxOutputParam, lineEditThreshold, pushButtonApplyImageParam);
 }
 
-void AboutDialog::applyParam(QComboBox *combo, QLineEdit *lineEdit, QPushButton *button )
+void AboutDialog::applyParam(QComboBox *combo, QLineEdit *lineEdit, QPushButton *button)
 {
-    changePalette(false,lineEdit,button);
+    changePalette(false, lineEdit, button);
 
     // apply the modification
-    MetricParam *param = static_cast<MetricParam *>( combo->itemData(combo->currentIndex(),Qt::UserRole).value<void *>() );
+    MetricParam *param = static_cast<MetricParam *>(combo->itemData(combo->currentIndex(), Qt::UserRole).value<void *>());
     QString valText = lineEdit->text();
-    if (param)
-    {
+
+    if (param) {
         // update the theshold
 
         /*
@@ -533,14 +435,12 @@ void AboutDialog::applyParam(QComboBox *combo, QLineEdit *lineEdit, QPushButton 
 void AboutDialog::changePalette(bool modified, QLineEdit *lineEdit, QPushButton *button)
 {
     button->setEnabled(modified);
-    if (modified)
-    {
+
+    if (modified) {
         QPalette pal;
         pal.setColor(QPalette::Text, Qt::red);
         lineEdit->setPalette(pal);
-    }
-    else
-    {
+    } else {
         // restore normal palette
         QPalette pal;
         pal.setColor(QPalette::Text, Qt::black);
@@ -548,7 +448,7 @@ void AboutDialog::changePalette(bool modified, QLineEdit *lineEdit, QPushButton 
     }
 }
 
-void AboutDialog::on_tabWidget_currentChanged ( int index )
+void AboutDialog::on_tabWidget_currentChanged(int index)
 {
-    setWindowTitle( tabWidget->tabText(index) );
+    setWindowTitle(tabWidget->tabText(index));
 }

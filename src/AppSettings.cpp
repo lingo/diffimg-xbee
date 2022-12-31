@@ -20,7 +20,7 @@
 
 #include "AppSettings.h"
 
-AppSettings::AppSettings( )
-    : QSettings ()
+AppSettings::AppSettings()
+    : QSettings()
 {
 }

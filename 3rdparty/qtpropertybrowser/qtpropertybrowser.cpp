@@ -51,40 +51,6 @@
 QT_BEGIN_NAMESPACE
 #endif
 
-class QtPropertyPrivate
-{
-public:
-    QtPropertyPrivate(QtAbstractPropertyManager *manager) : m_enabled(true), m_modified(false), m_manager(manager) {}
-    QtProperty *q_ptr;
-
-    QSet<QtProperty *> m_parentItems;
-    QList<QtProperty *> m_subItems;
-
-    QString m_toolTip;
-    QString m_statusTip;
-    QString m_whatsThis;
-    QString m_name;
-    bool m_enabled;
-    bool m_modified;
-
-    QtAbstractPropertyManager * const m_manager;
-};
-
-class QtAbstractPropertyManagerPrivate
-{
-    QtAbstractPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtAbstractPropertyManager)
-public:
-    void propertyDestroyed(QtProperty *property);
-    void propertyChanged(QtProperty *property) const;
-    void propertyRemoved(QtProperty *property,
-                QtProperty *parentProperty) const;
-    void propertyInserted(QtProperty *property, QtProperty *parentProperty,
-                QtProperty *afterProperty) const;
-
-    QSet<QtProperty *> m_properties;
-};
-
 /*!
     \class QtProperty
 
@@ -240,6 +206,16 @@ QString QtProperty::propertyName() const
 }
 
 /*!
+    Returns the property's id.
+
+    \sa setPropertyId()
+*/
+QString QtProperty::propertyId() const
+{
+    return d_ptr->m_id;
+}
+
+/*!
     Returns whether the property is enabled.
 
     \sa setEnabled()
@@ -293,6 +269,22 @@ QIcon QtProperty::valueIcon() const
 QString QtProperty::valueText() const
 {
     return d_ptr->m_manager->valueText(this);
+}
+
+/*!
+    Returns True if this property is equal to \a otherProperty
+
+    The list of parent or sub properties are not considered in the comparison.
+*/
+bool QtProperty::compare(QtProperty* otherProperty)const
+{
+  return (this->propertyId() == otherProperty->propertyId()
+          && this->propertyName() == otherProperty->propertyName()
+          && this->toolTip() == otherProperty->toolTip()
+          && this->statusTip() == otherProperty->statusTip()
+          && this->whatsThis() == otherProperty->whatsThis()
+          && this->isEnabled() == otherProperty->isEnabled()
+          && this->isModified() == otherProperty->isModified());
 }
 
 /*!
@@ -354,6 +346,21 @@ void QtProperty::setPropertyName(const QString &text)
 }
 
 /*!
+    \fn void QtProperty::setPropertyId(const QString &id)
+
+    Sets the property's  id to the given \a id.
+
+    \sa propertyId()
+*/
+void QtProperty::setPropertyId(const QString &text)
+{
+    if (d_ptr->m_id == text)
+        return;
+
+    d_ptr->m_id = text;
+}
+
+/*!
     Enables or disables the property according to the passed \a enable value.
 
     \sa isEnabled()
@@ -379,6 +386,14 @@ void QtProperty::setModified(bool modified)
 
     d_ptr->m_modified = modified;
     propertyChanged();
+}
+
+/*!
+    Returns whether the property is sub property.
+*/
+bool QtProperty::isSubProperty()const
+{
+  return d_ptr->m_parentItems.count();
 }
 
 /*!
@@ -737,6 +752,23 @@ QtProperty *QtAbstractPropertyManager::addProperty(const QString &name)
 }
 
 /*!
+    Return the QtProperty object matching \a id or Null if any.
+
+    \sa addProperty(), setPropertyId(const QString&), properties()
+*/
+QtProperty * QtAbstractPropertyManager::qtProperty(const QString &id)const
+{
+  foreach(QtProperty* prop, d_ptr->m_properties)
+    {
+    if (prop->propertyId() == id)
+      {
+      return prop;
+      }
+    }
+  return 0;
+}
+
+/*!
     Creates a property.
 
     The base implementation produce QtProperty instances; Reimplement
@@ -1053,24 +1085,6 @@ void QtAbstractPropertyManager::uninitializeProperty(QtProperty *property)
 */
 
 ////////////////////////////////////
-class QtBrowserItemPrivate
-{
-public:
-    QtBrowserItemPrivate(QtAbstractPropertyBrowser *browser, QtProperty *property, QtBrowserItem *parent)
-        : m_browser(browser), m_property(property), m_parent(parent), q_ptr(0) {}
-
-    void addChild(QtBrowserItem *index, QtBrowserItem *after);
-    void removeChild(QtBrowserItem *index);
-
-    QtAbstractPropertyBrowser * const m_browser;
-    QtProperty *m_property;
-    QtBrowserItem *m_parent;
-
-    QtBrowserItem *q_ptr;
-
-    QList<QtBrowserItem *> m_children;
-
-};
 
 void QtBrowserItemPrivate::addChild(QtBrowserItem *index, QtBrowserItem *after)
 {
@@ -1180,42 +1194,6 @@ typedef QMap<QtAbstractPropertyManager *, QMap<QtAbstractEditorFactoryBase *,
                             QList<QtAbstractPropertyBrowser *> > > Map2;
 Q_GLOBAL_STATIC(Map1, m_viewToManagerToFactory)
 Q_GLOBAL_STATIC(Map2, m_managerToFactoryToViews)
-
-    /*
-class QtAbstractPropertyBrowserPrivate
-{
-    QtAbstractPropertyBrowser *q_ptr;
-    Q_DECLARE_PUBLIC(QtAbstractPropertyBrowser)
-public:
-    QtAbstractPropertyBrowserPrivate();
-
-    void insertSubTree(QtProperty *property,
-            QtProperty *parentProperty);
-    void removeSubTree(QtProperty *property,
-            QtProperty *parentProperty);
-    void createBrowserIndexes(QtProperty *property, QtProperty *parentProperty, QtProperty *afterProperty);
-    void removeBrowserIndexes(QtProperty *property, QtProperty *parentProperty);
-    QtBrowserItem *createBrowserIndex(QtProperty *property, QtBrowserItem *parentIndex, QtBrowserItem *afterIndex);
-    void removeBrowserIndex(QtBrowserItem *index);
-    void clearIndex(QtBrowserItem *index);
-
-    void slotPropertyInserted(QtProperty *property,
-            QtProperty *parentProperty, QtProperty *afterProperty);
-    void slotPropertyRemoved(QtProperty *property, QtProperty *parentProperty);
-    void slotPropertyDestroyed(QtProperty *property);
-    void slotPropertyDataChanged(QtProperty *property);
-
-    QList<QtProperty *> m_subItems;
-    QMap<QtAbstractPropertyManager *, QList<QtProperty *> > m_managerToProperties;
-    QMap<QtProperty *, QList<QtProperty *> > m_propertyToParents;
-
-    QMap<QtProperty *, QtBrowserItem *> m_topLevelPropertyToIndex;
-    QList<QtBrowserItem *> m_topLevelIndexes;
-    QMap<QtProperty *, QList<QtBrowserItem *> > m_propertyToIndexes;
-
-    QtBrowserItem *m_currentItem;
-};
-*/
 
 QtAbstractPropertyBrowserPrivate::QtAbstractPropertyBrowserPrivate() :
    m_currentItem(0)
@@ -1809,14 +1787,14 @@ QtBrowserItem *QtAbstractPropertyBrowser::insertProperty(QtProperty *property,
     QList<QtProperty *> pendingList = properties();
     int pos = 0;
     int newPos = 0;
-    QtProperty *properAfterProperty = 0;
+    //QtProperty *properAfterProperty = 0;
     while (pos < pendingList.count()) {
         QtProperty *prop = pendingList.at(pos);
         if (prop == property)
             return 0;
         if (prop == afterProperty) {
             newPos = pos + 1;
-            properAfterProperty = afterProperty;
+            //properAfterProperty = afterProperty;
         }
         pos++;
     }
@@ -1980,4 +1958,3 @@ void QtAbstractPropertyBrowser::setCurrentItem(QtBrowserItem *item)
 QT_END_NAMESPACE
 #endif
 
-//#include "moc_qtpropertybrowser.cpp"

@@ -27,11 +27,11 @@
 
 #include "BaseMetric.h"
 #include "MetricsRegistering.h"
-#include "FormatsRegistering.h"
+//#include "FormatsRegistering.h"
 #include "MetricsManager.h"
-#include "FormatsManager.h"
 #include "FilesManager.h"
 #include "WipeMethod.h"
+#include "ChannelCurve.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QFileInfo>
@@ -42,14 +42,16 @@
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
-#include <QtGui/QActionGroup>
-#include <QtGui/QFileDialog>
-#include <QtGui/QAction>
-#include <QtGui/QMessageBox>
-#include <QtGui/QDesktopWidget>
-#include <QtGui/QDesktopServices>
-#include <QtGui/QPainter>
-#include <QtGui/QDragEnterEvent>
+#include <QActionGroup>
+#include <QFileDialog>
+#include <QAction>
+#include <QMessageBox>
+#include <QDesktopWidget>
+#include <QDesktopServices>
+#include <QPainter>
+#include <QDragEnterEvent>
+#include <QButtonGroup>
+#include <QMimeData>
 
 #if !defined(WIN32)
 #include <unistd.h> // for unlink
@@ -72,90 +74,55 @@
 const int defaultThumbnailSize = 128;
 const int updateWaitTime = 200;
 
-// QWT
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-
-class ChannelCurve : public QwtPlotCurve
-{
-public:
-
-    ChannelCurve(const QString &title) :
-        QwtPlotCurve(title)
-    {
-#if QT_VERSION >= 0x040000
-        setRenderHint(QwtPlotItem::RenderAntialiased);
-#endif
-    }
-
-    void setColor(const QColor &color)
-    {
-#if QT_VERSION >= 0x040000
-        QColor c = color;
-        c.setAlpha(50);
-
-        setPen(c);
-        setBrush(c);
-#else
-        setPen(color);
-        setBrush( QBrush(color, Qt::Dense4Pattern) );
-#endif
-    }
-};
-
-DiffImgWindow::DiffImgWindow(QWidget *parent, Qt::WFlags flags)
-    :   QMainWindow(parent, flags),
-    m_displayOverlayDiff(true),
-    m_displayOriginalImage(true),
-    m_displayModifiedImage(false),
-    m_displayDifferenceImage(false),
-    m_displayDualPanel(false),
-    m_displayHistoZeroValue(false),
-    m_displayImageComment(false),
-    m_newFile1m_newFile1(true),
-    m_newFile2m_newFile1(true),
-    m_version(PACKAGE_VERSION),
+DiffImgWindow::DiffImgWindow(QWidget *parent)
+    :   QMainWindow(parent),
+        m_displayOverlayDiff(true),
+        m_displayOriginalImage(true),
+        m_displayModifiedImage(false),
+        m_displayDifferenceImage(false),
+        m_displayDualPanel(false),
+        m_displayHistoZeroValue(false),
+        m_displayImageComment(false),
+        m_newFile1m_newFile1(true),
+        m_newFile2m_newFile1(true),
+        m_version(PACKAGE_VERSION),
 #ifdef WIN64
-    m_appName( PACKAGE_NAME + QString(" (x64)") ),
+        m_appName(PACKAGE_NAME + QString(" (x64)")),
 #else
-    m_appName(PACKAGE_NAME),
+        m_appName(PACKAGE_NAME),
 #endif
-    m_firstTime(true),
-    m_splashscreenAtStartup(true),
-    m_splashscreenTransparentBackground(true),
-    m_about(NULL),
-    m_logLevel(LogHandler::MSG_DEBUG),
-    m_widgetHistoCurveR(NULL),
-    m_widgetHistoCurveG(NULL),
-    m_widgetHistoCurveB(NULL),
-    m_resetConfig(false),
-    m_maskOpacity(50),
-    m_compareWithThreshold(false),
-    m_metricType(0),
-    m_thresholdType(0),
-    m_diffRes(NULL),
-    m_currentDisplayType(TYPE_ORIGINAL),
-    m_labelZoom(NULL),
-    m_labelPos(NULL),
-    m_labelInfos(NULL),
-    m_applyGain(false),
-    m_applyOffset(false),
-    m_currentGain(1.0f),
-    m_currentOffset(0.0f),
-    m_wipeMethod(WipeMethod::WIPE_HORIZONTAL)
+        m_firstTime(true),
+        m_about(nullptr),
+        m_logLevel(LogHandler::MSG_DEBUG),
+        m_widgetHistoCurveR(nullptr),
+        m_widgetHistoCurveG(nullptr),
+        m_widgetHistoCurveB(nullptr),
+        m_resetConfig(false),
+        m_maskOpacity(50),
+        m_compareWithThreshold(false),
+        m_metricType(0),
+        m_thresholdType(0),
+        m_diffRes(nullptr),
+        m_currentDisplayType(TYPE_ORIGINAL),
+        m_labelZoom(nullptr),
+        m_labelPos(nullptr),
+        m_labelInfos(nullptr),
+        m_applyGain(false),
+        m_applyOffset(false),
+        m_currentGain(1.0f),
+        m_currentOffset(0.0f),
+        m_wipeMethod(WipeMethod::WIPE_HORIZONTAL)
 {
     setupUi(this);
     updateUi();
     loadSettings();
 }
 
-DiffImgWindow::~DiffImgWindow() 
+DiffImgWindow::~DiffImgWindow()
 {
     saveSettings();
     delete m_diffRes;
     MetricsManager::clear();
-    FormatsManager::clear();
 }
 
 void DiffImgWindow::updateUi()
@@ -164,14 +131,14 @@ void DiffImgWindow::updateUi()
 
     // metrics registering
     int nb = MetricsRegistering::registerAll();
-    LogHandler::getInstance()->reportDebug( QString("Register of %1 metrics").arg(nb) );
+    LogHandler::getInstance()->reportDebug(QString("Register of %1 metrics").arg(nb));
 
     // weird format registering
-    nb = FormatsRegistering::registerAll();
-    LogHandler::getInstance()->reportDebug( QString("Register of %1 user formats").arg(nb) );
+    //nb = FormatsRegistering::registerAll();
+    //LogHandler::getInstance()->reportDebug( QString("Register of %1 user formats").arg(nb) );
 
     m_dfiles = new FilesDialog(this);
-    connect( m_dfiles, SIGNAL( accepted () ), this, SLOT( acceptFiles() ) );
+    connect(m_dfiles, SIGNAL(accepted()), this, SLOT(acceptFiles()));
 
     m_actionGroup = new QActionGroup(this);
     m_actionGroup->addAction(actionImage1);
@@ -180,12 +147,12 @@ void DiffImgWindow::updateUi()
     m_actionGroup->setExclusive(true);
 
     m_about = new AboutDialog(this);
-    connect( m_about,SIGNAL( restart() ),this,SLOT( restart() ) );
-    connect( m_about, SIGNAL( accepted() ), this, SLOT( setPreferences() ) );
+    connect(m_about, SIGNAL(restart()), this, SLOT(restart()));
+    connect(m_about, SIGNAL(accepted()), this, SLOT(setPreferences()));
 
     // create and connect the log handler
-    connect( LogHandler::getInstance(),SIGNAL( newMessage(const QString &) ),this,SLOT( printToLog(const QString &) ) );
-    
+    connect(LogHandler::getInstance(), SIGNAL(newMessage(const QString &)), this, SLOT(printToLog(const QString &)));
+
 
     m_diffRes = new DiffStruct;
 
@@ -199,21 +166,21 @@ void DiffImgWindow::updateUi()
     m_labelZoom = new QLabel(this);
     QMainWindow::statusBar()->addPermanentWidget(m_labelZoom);
 
-    connect( graphicsView1,SIGNAL( mouseMoved(const QPointF &) ),this,SLOT( displayMousePosition(const QPointF &) ) );
-    connect( graphicsView1,SIGNAL( mouseMoved(const QPointF &) ),graphicsView2,SLOT( setMarkerPosition(const QPointF &) ) );
-    connect( graphicsView1,SIGNAL( scaleChanged(qreal) ),this,SLOT( displayZoomFactor(qreal) ) );
+    connect(graphicsView1, SIGNAL(mouseMoved(const QPointF &)), this, SLOT(displayMousePosition(const QPointF &)));
+    connect(graphicsView1, SIGNAL(mouseMoved(const QPointF &)), graphicsView2, SLOT(setMarkerPosition(const QPointF &)));
+    connect(graphicsView1, SIGNAL(scaleChanged(qreal)), this, SLOT(displayZoomFactor(qreal)));
 
-    connect( graphicsView2,SIGNAL( mouseMoved(const QPointF &) ),this,SLOT( displayMousePosition(const QPointF &) ) );
-    connect( graphicsView2,SIGNAL( mouseMoved(const QPointF &) ),graphicsView1,SLOT( setMarkerPosition(const QPointF &) ) );
-    connect( graphicsView2,SIGNAL( scaleChanged(qreal) ),this,SLOT( displayZoomFactor(qreal) ) );
+    connect(graphicsView2, SIGNAL(mouseMoved(const QPointF &)), this, SLOT(displayMousePosition(const QPointF &)));
+    connect(graphicsView2, SIGNAL(mouseMoved(const QPointF &)), graphicsView1, SLOT(setMarkerPosition(const QPointF &)));
+    connect(graphicsView2, SIGNAL(scaleChanged(qreal)), this, SLOT(displayZoomFactor(qreal)));
 
-    connect( graphicsViewWipe,SIGNAL( mouseMoved(const QPointF &) ),this,SLOT( displayMousePosition(const QPointF &) ) );
+    connect(graphicsViewWipe, SIGNAL(mouseMoved(const QPointF &)), this, SLOT(displayMousePosition(const QPointF &)));
     //connect( graphicsViewWipe,SIGNAL( mouseMoved(const QPointF &) ),graphicsView1,SLOT( setMarkerPosition(const QPointF &) ) );
-    connect( graphicsViewWipe,SIGNAL( scaleChanged(qreal) ),this,SLOT( displayZoomFactor(qreal) ) );
+    connect(graphicsViewWipe, SIGNAL(scaleChanged(qreal)), this, SLOT(displayZoomFactor(qreal)));
 
-    connect( graphicsView1,SIGNAL( somethingChanged() ),this,SLOT( syncPanels() ) );
-    connect( graphicsView2,SIGNAL( somethingChanged() ),this,SLOT( syncPanels() ) );
-    connect( graphicsViewWipe,SIGNAL( somethingChanged() ),this,SLOT( syncPanels() ) );
+    connect(graphicsView1, SIGNAL(somethingChanged()), this, SLOT(syncPanels()));
+    connect(graphicsView2, SIGNAL(somethingChanged()), this, SLOT(syncPanels()));
+    connect(graphicsViewWipe, SIGNAL(somethingChanged()), this, SLOT(syncPanels()));
 
     graphicsView2->setShowOverview(false); // no navigator in view 2
     //connect( graphicsView2,SIGNAL( newZoomFactor(qreal) ),graphicsView1,SLOT( zoom(qreal) ) );
@@ -234,40 +201,45 @@ void DiffImgWindow::updateUi()
 
     // update timer for gain/offset
     m_timerUpdate = new QTimer(this);
-    connect( m_timerUpdate,SIGNAL( timeout() ),this,SLOT( updateDisplay() ) );
+    connect(m_timerUpdate, SIGNAL(timeout()), this, SLOT(updateDisplay()));
     m_timerUpdate->setSingleShot(true);
 
     LogHandler::getInstance()->setBufferization(false); // get all stored messages if exists
 
     // Wipe view
     graphicsViewWipe->setWipeMode(true);
+    widgetHisto->setMinimumHeight(50);
 }
 
 void DiffImgWindow::updateTooltips()
 {
     QList<QAction *> actions = findChildren<QAction *>();
 
-    foreach(QAction * act, actions )
-    {
+    foreach (QAction *act, actions) {
         QString tooltip = act->toolTip();
         QKeySequence keyShortcut = act->shortcut();
         QString strShortcutString = keyShortcut.toString();
-        if ( !strShortcutString.isEmpty() )
-            act->setToolTip( QString("%1 (%2)").arg(tooltip,strShortcutString) );
+
+        if (!strShortcutString.isEmpty()) {
+            act->setToolTip(QString("%1 (%2)").arg(tooltip, strShortcutString));
+        }
     }
 }
 
 void DiffImgWindow::updateTitle()
 {
-    int index1 = FilesManager::getFilelist1().indexOf( QFileInfo(m_file1).fileName() );
-    int index2 = FilesManager::getFilelist2().indexOf( QFileInfo(m_file2).fileName() );
+    int index1 = FilesManager::getFilelist1().indexOf(QFileInfo(m_file1).fileName());
+    int index2 = FilesManager::getFilelist2().indexOf(QFileInfo(m_file2).fileName());
     int total1 = FilesManager::getFilelist1().size() - 1;
     int total2 = FilesManager::getFilelist2().size() - 1;
     QString title;
-    if (index1 >= 0 && index2 >= 0)
-        title = QString(" (%1/%2) [%3] / [%4] (%5/%6)").arg(index1).arg(total1).arg( QFileInfo(m_file1).fileName() ).arg( QFileInfo(m_file2).fileName() ).arg(index2).arg(total2);
-    else
+
+    if (index1 >= 0 && index2 >= 0) {
+        title = QString(" (%1/%2) [%3] / [%4] (%5/%6)").arg(index1).arg(total1).arg(QFileInfo(m_file1).fileName()).arg(QFileInfo(m_file2).fileName()).arg(index2).arg(total2);
+    } else {
         title = "[" + QFileInfo(m_file1).fileName() + "] / [" + QFileInfo(m_file2).fileName() + "]";
+    }
+
     setWindowTitle(m_appName + " " + m_version + ": " + title);
 }
 
@@ -297,38 +269,30 @@ void DiffImgWindow::saveSettings()
 
     settings.beginGroup("MainWindow");
 
-    settings.setValue( "MainWindowState",saveState(0) );
+    settings.setValue("MainWindowState", saveState(0));
 
-    settings.setValue( "size", size() );
-    settings.setValue( "pos", pos() );
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
 
-    settings.setValue( "fullScreen", isFullScreen() );
-    settings.setValue( "maximized", isMaximized ());
-
-    // save the screen number for the splashsreeen ...
-    if ( QApplication::desktop()->isVirtualDesktop() )
-        settings.setValue( "screenNumber", QApplication::desktop()->screenNumber( pos() ) );
-    else
-        settings.setValue( "screenNumber", QApplication::desktop()->screenNumber(this) );
-
-    settings.setValue( "screenNumber", QApplication::desktop()->screenNumber(this) );
+    settings.setValue("fullScreen", isFullScreen());
+    settings.setValue("maximized", isMaximized());
 
     settings.endGroup();
 
     settings.beginGroup("Application");
 
     // save last diff images
-    if ( !m_file1.isEmpty() )
+    if (!m_file1.isEmpty()) {
         settings.setValue("lastDiffImage1", m_file1);
-    if ( !m_file2.isEmpty() )
+    }
+
+    if (!m_file2.isEmpty()) {
         settings.setValue("lastDiffImage2", m_file2);
+    }
 
     settings.setValue("displayDualPanel", m_displayDualPanel);
     settings.setValue("displayHistoZeroValue", m_displayHistoZeroValue);
     settings.setValue("displayImageComment", m_displayImageComment);
-
-    settings.setValue("splashscreenAtStartup", m_splashscreenAtStartup);
-    settings.setValue("splashscreenTransparentBackground", m_splashscreenTransparentBackground);
 
     settings.setValue("currentLanguage", m_currentLanguage);
 
@@ -356,45 +320,48 @@ void DiffImgWindow::loadSettings()
 
     restoreState(settings.value("MainWindowState").toByteArray(), 0);
 
-    resize( settings.value( "size", QSize(800, 800) ).toSize() );
-    move( settings.value( "pos", QPoint(200, 200) ).toPoint() );
+    resize(settings.value("size", QSize(800, 800)).toSize());
+    move(settings.value("pos", QPoint(200, 200)).toPoint());
 
     // check if restore position isn't outside the current screen definitions (additional screen has been unplugged)
-    if (QApplication::desktop()->screenNumber( pos() ) < 0)
-        move( QPoint(200, 200) );
+    if (QApplication::screenAt(pos()) == nullptr) {
+        move(QPoint(200, 200));
+    }
 
-    bool fullScreen = settings.value("fullScreen",false).toBool();
-    if (fullScreen)
-        showFullScreen ();
+    bool fullScreen = settings.value("fullScreen", false).toBool();
 
-    bool maximized = settings.value("maximized",false).toBool();
-    if (maximized)
-        showMaximized ();
+    if (fullScreen) {
+        showFullScreen();
+    }
+
+    bool maximized = settings.value("maximized", false).toBool();
+
+    if (maximized) {
+        showMaximized();
+    }
 
     settings.endGroup();
 
     settings.beginGroup("Application");
 
-    m_splashscreenAtStartup = settings.value( "splashscreenAtStartup", true).toBool();
-    m_splashscreenTransparentBackground = settings.value("splashscreenTransparentBackground",true).toBool();
+    m_currentLanguage = settings.value("currentLanguage", "auto").toString();
 
-    m_currentLanguage = settings.value("currentLanguage","auto").toString();
-
-    if ( m_currentLanguage.isEmpty() )
+    if (m_currentLanguage.isEmpty()) {
         m_currentLanguage = QLocale::system().name().left(2);
+    }
 
     // load last diff images
-    m_file1 = settings.value("lastDiffImage1","").toString();
-    m_file2 = settings.value("lastDiffImage2","").toString();
+    m_file1 = settings.value("lastDiffImage1", "").toString();
+    m_file2 = settings.value("lastDiffImage2", "").toString();
 
-    m_displayDualPanel = settings.value("displayDualPanel",false).toBool();
+    m_displayDualPanel = settings.value("displayDualPanel", false).toBool();
     actionDualPanel->setChecked(m_displayDualPanel);
     on_actionDualPanel_toggled(m_displayDualPanel);
 
-    m_displayHistoZeroValue = settings.value("displayHistoZeroValue",false).toBool();
+    m_displayHistoZeroValue = settings.value("displayHistoZeroValue", false).toBool();
     checkBoxShowHistoZero->setChecked(m_displayHistoZeroValue);
 
-    m_displayImageComment = settings.value("displayImageComment",false).toBool();
+    m_displayImageComment = settings.value("displayImageComment", false).toBool();
     actionShowComment->setChecked(m_displayImageComment);
     on_actionShowComment_toggled(m_displayImageComment);
 
@@ -409,12 +376,15 @@ void DiffImgWindow::loadSettings()
     m_thresholdType = settings.value("thresholdType", 0).toInt();
 
     m_currentDisplayType = settings.value("currentDisplayType", TYPE_ORIGINAL).toInt();
-    if (m_currentDisplayType == TYPE_ORIGINAL)
+
+    if (m_currentDisplayType == TYPE_ORIGINAL) {
         actionImage1->activate(QAction::Trigger);
-    else if (m_currentDisplayType == TYPE_MODIFIED)
+    } else if (m_currentDisplayType == TYPE_MODIFIED) {
         actionImage2->activate(QAction::Trigger);
-    else
+    } else {
         actionDifferenceImage->activate(QAction::Trigger);
+    }
+
     m_displayOverlayDiff = settings.value("displayOverlayDiff", true).toBool();
     actionDifferenceMask->setChecked(m_displayOverlayDiff);
 
@@ -430,15 +400,16 @@ void DiffImgWindow::loadSettings()
 void DiffImgWindow::load()
 {
     // display the selection file dialog if needed
-    if (m_file1.isEmpty() || m_file2.isEmpty() || m_firstTime)
-        QTimer::singleShot( 1000, this, SLOT( on_actionOpen_triggered() ) );
-    else
-        QTimer::singleShot( 2000, this, SLOT( acceptFiles() ) );
+    if (m_file1.isEmpty() || m_file2.isEmpty() || m_firstTime) {
+        QTimer::singleShot(0, this, SLOT(on_actionOpen_triggered()));
+    } else {
+        QTimer::singleShot(0, this, SLOT(acceptFiles()));
+    }
 }
 
 void DiffImgWindow::on_actionHelp_triggered()
 {
-    QDesktopServices::openUrl( QUrl( QString(PACKAGE_ONLINE_HELP_URL) ) );
+    QDesktopServices::openUrl(QUrl(QString(PACKAGE_ONLINE_HELP_URL)));
 }
 
 void DiffImgWindow::on_actionShowComment_toggled(bool val)
@@ -449,8 +420,7 @@ void DiffImgWindow::on_actionShowComment_toggled(bool val)
 
 void DiffImgWindow::updateImageComment()
 {
-    if (!m_displayDualPanel)
-    {
+    if (!m_displayDualPanel) {
         lineEditComment1->setVisible(m_displayImageComment);
         lineEditComment1->setEnabled(m_displayImageComment);
         pushButtonClearComment1->setVisible(m_displayImageComment);
@@ -461,9 +431,7 @@ void DiffImgWindow::updateImageComment()
         pushButtonClearComment2->setVisible(false);
         pushButtonValidComment2->setVisible(false);
         pushButtonValidComment2->setEnabled(false);
-    }
-    else
-    {
+    } else {
         lineEditComment1->setVisible(m_displayImageComment);
         lineEditComment1->setEnabled(m_displayImageComment);
         pushButtonClearComment1->setVisible(m_displayImageComment);
@@ -496,28 +464,26 @@ void DiffImgWindow::writeComment(const QString &comment, const QString &imageFil
     QString commentFile = imageFile + ".txt";
 
     // delete file if needed
-    if ( comment.trimmed().isEmpty() && QFileInfo(commentFile).exists() )
-    {
-        unlink( commentFile.toStdString().c_str() );
-    }
-    else if ( !MiscFunctions::stringToFile(comment.trimmed(),commentFile) )
-    {
-        QMessageBox::warning( this, PACKAGE_NAME,tr("Can't save comment data for %1").arg(imageFile) );
+    if (comment.trimmed().isEmpty() && QFileInfo(commentFile).exists()) {
+        unlink(commentFile.toStdString().c_str());
+    } else if (!MiscFunctions::stringToFile(comment.trimmed(), commentFile)) {
+        QMessageBox::warning(this, PACKAGE_NAME, tr("Can't save comment data for %1").arg(imageFile));
     }
 }
 
 void DiffImgWindow::on_actionSaveDifference_triggered()
 {
     // ask for a filename ...
-    QString savefilename = QFileDialog::getSaveFileName( this, tr("Save difference image"),
-                                                         "diff.png",
-                                                         MiscFunctions::getAvailablesImageFormats() );
+    QString savefilename = QFileDialog::getSaveFileName(this, tr("Save difference image"),
+                           "diff.png",
+                           MiscFunctions::getAvailablesImageFormats());
 
-    if ( !savefilename.isEmpty() )
-    {
+    if (!savefilename.isEmpty()) {
         BaseMetric *met = MetricsManager::getMetrics()[m_metricType];
-        if ( !met->saveDifference(savefilename) )
-            LogHandler::getInstance()->reportError( QString("Can't save difference image in %1").arg(savefilename) );
+
+        if (!met->saveDifference(savefilename)) {
+            LogHandler::getInstance()->reportError(QString("Can't save difference image in %1").arg(savefilename));
+        }
     }
 }
 
@@ -532,10 +498,11 @@ void DiffImgWindow::on_actionOpen_triggered()
 void DiffImgWindow::on_actionNext_triggered()
 {
     QString file1 = m_file1, file2 = m_file2;
-    FilesManager::getNextFiles(file1,file2);
+    FilesManager::getNextFiles(file1, file2);
 
-    if ( file1.isEmpty() || file2.isEmpty() )
+    if (file1.isEmpty() || file2.isEmpty()) {
         return;
+    }
 
     m_dfiles->setFile1(file1);
     m_dfiles->setFile2(file2);
@@ -546,10 +513,11 @@ void DiffImgWindow::on_actionNext_triggered()
 void DiffImgWindow::on_actionPrev_triggered()
 {
     QString file1 = m_file1, file2 = m_file2;
-    FilesManager::getPrevFiles(file1,file2);
+    FilesManager::getPrevFiles(file1, file2);
 
-    if ( file1.isEmpty() || file2.isEmpty() )
+    if (file1.isEmpty() || file2.isEmpty()) {
         return;
+    }
 
     m_dfiles->setFile1(file1);
     m_dfiles->setFile2(file2);
@@ -562,19 +530,18 @@ void DiffImgWindow::computeDifferenceNew()
     BaseMetric *met = MetricsManager::getMetrics()[m_metricType];
 
     // TODO put htis at the right place !!!
-    labelCurrentMetric->setText( tr("Current metric: %1").arg( met->getName() ) );
+    labelCurrentMetric->setText(tr("Current metric: %1").arg(met->getName()));
 
-    met->checkDifferences(m_file1,m_file2);
+    met->checkDifferences(m_file1, m_file2);
 
-    if ( !met->isValid() )
-    {
-        QMessageBox::information( this, PACKAGE_NAME,tr("Can't display difference, more information in the log panel ...") );
+    if (!met->isValid()) {
+        QMessageBox::information(this, PACKAGE_NAME, tr("Can't display difference, more information in the log panel ..."));
         return;
     }
 
-    updateImage1( met->getImage1() );
-    updateImage2( met->getImage2() );
-    updateDifference( met->getImageDifference() );
+    updateImage1(met->getImage1());
+    updateImage2(met->getImage2());
+    updateDifference(met->getImageDifference());
     m_maskDiffImage = met->getImageMask();
     graphicsView1->setMask(m_maskDiffImage);
     graphicsView2->setMask(m_maskDiffImage);
@@ -589,7 +556,7 @@ void DiffImgWindow::computeDifferenceNew()
 
 void DiffImgWindow::acceptFiles()
 {
-    m_dfiles->getCurrentFiles(m_file1,m_file2);
+    m_dfiles->getCurrentFiles(m_file1, m_file2);
 
     updateTitle();
     computeDifferenceNew();
@@ -599,13 +566,14 @@ void DiffImgWindow::on_actionDisplayWipe_toggled(bool val)
 {
     actionDualPanel->setEnabled(!val);
     m_actionGroup->setEnabled(!val);
-    dockWidgetNavigator->setEnabled(!val);
-    if (val)
-    {
+    pushButtonFile1->setEnabled(!val);
+    pushButtonFile2->setEnabled(!val);
+    pushButtonDifference->setEnabled(!val);
+
+    //dockWidgetNavigator->setEnabled(!val);
+    if (val) {
         stackedWidget->setCurrentIndex(PAGE_WIPEVIEW);
-    }
-    else
-    {
+    } else {
         stackedWidget->setCurrentIndex(PAGE_DUALVIEW);
     }
 }
@@ -619,8 +587,9 @@ void DiffImgWindow::on_actionDualPanel_toggled(bool val)
     actionImage2->setEnabled(!m_displayDualPanel);
 
     // if dual panel mode => force original image display
-    if (m_displayDualPanel)
+    if (m_displayDualPanel) {
         actionImage1->trigger();
+    }
 }
 
 //-------------------------------------------------------------------------
@@ -629,49 +598,56 @@ void DiffImgWindow::updateSmileyStatus()
 {
     BaseMetric *met = MetricsManager::getMetrics()[m_metricType];
 
+    QPixmap pixmap;
+
     // setup the emoticon
-    if ( !met->getPixelError() )
-    {
-        labelSmiley->setPixmap( QPixmap(":/diffimg/allgood.png") );
+    if (!met->getPixelError()) {
+        pixmap = QPixmap(":/diffimg/allgood.png");
+    } else if (m_compareWithThreshold && met->selectedStatsIsValid()) {
+        pixmap = QPixmap(":/diffimg/somebad.png");
+    } else {
+        pixmap = QPixmap(":/diffimg/bad.png");
     }
-    else if ( m_compareWithThreshold && met->selectedStatsIsValid() )
-    {
-        labelSmiley->setPixmap( QPixmap(":/diffimg/somebad.png") );
-    }
-    else
-    {
-        labelSmiley->setPixmap( QPixmap(":/diffimg/bad.png") );
-    }
+
+    labelSmiley->setPixmap(pixmap.scaledToHeight(labelSmiley->height()));
 }
 
 //-------------------------------------------------------------------------
 
 void DiffImgWindow::openFile1(const QString &fileName)
 {
-    if ( fileName.isEmpty() )
-        return;
-
-    QImage image(fileName);
-    if ( image.isNull() )
-    {
-        QMessageBox::information( this, tr("Image Viewer"),tr("Cannot load %1.").arg(fileName) );
+    if (fileName.isEmpty()) {
         return;
     }
+
+    QImage image(fileName);
+
+    if (image.isNull()) {
+        QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(fileName));
+        return;
+    }
+
     updateImage1(image);
 }
 
 void DiffImgWindow::updateImage1(const QImage &image)
 {
+    graphicsView1->filenameLeft = QFileInfo(m_file1).fileName();
+    graphicsViewWipe->filenameLeft = QFileInfo(m_file1).fileName();
+
     m_image1 = image;
-    m_image1Thumbnail = m_image1.scaled( (int) defaultThumbnailSize, (int) defaultThumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation );
+
+    m_image1Thumbnail = m_image1.scaledToHeight(pushButtonFile1->height(), Qt::SmoothTransformation);
 
     //m_resultImage1 = QImage(m_image1.size(), QImage::Format_ARGB32);
 
     // set default iconsize for pushbutton
-    pushButtonFile1->setIconSize( m_image1Thumbnail.size() );
-    pushButtonFile1->setIcon( QPixmap::fromImage(m_image1Thumbnail) );
+    pushButtonFile1->setIconSize(pushButtonFile1->size());
+    //pushButtonFile1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pushButtonFile1->setIcon(QPixmap::fromImage(m_image1Thumbnail).scaled(pushButtonFile1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    //pushButtonFile1->setMinimumSize(0, 0);
 
-    lineEditComment1->setText( readComment(m_file1) );
+    lineEditComment1->setText(readComment(m_file1));
     pushButtonValidComment1->setEnabled(false);
 
     //labelSize->setText( QString("%1x%2").arg( m_sourceImage.size().width() ).arg( m_sourceImage.size().height() ) );
@@ -688,17 +664,17 @@ void DiffImgWindow::updateImage1(const QImage &image)
 void DiffImgWindow::setPanel1Visibility(bool val)
 {
     graphicsView1->setVisible(val);
-    lineEditComment1->setVisible(val&&m_displayImageComment);
-    pushButtonClearComment1->setVisible(val&&m_displayImageComment);
-    pushButtonValidComment1->setVisible(val&&m_displayImageComment);
+    lineEditComment1->setVisible(val && m_displayImageComment);
+    pushButtonClearComment1->setVisible(val && m_displayImageComment);
+    pushButtonValidComment1->setVisible(val && m_displayImageComment);
 }
 
 void DiffImgWindow::setPanel2Visibility(bool val)
 {
     graphicsView2->setVisible(val);
-    lineEditComment2->setVisible(val&&m_displayImageComment);
-    pushButtonClearComment2->setVisible(val&&m_displayImageComment);
-    pushButtonValidComment2->setVisible(val&&m_displayImageComment);
+    lineEditComment2->setVisible(val && m_displayImageComment);
+    pushButtonClearComment2->setVisible(val && m_displayImageComment);
+    pushButtonValidComment2->setVisible(val && m_displayImageComment);
 }
 
 void DiffImgWindow::updateDisplay()
@@ -707,64 +683,78 @@ void DiffImgWindow::updateDisplay()
 
     // always update image2
     QImage img2;
-    if (m_applyGain || m_applyOffset)
-        img2 = met->getImage2WithGain(m_currentGain,m_currentOffset);
-    else
+
+    if (m_applyGain || m_applyOffset) {
+        img2 = met->getImage2WithGain(m_currentGain, m_currentOffset);
+    } else {
         img2 = m_image2;
+    }
+
     graphicsView2->setImage(img2);
 
     setPanel1Visibility(true);
 
     // new mode
-    if (m_displayDualPanel)
-    {
+    if (stackedWidget->currentIndex() == PAGE_WIPEVIEW) {
+        QImage img1;
+
+        if (m_applyGain || m_applyOffset) {
+            graphicsViewWipe->setWipeImage1(met->getImage1WithGain(m_currentGain, m_currentOffset));
+            graphicsViewWipe->setWipeImage2(met->getImage2WithGain(m_currentGain, m_currentOffset));
+        } else {
+            graphicsViewWipe->setWipeImage1(m_image1);
+            graphicsViewWipe->setWipeImage2(m_image2);
+        }
+    } else if (m_displayDualPanel) {
         setPanel2Visibility(true);
         graphicsView2->setShowOverview(false);
-        if (m_currentDisplayType == TYPE_ORIGINAL)
-        {
+
+        if (m_currentDisplayType == TYPE_ORIGINAL) {
             QImage img1;
-            if (m_applyGain || m_applyOffset)
-                img1 = met->getImage1WithGain(m_currentGain,m_currentOffset);
-            else
+
+            if (m_applyGain || m_applyOffset) {
+                img1 = met->getImage1WithGain(m_currentGain, m_currentOffset);
+            } else {
                 img1 = m_image1;
+            }
+
             graphicsView1->setImage(img1);
-        }
-        else
-        {
+        } else {
             QImage img1;
-            if (m_applyGain || m_applyOffset)
-                img1 = met->getImageDifferenceWithGain(m_currentGain,m_currentOffset);
-            else
+
+            if (m_applyGain || m_applyOffset) {
+                img1 = met->getImageDifferenceWithGain(m_currentGain, m_currentOffset);
+            } else {
                 img1 = m_diffImage;
+            }
+
             graphicsView1->setImage(img1);
         }
-    }
-    else
-    {
+    } else {
         setPanel2Visibility(false);
         graphicsView2->setShowOverview(false);
         QImage img1;
-        if (m_currentDisplayType == TYPE_ORIGINAL)
-        {
-            if (m_applyGain || m_applyOffset)
-                img1 = met->getImage1WithGain(m_currentGain,m_currentOffset);
-            else
+
+        if (m_currentDisplayType == TYPE_ORIGINAL) {
+            if (m_applyGain || m_applyOffset) {
+                img1 = met->getImage1WithGain(m_currentGain, m_currentOffset);
+            } else {
                 img1 = m_image1;
-        }
-        else if (m_currentDisplayType == TYPE_MODIFIED)
-        {
-            if (m_applyGain || m_applyOffset)
-                img1 = met->getImage2WithGain(m_currentGain,m_currentOffset);
-            else
+            }
+        } else if (m_currentDisplayType == TYPE_MODIFIED) {
+            if (m_applyGain || m_applyOffset) {
+                img1 = met->getImage2WithGain(m_currentGain, m_currentOffset);
+            } else {
                 img1 = m_image2;
-        }
-        else
-        {
-            if (m_applyGain || m_applyOffset)
-                img1 = met->getImageDifferenceWithGain(m_currentGain,m_currentOffset);
-            else
+            }
+        } else {
+            if (m_applyGain || m_applyOffset) {
+                img1 = met->getImageDifferenceWithGain(m_currentGain, m_currentOffset);
+            } else {
                 img1 = m_diffImage;
+            }
         }
+
         graphicsView1->setImage(img1);
     }
 }
@@ -773,13 +763,14 @@ void DiffImgWindow::updateDisplay()
 
 void DiffImgWindow::openFile2(const QString &fileName)
 {
-    if ( fileName.isEmpty() )
+    if (fileName.isEmpty()) {
         return;
+    }
 
     QImage image(fileName);
-    if ( image.isNull() )
-    {
-        QMessageBox::information( this, tr("Image Viewer"),tr("Cannot load %1.").arg(fileName) );
+
+    if (image.isNull()) {
+        QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(fileName));
         return;
     }
 
@@ -788,28 +779,36 @@ void DiffImgWindow::openFile2(const QString &fileName)
 
 void DiffImgWindow::updateImage2(const QImage &image)
 {
+    graphicsView2->filenameRight = QFileInfo(m_file2).fileName();
+    graphicsViewWipe->filenameRight = QFileInfo(m_file2).fileName();
+
     m_image2 = image;
-    m_image2Thumbnail = m_image2.scaled( (int) defaultThumbnailSize, (int) defaultThumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation );
+
+    m_image2Thumbnail = m_image2.scaledToHeight(pushButtonFile2->height(), Qt::SmoothTransformation);
 
     // set default iconsize for pushbutton
-    pushButtonFile2->setIconSize( m_image2Thumbnail.size() );
-    pushButtonFile2->setIcon( QPixmap::fromImage(m_image2Thumbnail) );
+    pushButtonFile2->setIconSize(pushButtonFile2->size());
+    //pushButtonFile2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pushButtonFile2->setIcon(QPixmap::fromImage(m_image2Thumbnail).scaled(pushButtonFile2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    //pushButtonFile2->setMinimumSize(0, 0);
 
-    lineEditComment2->setText( readComment(m_file2) );
+    lineEditComment2->setText(readComment(m_file2));
     pushButtonValidComment2->setEnabled(false);
 
     graphicsView2->setImage(m_image2);
     graphicsViewWipe->setWipeImage2(m_image2);
-    if (m_displayDualPanel)
+
+    if (m_displayDualPanel) {
         synchronizePanels();
+    }
 }
 
 void DiffImgWindow::updateDifference(const QImage &image)
 {
     m_diffImage = image;
-    m_diffImageThumbnail = m_diffImage.scaled( (int) defaultThumbnailSize, (int) defaultThumbnailSize, Qt::KeepAspectRatio, Qt::SmoothTransformation );
-    pushButtonDifference->setIconSize( m_diffImageThumbnail.size() );
-    pushButtonDifference->setIcon( QPixmap::fromImage(m_diffImageThumbnail) );
+    m_diffImageThumbnail = m_diffImage.scaledToHeight(pushButtonDifference->height(), Qt::SmoothTransformation);
+    pushButtonDifference->setIconSize(pushButtonDifference->size());
+    pushButtonDifference->setIcon(QPixmap::fromImage(m_diffImageThumbnail).scaled(pushButtonDifference->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
 //-------------------------------------------------------------------------
@@ -828,20 +827,21 @@ void DiffImgWindow::on_actionDifferenceMask_toggled(bool val)
 void DiffImgWindow::on_actionImage1_toggled(bool val)
 {
     m_displayOriginalImage = val;
-    if (m_displayOriginalImage)
-    {
+
+    if (m_displayOriginalImage) {
         m_currentDisplayType = TYPE_ORIGINAL;
         showRGBHistogramNew();
         m_displayModifiedImage = false;
         m_displayDifferenceImage = false;
 
-        if ( !pushButtonFile1->isChecked() )
+        if (!pushButtonFile1->isChecked()) {
             pushButtonFile1->setChecked(true);
+        }
 
-        graphicsView1->setScale( graphicsView2->getScale() );
-        graphicsView1->setCenter( graphicsView2->getCenter() );
+        graphicsView1->setScale(graphicsView2->getScale());
+        graphicsView1->setCenter(graphicsView2->getCenter());
 
-        lineEditComment1->setText( readComment(m_file1) );
+        lineEditComment1->setText(readComment(m_file1));
         pushButtonValidComment1->setEnabled(false);
         lineEditComment1->setEnabled(true);
         pushButtonClearComment1->setEnabled(true);
@@ -858,20 +858,21 @@ void DiffImgWindow::on_actionImage1_toggled(bool val)
 void DiffImgWindow::on_actionImage2_toggled(bool val)
 {
     m_displayModifiedImage = val;
-    if (m_displayModifiedImage)
-    {
+
+    if (m_displayModifiedImage) {
         m_currentDisplayType = TYPE_MODIFIED;
         showRGBHistogramNew();
         m_displayOriginalImage = false;
         m_displayDifferenceImage = false;
 
-        if ( !pushButtonFile2->isChecked() )
+        if (!pushButtonFile2->isChecked()) {
             pushButtonFile2->setChecked(true);
+        }
 
-        graphicsView2->setScale( graphicsView1->getScale() );
-        graphicsView2->setCenter( graphicsView1->getCenter() );
+        graphicsView2->setScale(graphicsView1->getScale());
+        graphicsView2->setCenter(graphicsView1->getCenter());
 
-        lineEditComment1->setText( readComment(m_file2) );
+        lineEditComment1->setText(readComment(m_file2));
         pushButtonValidComment1->setEnabled(false);
         lineEditComment1->setEnabled(true);
         pushButtonClearComment1->setEnabled(true);
@@ -888,14 +889,16 @@ void DiffImgWindow::on_actionImage2_toggled(bool val)
 void DiffImgWindow::on_actionDifferenceImage_toggled(bool val)
 {
     m_displayDifferenceImage = val;
-    if (m_displayDifferenceImage)
-    {
+
+    if (m_displayDifferenceImage) {
         m_currentDisplayType = TYPE_DIFFERENCE;
         showRGBHistogramNew();
         m_displayOriginalImage = false;
         m_displayModifiedImage = false;
-        if ( !pushButtonDifference->isChecked() )
+
+        if (!pushButtonDifference->isChecked()) {
             pushButtonDifference->setChecked(true);
+        }
 
         lineEditComment1->setText("");
         pushButtonValidComment1->setEnabled(false);
@@ -905,6 +908,7 @@ void DiffImgWindow::on_actionDifferenceImage_toggled(bool val)
 
         updateDisplay();
     }
+
     checkBoxShowHistoZero->setVisible(val);
     labelHist->setVisible(val);
 }
@@ -931,6 +935,7 @@ void DiffImgWindow::on_actionShowDocks_triggered()
 {
     dockWidgetNavigator->show();
     dockWidgetProperties->show();
+    widgetHisto->setMinimumHeight(50);
     dockWidgetHistogram->show();
 }
 
@@ -945,8 +950,9 @@ void DiffImgWindow::on_pushButtonFile1_pressed()
 
 void DiffImgWindow::on_pushButtonFile2_pressed()
 {
-    if (m_displayDualPanel)
+    if (m_displayDualPanel) {
         return;
+    }
 
     actionImage2->setChecked(true);
 }
@@ -962,25 +968,25 @@ void DiffImgWindow::on_pushButtonDifference_pressed()
 
 void DiffImgWindow::resetView()
 {
-    pushButtonFile1->setIcon( QIcon(":/diffimg/original.png") );
-    pushButtonFile2->setIcon( QIcon(":/diffimg/modified.png") );
-    pushButtonDifference->setIcon( QIcon(":/diffimg/diffimg.png") );
+    pushButtonFile1->setIcon(QIcon(":/diffimg/original.png"));
+    pushButtonFile2->setIcon(QIcon(":/diffimg/modified.png"));
+    pushButtonDifference->setIcon(QIcon(":/diffimg/diffimg.png"));
 }
 
 //-------------------------------------------------------------------------
 
 void DiffImgWindow::setModeSingleImage()
 {
-    pushButtonFile2->setEnabled(false);
-    pushButtonDifference->setEnabled(false);
+    pushButtonFile2->setCheckable(false);
+    pushButtonDifference->setCheckable(false);
 }
 
 //-------------------------------------------------------------------------
 
 void DiffImgWindow::setModeDualImage()
 {
-    pushButtonFile2->setEnabled(true);
-    pushButtonDifference->setEnabled(true);
+    pushButtonFile2->setCheckable(true);
+    pushButtonDifference->setCheckable(true);
 }
 
 //-------------------------------------------------------------------------
@@ -988,8 +994,8 @@ void DiffImgWindow::setModeDualImage()
 void DiffImgWindow::setModeDualPanel(bool val)
 {
     m_displayDualPanel = val;
-    if (m_displayDualPanel)
-    {
+
+    if (m_displayDualPanel) {
         // for a problem of incorrect layout (??), I have to hide both view before showing them
         setPanel2Visibility(false);
         setPanel1Visibility(false);
@@ -1003,13 +1009,12 @@ void DiffImgWindow::setModeDualPanel(bool val)
         //graphicsView2->show();
         //graphicsView1->show();
 
-        pushButtonFile2->setEnabled(false);
-    }
-    else
-    {
+        pushButtonFile2->setCheckable(false);
+    } else {
         setPanel2Visibility(false);
-        pushButtonFile2->setEnabled(true);
+        pushButtonFile2->setCheckable(true);
     }
+
     synchronizePanels();
 }
 
@@ -1022,27 +1027,23 @@ void DiffImgWindow::etHop()
 
 void DiffImgWindow::syncPanels()
 {
-    ImageView *iv = qobject_cast<ImageView *>( sender() );
-    if (iv == graphicsView1)
-    {
-        graphicsView2->setScale( graphicsView1->getScale() );
-        graphicsView2->setCenter( graphicsView1->getCenter() );
-        graphicsViewWipe->setScale( graphicsView1->getScale() );
-        graphicsViewWipe->setCenter( graphicsView1->getCenter() );
-    }
-    else if (iv == graphicsView2)
-    {
-        graphicsView1->setScale( graphicsView2->getScale() );
-        graphicsView1->setCenter( graphicsView2->getCenter() );
-        graphicsViewWipe->setScale( graphicsView2->getScale() );
-        graphicsViewWipe->setCenter( graphicsView2->getCenter() );
-    }
-    else if (iv == graphicsViewWipe)
-    {
-        graphicsView1->setScale( graphicsViewWipe->getScale() );
-        graphicsView1->setCenter( graphicsViewWipe->getCenter() );
-        graphicsView2->setScale( graphicsViewWipe->getScale() );
-        graphicsView2->setCenter( graphicsViewWipe->getCenter() );
+    ImageView *iv = qobject_cast<ImageView *>(sender());
+
+    if (iv == graphicsView1) {
+        graphicsView2->setScale(graphicsView1->getScale());
+        graphicsView2->setCenter(graphicsView1->getCenter());
+        graphicsViewWipe->setScale(graphicsView1->getScale());
+        graphicsViewWipe->setCenter(graphicsView1->getCenter());
+    } else if (iv == graphicsView2) {
+        graphicsView1->setScale(graphicsView2->getScale());
+        graphicsView1->setCenter(graphicsView2->getCenter());
+        graphicsViewWipe->setScale(graphicsView2->getScale());
+        graphicsViewWipe->setCenter(graphicsView2->getCenter());
+    } else if (iv == graphicsViewWipe) {
+        graphicsView1->setScale(graphicsViewWipe->getScale());
+        graphicsView1->setCenter(graphicsViewWipe->getCenter());
+        graphicsView2->setScale(graphicsViewWipe->getScale());
+        graphicsView2->setCenter(graphicsViewWipe->getCenter());
     }
 }
 
@@ -1051,7 +1052,7 @@ void DiffImgWindow::syncPanels()
 void DiffImgWindow::synchronizePanels()
 {
     // reference is panel1
-    graphicsView2->setScale( graphicsView1->getScale() );
+    graphicsView2->setScale(graphicsView1->getScale());
 }
 
 void DiffImgWindow::updateApplicationIdentity()
@@ -1089,17 +1090,13 @@ void DiffImgWindow::updateAbout()
     m_about->comboBoxOutputParam->setCurrentIndex(m_thresholdType);
 
     m_about->comboBoxWipeEffectAxis->setCurrentIndex(m_wipeMethod);
-
-    // splashscreen
-    m_about->checkBoxSplashscreenAtStartup->setChecked(m_splashscreenAtStartup);
-    m_about->checkBoxSplashscreenTransparentBackground->setChecked(m_splashscreenTransparentBackground);
 }
 
 //--------------------------------------------------------------------------------------
 // LOG Functions
 //--------------------------------------------------------------------------------------
 
-void DiffImgWindow::printToLog(const QString & mess)
+void DiffImgWindow::printToLog(const QString &mess)
 {
     m_about->textBrowserLog->append(mess);
 }
@@ -1114,43 +1111,33 @@ void DiffImgWindow::initHistoNew()
 
     // histogram
     //widgetHisto->setAxisScale(QwtPlot::xBottom,met->getMinError(),met->getMaxError());
-    widgetHisto->setCanvasBackground (Qt::white);
+    widgetHisto->setCanvasBackground(Qt::white);
     int nbChannels = 0;
 
-    if (m_currentDisplayType == TYPE_ORIGINAL)
-    {
+    if (m_currentDisplayType == TYPE_ORIGINAL) {
         nbChannels = met->getImage1Channels();
-        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinImage1(),met->getMaxImage1() );
-    }
-    else if (m_currentDisplayType == TYPE_MODIFIED)
-    {
+        widgetHisto->setAxisScale(QwtPlot::xBottom, met->getMinImage1(), 256);
+    } else if (m_currentDisplayType == TYPE_MODIFIED) {
         nbChannels = met->getImage2Channels();
-        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinImage2(),met->getMaxImage2() );
-    }
-    else
-    {
+        widgetHisto->setAxisScale(QwtPlot::xBottom, met->getMinImage2(), 256);
+    } else {
         nbChannels = met->getDifferenceChannels();
-        widgetHisto->setAxisScale( QwtPlot::xBottom,met->getMinError(),met->getMaxError() );
+        widgetHisto->setAxisScale(QwtPlot::xBottom, met->getMinError(), 256);
     }
 
-    if (nbChannels == 1)
-    {
-        // prepare RGB curves
+    if (nbChannels == 1) {
         m_widgetHistoCurveR = new ChannelCurve("Value");
         m_widgetHistoCurveR->setColor(Qt::black);
-    }
-    else
-    {
-        // prepare RGB curves
+    } else {
         m_widgetHistoCurveR = new ChannelCurve("Red");
         m_widgetHistoCurveR->setColor(Qt::red);
-
-        m_widgetHistoCurveG = new ChannelCurve("Green");
-        m_widgetHistoCurveG->setColor(Qt::green);
-
-        m_widgetHistoCurveB = new ChannelCurve("Blue");
-        m_widgetHistoCurveB->setColor(Qt::blue);
     }
+
+    m_widgetHistoCurveG = new ChannelCurve("Green");
+    m_widgetHistoCurveG->setColor(Qt::green);
+
+    m_widgetHistoCurveB = new ChannelCurve("Blue");
+    m_widgetHistoCurveB->setColor(Qt::blue);
 }
 
 void DiffImgWindow::showRGBHistogramNew()
@@ -1162,44 +1149,41 @@ void DiffImgWindow::showRGBHistogramNew()
 void DiffImgWindow::applyHisto()
 {
     BaseMetric *met = MetricsManager::getMetrics()[m_metricType];
-    const QList<QPolygonF> * pHistos = NULL;
+    const QList<QPolygonF> *pHistos = nullptr;
 
-    if (m_currentDisplayType == TYPE_ORIGINAL)
+    if (m_currentDisplayType == TYPE_ORIGINAL) {
         pHistos = &met->getHistogramImage1();
-    else if (m_currentDisplayType == TYPE_MODIFIED)
+    } else if (m_currentDisplayType == TYPE_MODIFIED) {
         pHistos = &met->getHistogramImage2();
-    else
+    } else {
         pHistos = &met->getHistogramImageDiff(m_displayHistoZeroValue);
+    }
 
-    for (int i = 0; i < (*pHistos).size(); i++)
-    {
-        if ( (*pHistos)[i].isEmpty() )
+    for (int i = 0; i < (*pHistos).size(); i++) {
+        if ((*pHistos)[i].isEmpty()) {
             continue;
+        }
 
-        if (i==0)
-        {
-            m_widgetHistoCurveR->setSamples( (*pHistos)[i] );
+        if (i == 0) {
+            m_widgetHistoCurveR->setSamples((*pHistos)[i]);
             m_widgetHistoCurveR->attach(widgetHisto);
-        }
-        else if (i == 1)
-        {
-            m_widgetHistoCurveR->setSamples( (*pHistos)[i] );
-            m_widgetHistoCurveR->attach(widgetHisto);
-        }
-        else if (i == 2)
-        {
-            m_widgetHistoCurveB->setSamples( (*pHistos)[i] );
+        } else if (i == 1) {
+            m_widgetHistoCurveG->setSamples((*pHistos)[i]);
+            m_widgetHistoCurveG->attach(widgetHisto);
+        } else if (i == 2) {
+            m_widgetHistoCurveB->setSamples((*pHistos)[i]);
             m_widgetHistoCurveB->attach(widgetHisto);
         }
     }
 
     // plot the histogram
     widgetHisto->replot();
+    widgetHisto->setMinimumHeight(50);
 }
 
 void DiffImgWindow::restart()
 {
-    QProcess::startDetached( qApp->arguments()[0], qApp->arguments().mid(1) );
+    QProcess::startDetached(qApp->arguments()[0], qApp->arguments().mid(1));
     QApplication::exit(0);
 }
 
@@ -1209,28 +1193,24 @@ void DiffImgWindow::restart()
 
 void DiffImgWindow::setPreferences()
 {
-    if (!m_about)
+    if (!m_about) {
         return;
-
-    // splashscreen
-    m_splashscreenAtStartup = m_about->checkBoxSplashscreenAtStartup->isChecked();
-    m_splashscreenTransparentBackground = m_about->checkBoxSplashscreenTransparentBackground->isChecked();
+    }
 
     // get the language
-    m_currentLanguage = m_about->comboBoxLanguage->itemData( m_about->comboBoxLanguage->currentIndex() ).toString();
+    m_currentLanguage = m_about->comboBoxLanguage->itemData(m_about->comboBoxLanguage->currentIndex()).toString();
 
     // get the diff method
 
     bool hasDifference = false;
 
-    hasDifference |= ( m_maskOpacity != m_about->horizontalSliderOpacity->value() );
+    hasDifference |= (m_maskOpacity != m_about->horizontalSliderOpacity->value());
 
-    hasDifference |= ( m_compareWithThreshold != m_about->groupBoxEnableThreshold->isChecked() );
-    hasDifference |= ( m_metricType != m_about->comboBoxMetrics->currentIndex() );
-    hasDifference |= ( m_thresholdType != m_about->comboBoxOutputParam->currentIndex() );
+    hasDifference |= (m_compareWithThreshold != m_about->groupBoxEnableThreshold->isChecked());
+    hasDifference |= (m_metricType != m_about->comboBoxMetrics->currentIndex());
+    hasDifference |= (m_thresholdType != m_about->comboBoxOutputParam->currentIndex());
 
-    if (hasDifference)
-    {
+    if (hasDifference) {
         m_maskOpacity = m_about->horizontalSliderOpacity->value();
         graphicsView1->setMaskOpacity(m_maskOpacity / 100.0f);
         graphicsView2->setMaskOpacity(m_maskOpacity / 100.0f);
@@ -1242,8 +1222,7 @@ void DiffImgWindow::setPreferences()
         computeDifferenceNew();
     }
 
-    if (m_wipeMethod != m_about->comboBoxWipeEffectAxis->currentIndex())
-    {
+    if (m_wipeMethod != m_about->comboBoxWipeEffectAxis->currentIndex()) {
         m_wipeMethod = m_about->comboBoxWipeEffectAxis->currentIndex();
         graphicsViewWipe->setWipeMethod(m_wipeMethod);
     }
@@ -1258,82 +1237,83 @@ void DiffImgWindow::on_actionRefresh_triggered()
 
 void DiffImgWindow::displayMousePosition(const QPointF &p)
 {
-    QPoint pt( (int)p.x(),(int)p.y() );
-    if ( pt.isNull() )
+    QPoint pt((int)p.x(), (int)p.y());
+
+    if (pt.isNull()) {
         m_labelPos->setText("");
-    else
-        m_labelPos->setText( QString("%1x%2").arg( pt.x() ).arg( pt.y() ) );
+    } else {
+        m_labelPos->setText(QString("%1x%2").arg(pt.x()).arg(pt.y()));
+    }
 
     // display a marker if needed
-    ImageView *view = qobject_cast<ImageView *>( sender() );
-    if (!view)
+    ImageView *view = qobject_cast<ImageView *>(sender());
+
+    if (!view) {
         return;
+    }
 
     graphicsView1->setEnabledMarker(view != graphicsView1);
     graphicsView2->setEnabledMarker(view != graphicsView2);
 
     // display pixel infos
     QString infos;
-    if ( !pt.isNull() )
-    {
+
+    if (!pt.isNull()) {
         BaseMetric *met = MetricsManager::getMetrics()[m_metricType];
-        if (m_displayDualPanel)
-        {
-            if (m_currentDisplayType == TYPE_ORIGINAL)
-            {
+
+        if (m_displayDualPanel) {
+            if (m_currentDisplayType == TYPE_ORIGINAL) {
                 infos += met->getImage1Data(pt);
                 infos += " | ";
                 infos += met->getImage2Data(pt);
-            }
-            else
-            {
+            } else {
                 infos += met->getErrorData(pt);
                 infos += " | ";
                 infos += met->getImage2Data(pt);
             }
-        }
-        else
-        {
-            if (m_currentDisplayType == TYPE_ORIGINAL)
-            {
+        } else {
+            if (m_currentDisplayType == TYPE_ORIGINAL) {
                 infos += met->getImage1Data(pt);
-            }
-            else if (m_currentDisplayType == TYPE_MODIFIED)
-            {
+            } else if (m_currentDisplayType == TYPE_MODIFIED) {
                 infos += met->getImage2Data(pt);
-            }
-            else
-            {
+            } else {
                 infos += met->getErrorData(pt);
             }
         }
     }
+
     m_labelInfos->setText(infos);
 }
 
 void DiffImgWindow::displayZoomFactor(qreal zoom)
 {
-    m_labelZoom->setText( tr(" Scale x%1 ").arg( zoom, 3, 'g', 3 ) );
+    m_labelZoom->setText(tr(" Scale x%1 ").arg(zoom, 3, 'g', 3));
 }
 
 void DiffImgWindow::on_sliderGain_valueChanged(int val)
 {
     m_currentGain = val / 100.0f;
-    doubleSpinBoxGain->setValue( (double)m_currentGain );
-    m_timerUpdate->start(updateWaitTime);
+    doubleSpinBoxGain->setValue((double)m_currentGain);
+
+    if (m_timerUpdate->remainingTime() < updateWaitTime / 10) {
+        m_timerUpdate->start(updateWaitTime);
+    }
 }
 
 void DiffImgWindow::on_doubleSpinBoxGain_valueChanged(double val)
 {
     m_currentGain = val;
-    sliderGain->setValue( (int)(val * 100) );
+    sliderGain->setValue((int)(val * 100));
 }
 
 void DiffImgWindow::on_sliderOffset_valueChanged(int val)
 {
     m_currentOffset = val;
-    doubleSpinBoxOffset->setValue( (double)m_currentOffset );
-    m_timerUpdate->start(updateWaitTime);
+    doubleSpinBoxOffset->setValue((double)m_currentOffset);
+
+    if (m_timerUpdate->remainingTime() < updateWaitTime / 10) {
+        m_timerUpdate->start(updateWaitTime);
+    }
 
 //     if (m_lyr)
 //         m_lyr->setOffset(currentOffset_);
@@ -1344,18 +1324,16 @@ void DiffImgWindow::on_sliderOffset_valueChanged(int val)
 void DiffImgWindow::on_doubleSpinBoxOffset_valueChanged(double val)
 {
     m_currentOffset = val;
-    sliderOffset->setValue( (int)(val) );
+    sliderOffset->setValue((int)(val));
 }
 
 void DiffImgWindow::on_checkBoxGain_toggled(bool val)
 {
     m_applyGain = val;
-    if (m_applyGain)
-    {
-        on_sliderGain_valueChanged( sliderGain->value() );
-    }
-    else
-    {
+
+    if (m_applyGain) {
+        on_sliderGain_valueChanged(sliderGain->value());
+    } else {
         m_currentGain = 1.0f;
         updateDisplay();
     }
@@ -1364,12 +1342,10 @@ void DiffImgWindow::on_checkBoxGain_toggled(bool val)
 void DiffImgWindow::on_checkBoxOffset_toggled(bool val)
 {
     m_applyOffset = val;
-    if (m_applyOffset)
-    {
-        on_sliderOffset_valueChanged( sliderOffset->value() );
-    }
-    else
-    {
+
+    if (m_applyOffset) {
+        on_sliderOffset_valueChanged(sliderOffset->value());
+    } else {
         m_currentOffset = 0.0;
         updateDisplay();
     }
@@ -1379,18 +1355,16 @@ void DiffImgWindow::on_checkBoxOffset_toggled(bool val)
 
 void DiffImgWindow::dragEnterEvent(QDragEnterEvent *event)
 {
-    const QMimeData* mimeData = event->mimeData();
+    const QMimeData *mimeData = event->mimeData();
 
-    if ( !mimeData->hasUrls() )
-    {
+    if (!mimeData->hasUrls()) {
         event->ignore();
         return;
     }
 
     QList<QUrl> urls = mimeData->urls();
 
-    if(urls.count() != 2)
-    {
+    if (urls.count() != 2) {
         event->ignore();
         return;
     }
@@ -1399,41 +1373,74 @@ void DiffImgWindow::dragEnterEvent(QDragEnterEvent *event)
     QString filename = url.toLocalFile();
 
     // We don't test extension
-    if ( !QFileInfo(filename).exists() )
-    {
+    if (!QFileInfo(filename).exists()) {
         event->ignore();
         return;
     }
 
-    if ( !QFileInfo(filename).isFile() )
-    {
+    if (!QFileInfo(filename).isFile()) {
         event->ignore();
         return;
     }
 
     event->acceptProposedAction();
 }
+void DiffImgWindow::resizeEvent(QResizeEvent *event)
+{
+    if (m_image1Thumbnail.isNull() || m_image2Thumbnail.isNull() || m_diffImageThumbnail.isNull()) {
+        QMainWindow::resizeEvent(event);
+        return;
+    }
+
+    QSize size1 = pushButtonFile1->size();
+    pushButtonFile1->setIconSize(size1);
+
+    if (size1.height() > m_image1Thumbnail.height()) {
+        m_image1Thumbnail = m_image1.scaledToHeight(size1.height(), Qt::SmoothTransformation);
+    }
+
+    pushButtonFile1->setIcon(QPixmap::fromImage(m_image1Thumbnail).scaled(pushButtonFile1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    QSize size2 = pushButtonFile2->size();
+    pushButtonFile2->setIconSize(size2);
+
+    if (size2.height() > m_image2Thumbnail.height()) {
+        m_image2Thumbnail = m_image2.scaledToHeight(size2.height(), Qt::SmoothTransformation);
+    }
+
+    pushButtonFile2->setIcon(QPixmap::fromImage(m_image2Thumbnail).scaled(pushButtonFile2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    QSize sizeDiff = pushButtonDifference->size();
+
+    if (sizeDiff.height() > m_diffImageThumbnail.height()) {
+        m_diffImageThumbnail = m_diffImage.scaledToHeight(defaultThumbnailSize, Qt::SmoothTransformation);
+    }
+
+    pushButtonDifference->setIconSize(sizeDiff);
+    pushButtonDifference->setIcon(QPixmap::fromImage(m_diffImageThumbnail).scaled(pushButtonDifference->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    if (m_image1Thumbnail.isNull() || m_image2Thumbnail.isNull() || m_diffImageThumbnail.isNull()) {
+        QMainWindow::resizeEvent(event);
+        return;
+    }
+}
 
 void DiffImgWindow::dragMoveEvent(QDragMoveEvent *event)
 {
-    if ( event->source() == this )
-    {
+    if (event->source() == this) {
         event->setDropAction(Qt::MoveAction);
         event->accept();
-    }
-    else
-    {
+    } else {
         event->acceptProposedAction();
     }
 }
 
 void DiffImgWindow::dropEvent(QDropEvent *event)
 {
-    const QMimeData* mimeData = event->mimeData();
+    const QMimeData *mimeData = event->mimeData();
     QList<QUrl> urls = mimeData->urls();
 
-    if (urls.size()>1)
-    {
+    if (urls.size() > 1) {
         QString file1 = urls.at(0).toLocalFile();
         QString file2 = urls.at(1).toLocalFile();
         m_dfiles->setFile1(file1);
@@ -1461,13 +1468,13 @@ void DiffImgWindow::on_lineEditComment2_textChanged(const QString &)
 void DiffImgWindow::on_lineEditComment1_returnPressed()
 {
     pushButtonValidComment1->setEnabled(false);
-    writeComment(lineEditComment1->text(),m_file1);
+    writeComment(lineEditComment1->text(), m_file1);
 }
 
 void DiffImgWindow::on_lineEditComment2_returnPressed()
 {
     pushButtonValidComment2->setEnabled(false);
-    writeComment(lineEditComment2->text(),m_file2);
+    writeComment(lineEditComment2->text(), m_file2);
 }
 
 void DiffImgWindow::on_pushButtonValidComment1_pressed()
@@ -1480,18 +1487,14 @@ void DiffImgWindow::on_pushButtonValidComment2_pressed()
     on_lineEditComment2_returnPressed();
 }
 
-void DiffImgWindow::keyPressEvent ( QKeyEvent * event )
+void DiffImgWindow::keyPressEvent(QKeyEvent *event)
 {
     bool ctrl = event->modifiers() & Qt::ControlModifier;
 
-    if (ctrl)
-    {
-        if (event->key() == Qt::Key_Plus)
-        {
+    if (ctrl) {
+        if (event->key() == Qt::Key_Plus) {
             graphicsView1->zoomIn();
-        }
-        else if (event->key() == Qt::Key_Minus)
-        {
+        } else if (event->key() == Qt::Key_Minus) {
             graphicsView1->zoomOut();
         }
     }

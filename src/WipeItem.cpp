@@ -20,17 +20,17 @@
 
 // Qt
 #include <QtCore/QDebug>
-#include <QtGui/QPainter>
-#include <QtGui/QGraphicsSceneMouseEvent>
-#include <QtGui/QCursor>
+#include <QPainter>
+#include <QGraphicsSceneMouseEvent>
+#include <QCursor>
 
 #include "WipeItem.h"
 #include "WipeMethod.h"
 
 
-WipeItem::WipeItem(QGraphicsItem * parent) : QGraphicsItem(parent),
-m_wipe(false),
-m_wipeMethod(WipeMethod::WIPE_HORIZONTAL)
+WipeItem::WipeItem(QGraphicsItem *parent) : QGraphicsItem(parent),
+    m_wipe(false),
+    m_wipeMethod(WipeMethod::WIPE_HORIZONTAL)
 {
     //setFlag(QGraphicsItem::ItemIsSelectable,true);
     //setAcceptedMouseButtons(Qt::LeftButton|Qt::RightButton);
@@ -46,12 +46,12 @@ QRectF WipeItem::boundingRect() const
     QRectF rect;
 
     if (!m_pix1.isNull() ||
-         !m_pix2.isNull())
-    {
-        if (m_pix1.isNull()) 
-            rect = QRectF(QPointF(0,0), m_pix2.size());
-        else 
-            rect = QRectF(QPointF(0,0), m_pix1.size());
+            !m_pix2.isNull()) {
+        if (m_pix1.isNull()) {
+            rect = QRectF(QPointF(0, 0), m_pix2.size());
+        } else {
+            rect = QRectF(QPointF(0, 0), m_pix1.size());
+        }
     }
 
     //qDebug() << "boundingRect" << rect;
@@ -59,33 +59,34 @@ QRectF WipeItem::boundingRect() const
 }
 
 void WipeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                                QWidget *widget)
+                     QWidget *widget)
 {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+
     painter->setRenderHint(QPainter::SmoothPixmapTransform);
 
-    switch (m_wipeMethod)
-    {
-    case WipeMethod::WIPE_VERTICAL:
-        {
-            painter->drawPixmap(QPoint(0,0), 
-                m_pix2, 
-                QRect(0,0,m_pix2.width(),m_wipePoint.y()));
-            painter->drawPixmap(QPoint(0,m_wipePoint.y()), 
-                m_pix1, 
-                QRect(0,m_wipePoint.y(),m_pix1.width(),m_pix1.height()-m_wipePoint.y()));
-            break;
-        }
+    switch (m_wipeMethod) {
+    case WipeMethod::WIPE_VERTICAL: {
+        painter->drawPixmap(QPoint(0, 0),
+                            m_pix2,
+                            QRect(0, 0, m_pix2.width(), m_wipePoint.y()));
+        painter->drawPixmap(QPoint(0, m_wipePoint.y()),
+                            m_pix1,
+                            QRect(0, m_wipePoint.y(), m_pix1.width(), m_pix1.height() - m_wipePoint.y()));
+        break;
+    }
+
     default:
-    case WipeMethod::WIPE_HORIZONTAL:
-        {
-            painter->drawPixmap(QPoint(0,0), 
-                m_pix2, 
-                QRect(0,0,m_wipePoint.x(),m_pix2.height()));
-            painter->drawPixmap(QPoint(m_wipePoint.x(),0), 
-                m_pix1, 
-                QRect(m_wipePoint.x(),0,m_pix1.width()-m_wipePoint.x(),m_pix1.height()));
-            break;
-        }
+    case WipeMethod::WIPE_HORIZONTAL: {
+        painter->drawPixmap(QPoint(0, 0),
+                            m_pix2,
+                            QRect(0, 0, m_wipePoint.x(), m_pix2.height()));
+        painter->drawPixmap(QPoint(m_wipePoint.x(), 0),
+                            m_pix1,
+                            QRect(m_wipePoint.x(), 0, m_pix1.width() - m_wipePoint.x(), m_pix1.height()));
+        break;
+    }
     }
 
 }
@@ -93,61 +94,82 @@ void WipeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 void WipeItem::setImage1(const QImage &img)
 {
     m_pix1 = QPixmap::fromImage(img);
-    m_wipePoint = QPointF(0,0);
-    prepareGeometryChange ();
+
+    if (m_wipePoint.isNull()) {
+        m_wipePoint = img.rect().center();
+    }
+
+    prepareGeometryChange();
     update();
 }
 
 void WipeItem::setImage2(const QImage &img)
 {
     m_pix2 = QPixmap::fromImage(img);
-    m_wipePoint = QPointF(0,0);
-    prepareGeometryChange ();
+
+    if (m_wipePoint.isNull()) {
+        m_wipePoint = img.rect().center();
+    }
+
+    prepareGeometryChange();
     update();
 }
 
-void WipeItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
+void WipeItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
 
-    if (m_wipe)
-    {
+    if (m_wipe) {
         m_wipePoint = event->pos();
         update();
-    }
-    else
+    } else {
         event->ignore();
-    QGraphicsItem::mouseMoveEvent(event);
+        QGraphicsItem::mouseMoveEvent(event);
+    }
 }
 
-void WipeItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
+void WipeItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() == Qt::RightButton)
-    {
+    const int distance = (m_wipeMethod == WipeMethod::WIPE_HORIZONTAL) ?
+                         qAbs(event->pos().x() - m_wipePoint.x()) :
+                         qAbs(event->pos().y() - m_wipePoint.y()) ;
+
+    if (event->button() == Qt::RightButton || distance < 40) {
         m_wipe = true;
-    }
-    else
+        m_wipePoint = event->pos();
+        update();
+    } else {
         QGraphicsItem::mousePressEvent(event);
+    }
 }
 
-void WipeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) 
+void WipeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() == Qt::RightButton)
-    {
+    if (m_wipe) {
         m_wipe = false;
+    } else {
+        QGraphicsItem::mouseReleaseEvent(event);
     }
-   // QGraphicsItem::mouseReleaseEvent(event);
 }
 
 void WipeItem::setWipeMethod(int method)
 {
-    if (m_wipeMethod != method)
-    {
+    if (m_wipeMethod != method) {
         m_wipeMethod = method;
-        m_wipePoint = QPointF(0,0);
-        if (m_wipeMethod == WipeMethod::WIPE_HORIZONTAL)
+
+        if (m_wipePoint.isNull()) {
+            if (!m_pix1.isNull()) {
+                m_wipePoint = m_pix1.rect().center();
+            } else if (!m_pix2.isNull()) {
+                m_wipePoint = m_pix2.rect().center();
+            }
+        }
+
+        if (m_wipeMethod == WipeMethod::WIPE_HORIZONTAL) {
             setCursor(Qt::SplitHCursor);
-        else
+        } else {
             setCursor(Qt::SplitVCursor);
+        }
+
         update();
     }
 }

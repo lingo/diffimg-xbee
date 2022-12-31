@@ -1,42 +1,42 @@
-PROJECT (PerceptualDiff)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+# Tell CMake to run moc when necessary:
+set(CMAKE_AUTOMOC ON)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+# As moc files are generated in the binary dir, tell CMake
+# to always look for includes there:
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# this command finds Qt4 libraries and sets all required variables
-FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+set(_SRCS
+  qteditorfactory.cpp
+  qtpropertybrowser.cpp
+  qtpropertybrowserutils.cpp
+  qtpropertymanager.cpp
+  qttreepropertybrowser.cpp
+  qtvariantproperty.cpp
+  )
 
-# add some useful macros and variables
-# (QT_USE_FILE is a variable defined by FIND_PACKAGE( Qt4 ) that contains a path to CMake script)
-INCLUDE(${QT_USE_FILE})
+file(GLOB _IMPL_HDRS *.h)
+file(GLOB _PUBLIC_HDRS Qt*)
 
+set(_UI_FORMS
+  )
 
-FILE(GLOB include_file_list "*.h" )
-FILE(GLOB cpp_file_list "*.cpp"  )
-
-SET(MYLIB_HDRS
-    ${include_file_list}
-)
-
-SET(MYLIB_SRCS
-    ${cpp_file_list}
-)
-
-IF(CMAKE_COMPILER_IS_GNUCXX )
-    ADD_DEFINITIONS( -Wall -Wextra )
-ENDIF(CMAKE_COMPILER_IS_GNUCXX )
-
-# qt4 definitinos
-QT4_WRAP_CPP        ( MYLIB_MOC_SRCS ${MYLIB_HDRS} )
-QT4_AUTOMOC         ( ${MYLIB_SRCS} )
+set(_RESOURCES
+  qtpropertybrowser.qrc
+  )
 
 
-ADD_LIBRARY(qtpropertybrowser STATIC ${MYLIB_SRCS} ${MYLIB_MOC_SRCS} )
+set(TARGET_NAME ${PROJECT_NAME})
 
-IF (MSVC)
-# Turn off deprecation warnings
-ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_WARNINGS)
-ENDIF(MSVC)
+add_library(${TARGET_NAME}
+  ${_SRCS}
+  ${_UI_SRCS}
+  ${_QRC_SRCS}
+  ${_IMPL_HDRS}
+  )
 
+target_link_libraries(${TARGET_NAME} Qt5::Widgets)
 
-
+######################### Installation Stuff ###########################
+include(GenerateExportHeader)
+generate_export_header(${TARGET_NAME})

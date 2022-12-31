@@ -340,13 +340,13 @@ bool Yee_Compare(CompareArgs &args)
     if (lb)
         delete lb;
     if (aA)
-        delete aA;
+        delete[] aA;
     if (bA)
-        delete bA;
+        delete[] bA;
     if (aB)
-        delete aB;
+        delete[] aB;
     if (bB)
-        delete bB;
+        delete[] bB;
 
     char different[100];
     sprintf(different, "%d pixels are different\n", pixels_failed);
